@@ -53,29 +53,29 @@ Sistema de infotainment para veículos antigos usando Raspberry Pi 4 com interfa
 
 ## 📦 Instalação
 
-### 1. Sistema Base
+**Instalação automatizada disponível!**
 
-Instale o Raspberry Pi OS Lite (64-bit) e configure:
+### Método Rápido (Recomendado)
 
 ```bash
-# Atualizar sistema
-sudo apt update && sudo apt upgrade -y
+# Clonar repositório
+git clone https://github.com/flavioluiz/pi-car.git
+cd pi-car
 
-# Instalar interface gráfica mínima
-sudo apt install -y xorg openbox lxterminal pcmanfm
+# Executar script de instalação
+bash install.sh
 
-# Instalar dependências de áudio e música
-sudo apt install -y mpd mpc alsa-utils
-
-# Instalar GPS e navegação
-sudo apt install -y gpsd gpsd-clients navit
-
-# Instalar navegador
-sudo apt install -y chromium
-
-# Instalar dependências Python
-pip3 install flask python-mpd2 gps3 obd --break-system-packages
+# Reiniciar
+sudo reboot
 ```
+
+Após o reinício, o sistema iniciará automaticamente com o dashboard Pi-Car.
+
+📖 **Detalhes completos**: Veja [INSTALACAO.md](INSTALACAO.md) para instruções detalhadas.
+
+### Manual
+
+Se preferir instalar cada componente manualmente, consulte o guia [INSTALACAO.md](INSTALACAO.md).
 
 ### 2. Configurar MPD
 
