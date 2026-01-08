@@ -12,12 +12,12 @@ Sistema de infotainment para veículos antigos usando Raspberry Pi 4 com interfa
 
 ## ✨ Funcionalidades
 
-| Módulo | Descrição | Status |
+| Modulo | Descricao | Status |
 |--------|-----------|--------|
-| 🎵 **Música** | Player MPD com controle total (play, pause, volume, playlist) | ✅ Funcionando |
-| 📍 **GPS** | Velocidade, satélites, coordenadas + integração Navit | ✅ Pronto |
-| 🚗 **OBD-II** | RPM, velocidade, temperatura, posição do acelerador | ✅ Pronto |
-| 📻 **Rádio SDR** | Receptor RTL-SDR para FM, aviação, amador | ⏳ Em desenvolvimento |
+| 🎵 **Musica** | Player MPD com controles basicos (play, pause, volume) | ✅ Funcionando |
+| 📍 **GPS** | Velocidade, satelites, coordenadas + integracao Navit | ⏳ v0.5 |
+| 🚗 **OBD-II** | RPM, velocidade, temperatura, posicao do acelerador | ⏳ v0.3 |
+| 📻 **Radio SDR** | Receptor RTL-SDR para FM, aviacao, amador | ⏳ v0.4 |
 
 ---
 
@@ -259,28 +259,37 @@ pi-car/
 ## 🎯 Roadmap
 
 ### v0.1 (atual)
-- [x] Interface web básica
-- [x] Controle de música (MPD)
-- [x] Integração GPS (gpsd)
-- [x] Integração OBD-II
-- [x] Modo kiosk
+- [x] Interface web basica com navegacao por abas
+- [x] Controle basico de musica (play, pause, next, prev, volume)
+- [x] Estrutura modular backend/frontend
+- [x] Modo kiosk com Chromium
 
-### v0.2
-- [ ] Biblioteca de músicas navegável
+### v0.2 - Musica
+- [ ] Biblioteca de musicas navegavel
+- [ ] Listagem por artista/album/genero
 - [ ] Gerenciamento de playlists
-- [ ] Mapas offline (Navit embedded)
-- [ ] Integração RTL-SDR
+- [ ] Shuffle e repeat
 
-### v0.3
+### v0.3 - OBD-II
+- [ ] Leitura de dados do veiculo (RPM, velocidade, temperatura)
+- [ ] Exibicao em tempo real nos gauges
+- [ ] Conexao Bluetooth com ELM327
+
+### v0.4 - Radio SDR
+- [ ] Integracao basica com RTL-SDR
+- [ ] Sintonizacao de frequencias FM
+- [ ] Interface de controle do radio
+
+### v0.5 - GPS
+- [ ] Leitura de posicao via gpsd
+- [ ] Exibicao de velocidade e satelites
+- [ ] Integracao com Navit para navegacao
+
+### Futuro
 - [ ] Temas (claro/escuro/auto)
-- [ ] Configurações pela interface
-- [ ] Histórico de viagens
-- [ ] Códigos de erro OBD com descrição
-
-### v1.0
-- [ ] Backup de configurações
-- [ ] Atualizações OTA
-- [ ] Documentação completa
+- [ ] Configuracoes pela interface
+- [ ] Codigos de erro OBD com descricao
+- [ ] Historico de viagens
 - [ ] Imagem pronta para download
 
 ---
