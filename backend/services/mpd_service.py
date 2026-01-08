@@ -382,3 +382,31 @@ class MPDService:
             return [s for s in songs if 'file' in s]
         except Exception as e:
             return {'error': str(e)}
+
+    def seek(self, position):
+        """Vai para posicao especifica da musica (em segundos)"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.seekcur(float(position))
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def restart_song(self):
+        """Reinicia a musica atual"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.seekcur(0)
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}

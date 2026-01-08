@@ -29,6 +29,8 @@ function formatTime(seconds) {
 }
 
 // ============ ATUALIZAR DADOS ============
+let currentDuration = 0; // Armazena duracao para seek
+
 function updateData() {
     fetch('/api/status')
         .then(r => r.json())
@@ -44,6 +46,9 @@ function updateData() {
             document.getElementById('volume-display').textContent = data.music.volume + '%';
             document.getElementById('time-elapsed').textContent = formatTime(data.music.elapsed);
             document.getElementById('time-duration').textContent = formatTime(data.music.duration);
+
+            // Armazena duracao para uso no seek
+            currentDuration = data.music.duration || 0;
 
             const progress = data.music.duration > 0 ? (data.music.elapsed / data.music.duration * 100) : 0;
             document.getElementById('progress-fill').style.width = progress + '%';
@@ -100,6 +105,34 @@ setInterval(updateData, 1000);
 // ============ CONTROLES DE MUSICA ============
 function musicControl(action) {
     fetch('/api/music/' + action)
+        .then(r => r.json())
+        .then(() => updateData())
+        .catch(err => console.error('Erro:', err));
+}
+
+// Seek para posicao clicada na barra de progresso
+function seekToPosition(event) {
+    if (currentDuration <= 0) return;
+
+    const bar = document.getElementById('progress-bar');
+    const rect = bar.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const percentage = clickX / rect.width;
+    const position = percentage * currentDuration;
+
+    fetch('/api/music/seek', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position: position })
+    })
+        .then(r => r.json())
+        .then(() => updateData())
+        .catch(err => console.error('Erro:', err));
+}
+
+// Reiniciar musica atual
+function restartSong() {
+    fetch('/api/music/restart', { method: 'POST' })
         .then(r => r.json())
         .then(() => updateData())
         .catch(err => console.error('Erro:', err));

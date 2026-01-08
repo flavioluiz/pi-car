@@ -189,3 +189,25 @@ def music_all():
     if isinstance(result, dict) and 'error' in result:
         return jsonify(result), 500
     return jsonify(result)
+
+
+@music_bp.route('/seek', methods=['POST'])
+def music_seek():
+    """Vai para posicao especifica da musica"""
+    data = request.json
+    position = data.get('position') if data else None
+    if position is None:
+        return jsonify({'error': 'Posicao nao fornecida'}), 400
+    result = mpd_service.seek(position)
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@music_bp.route('/restart', methods=['POST'])
+def music_restart():
+    """Reinicia a musica atual"""
+    result = mpd_service.restart_song()
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)

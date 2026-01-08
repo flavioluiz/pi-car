@@ -292,6 +292,12 @@ body::after {
     border-radius: 3px;
     overflow: hidden;
     margin-bottom: 10px;
+    cursor: pointer;
+    transition: height 0.2s;
+}
+
+.progress-bar:hover {
+    height: 10px;
 }
 
 .progress-fill {
@@ -536,6 +542,12 @@ body::after {
     width: 38px;
     height: 38px;
     font-size: 0.9rem;
+}
+
+#music-playing .control-btn.small {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
 }
 
 #music-playing .control-btn.play-pause {
