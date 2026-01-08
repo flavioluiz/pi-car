@@ -249,8 +249,25 @@ chromium http://localhost:5000
 
 - **MPD**: `~/.mpd/log`
 - **GPSD**: `sudo journalctl -u gpsd -f`
-- **Dashboard**: Terminal onde o script está rodando
+- **Dashboard**: Terminal onde o script esta rodando
 - **Kernel**: `sudo journalctl -k -f`
+
+## Estrutura do Projeto
+
+O projeto esta organizado em modulos:
+
+```
+pi-car/
+├── app.py                  # Entry point
+├── config.py               # Configuracoes
+├── backend/
+│   ├── routes/             # Endpoints da API
+│   └── services/           # Logica de negocio (MPD, GPS, OBD)
+└── frontend/
+    ├── static/css/         # Estilos
+    ├── static/js/          # JavaScript
+    └── templates/          # HTML
+```
 
 ## Próximos Passos
 

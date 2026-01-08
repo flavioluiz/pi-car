@@ -283,17 +283,17 @@ install_picar() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     # Se estamos rodando de dentro de um clone do repositório, usar esse diretório
-    if [ -f "$SCRIPT_DIR/app.py" ] && [ -f "$SCRIPT_DIR/start_dashboard.sh" ]; then
-        log_info "Repositório local encontrado em: $SCRIPT_DIR"
+    if [ -f "$SCRIPT_DIR/app.py" ] && [ -d "$SCRIPT_DIR/backend" ] && [ -d "$SCRIPT_DIR/frontend" ]; then
+        log_info "Repositorio local encontrado em: $SCRIPT_DIR"
         INSTALL_DIR="$SCRIPT_DIR"
     else
         # Se não, clonar do GitHub
         if [ -d "$INSTALL_DIR/.git" ]; then
-            log_info "Repositório existente encontrado, atualizando..."
+            log_info "Repositorio existente encontrado, atualizando..."
             cd "$INSTALL_DIR"
             git pull
         else
-            log_info "Clonando repositório do GitHub..."
+            log_info "Clonando repositorio do GitHub..."
             git clone https://github.com/flavioluiz/pi-car.git "$INSTALL_DIR"
         fi
     fi

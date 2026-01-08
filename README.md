@@ -180,12 +180,38 @@ Para iniciar X automaticamente no boot, adicione ao `~/.bash_profile`:
 
 ```
 pi-car/
-├── app.py                  # Servidor Flask + interface web
-├── start_dashboard.sh      # Script de inicialização
-├── install.sh              # Script de instalação automatizada
-├── README.md               # Este arquivo
-├── INSTALACAO.md           # Guia detalhado de instalação
-└── LICENSE
+├── app.py                      # Entry point - servidor Flask
+├── config.py                   # Configuracoes centralizadas
+├── start_dashboard.sh          # Script de inicializacao
+├── update_music.sh             # Script para atualizar biblioteca de musicas
+├── install.sh                  # Script de instalacao automatizada
+├── README.md                   # Este arquivo
+├── INSTALACAO.md               # Guia detalhado de instalacao
+│
+├── backend/                    # Logica do servidor
+│   ├── __init__.py
+│   ├── routes/                 # Endpoints da API (Flask Blueprints)
+│   │   ├── __init__.py
+│   │   ├── music.py            # /api/music/* - controle MPD
+│   │   ├── gps.py              # /api/gps/* - dados GPS
+│   │   ├── vehicle.py          # /api/vehicle/* - dados OBD-II
+│   │   └── system.py           # /api/status, /api/launch/*
+│   │
+│   └── services/               # Servicos de integracao
+│       ├── __init__.py
+│       ├── mpd_service.py      # Conexao e controle MPD
+│       ├── gps_service.py      # Thread de monitoramento GPS
+│       └── obd_service.py      # Thread de monitoramento OBD-II
+│
+└── frontend/                   # Interface web
+    ├── static/
+    │   ├── css/
+    │   │   └── style.css       # Estilos da interface
+    │   └── js/
+    │       └── app.js          # Logica JavaScript
+    │
+    └── templates/
+        └── index.html          # Pagina principal
 ```
 
 ---
@@ -196,18 +222,27 @@ pi-car/
 ┌─────────────────────────────────────────────────────────────┐
 │                    Chromium (Kiosk Mode)                    │
 │                    http://localhost:5000                    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              frontend/ (HTML/CSS/JS)                 │   │
+│  │     templates/index.html + static/css + static/js   │   │
+│  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────┬───────────────────────────────┘
                               │
 ┌─────────────────────────────▼───────────────────────────────┐
-│                     Flask Server (:5000)                    │
+│            Flask Server (:5000) - app.py + config.py        │
 │                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   MPD API   │  │   GPS API   │  │      OBD API        │  │
-│  │  (música)   │  │  (posição)  │  │   (diagnóstico)     │  │
-│  └──────┬──────┘  └──────┬──────┘  └──────────┬──────────┘  │
-└─────────┼────────────────┼────────────────────┼─────────────┘
-          │                │                    │
-          ▼                ▼                    ▼
+│  ┌─────────────────── backend/routes/ ─────────────────┐   │
+│  │  music.py      gps.py      vehicle.py    system.py  │   │
+│  │  /api/music/*  /api/gps/*  /api/vehicle/* /api/*    │   │
+│  └──────────────────────┬──────────────────────────────┘   │
+│                         │                                   │
+│  ┌─────────────────── backend/services/ ───────────────┐   │
+│  │  mpd_service.py   gps_service.py   obd_service.py   │   │
+│  └──────┬─────────────────┬─────────────────┬──────────┘   │
+└─────────┼─────────────────┼─────────────────┼──────────────┘
+          │                 │                 │
+          ▼                 ▼                 ▼
     ┌───────────┐    ┌───────────┐      ┌─────────────┐
     │    MPD    │    │   gpsd    │      │  python-obd │
     │  (:6600)  │    │  (:2947)  │      │             │

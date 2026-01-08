@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Car Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">Pi·Car</div>
+        <div class="clock" id="clock">00:00</div>
+        <div class="status-indicators">
+            <div class="indicator" id="ind-music" title="Musica"></div>
+            <div class="indicator" id="ind-gps" title="GPS"></div>
+            <div class="indicator" id="ind-obd" title="OBD-II"></div>
+        </div>
+    </header>
+
+    <!-- Abas de navegacao -->
+    <nav class="tabs">
+        <button class="tab active" data-panel="music">MUSICA</button>
+        <button class="tab" data-panel="vehicle">VEICULO</button>
+        <button class="tab" data-panel="gps">GPS</button>
+        <button class="tab" data-panel="radio">RADIO</button>
+    </nav>
+
+    <!-- Paineis -->
+    <main class="panels">
+
+        <!-- Painel: Musica -->
+        <section class="panel active" id="panel-music">
+            <div class="music-now-playing">
+                <div class="music-artwork" id="music-artwork">&#9835;</div>
+                <div class="music-info">
+                    <div class="music-title" id="music-title">Nenhuma musica</div>
+                    <div class="music-artist" id="music-artist">-</div>
+                    <div class="music-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-time">
+                            <span id="time-elapsed">0:00</span>
+                            <span id="time-duration">0:00</span>
+                        </div>
+                    </div>
+                    <div class="music-controls">
+                        <button class="control-btn" onclick="musicControl('prev')">&#9664;&#9664;</button>
+                        <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">&#9654;</button>
+                        <button class="control-btn" onclick="musicControl('next')">&#9654;&#9654;</button>
+                    </div>
+                    <div class="volume-control">
+                        <button class="volume-btn" onclick="musicControl('voldown')">-</button>
+                        <span class="volume-display" id="volume-display">100%</span>
+                        <button class="volume-btn" onclick="musicControl('volup')">+</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Painel: Veiculo (OBD) -->
+        <section class="panel" id="panel-vehicle">
+            <div id="obd-content">
+                <div class="gauges-grid">
+                    <div class="gauge rpm">
+                        <div class="gauge-value" id="obd-rpm">0</div>
+                        <div class="gauge-unit">RPM</div>
+                        <div class="gauge-label">Rotacao</div>
+                    </div>
+                    <div class="gauge speed">
+                        <div class="gauge-value" id="obd-speed">0</div>
+                        <div class="gauge-unit">km/h</div>
+                        <div class="gauge-label">Velocidade</div>
+                    </div>
+                    <div class="gauge temp">
+                        <div class="gauge-value" id="obd-temp">0</div>
+                        <div class="gauge-unit">°C</div>
+                        <div class="gauge-label">Temperatura</div>
+                    </div>
+                    <div class="gauge throttle">
+                        <div class="gauge-value" id="obd-throttle">0</div>
+                        <div class="gauge-unit">%</div>
+                        <div class="gauge-label">Acelerador</div>
+                    </div>
+                </div>
+            </div>
+            <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
+                <div class="icon">[OBD]</div>
+                <p>OBD-II nao conectado</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Conecte o adaptador ELM327</p>
+            </div>
+        </section>
+
+        <!-- Painel: GPS -->
+        <section class="panel" id="panel-gps">
+            <div id="gps-content">
+                <div class="gps-info">
+                    <div class="gps-stat">
+                        <div class="gps-stat-value" id="gps-speed">0</div>
+                        <div class="gps-stat-label">km/h</div>
+                    </div>
+                    <div class="gps-stat">
+                        <div class="gps-stat-value" id="gps-sats">0</div>
+                        <div class="gps-stat-label">Satelites</div>
+                    </div>
+                    <div class="gps-stat gps-coords">
+                        <div id="gps-coords">Aguardando sinal GPS...</div>
+                    </div>
+                    <button class="navit-btn" onclick="openNavit()">
+                        ABRIR NAVEGACAO
+                    </button>
+                </div>
+            </div>
+            <div id="gps-disconnected" class="disconnected-msg" style="display: none;">
+                <div class="icon">[GPS]</div>
+                <p>GPS nao conectado</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Verifique o modulo GPS</p>
+            </div>
+        </section>
+
+        <!-- Painel: Radio SDR -->
+        <section class="panel" id="panel-radio">
+            <div class="card">
+                <div class="card-title">Radio SDR</div>
+                <div class="disconnected-msg">
+                    <div class="icon">[SDR]</div>
+                    <p>RTL-SDR</p>
+                    <p style="font-size: 0.9rem; margin-top: 10px; color: var(--text-secondary);">
+                        Em desenvolvimento...
+                    </p>
+                    <button class="navit-btn" style="margin-top: 20px;" onclick="openGqrx()">
+                        ABRIR GQRX
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
