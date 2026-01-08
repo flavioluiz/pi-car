@@ -60,6 +60,10 @@ function updateData() {
                 artwork.classList.remove('playing');
             }
 
+            // Shuffle e Repeat
+            document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
+            document.getElementById('btn-repeat').classList.toggle('active', data.music.repeat);
+
             // OBD
             if (data.obd.connected) {
                 document.getElementById('obd-content').style.display = 'block';
@@ -111,3 +115,229 @@ function openGqrx() {
     fetch('/api/launch/gqrx').catch(() => {});
     alert('Abrindo GQRX...');
 }
+
+// ============ SHUFFLE E REPEAT ============
+function toggleShuffle() {
+    fetch('/api/music/shuffle', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => updateData())
+        .catch(err => console.error('Erro:', err));
+}
+
+function toggleRepeat() {
+    fetch('/api/music/repeat', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => updateData())
+        .catch(err => console.error('Erro:', err));
+}
+
+// ============ BROWSER DE MUSICA ============
+
+// Tabs do browser
+document.querySelectorAll('.browser-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.browser-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.browser-panel').forEach(p => p.classList.remove('active'));
+
+        tab.classList.add('active');
+        const panelId = 'browser-' + tab.dataset.browser;
+        document.getElementById(panelId).classList.add('active');
+
+        // Carregar conteudo da tab
+        loadBrowserContent(tab.dataset.browser);
+    });
+});
+
+// Carregar conteudo baseado na tab
+function loadBrowserContent(type) {
+    switch (type) {
+        case 'queue':
+            loadQueue();
+            break;
+        case 'artists':
+            loadArtists();
+            break;
+        case 'playlists':
+            loadPlaylists();
+            break;
+        case 'search':
+            // Busca e acionada pelo usuario
+            break;
+    }
+}
+
+// Carregar fila atual
+function loadQueue() {
+    fetch('/api/music/playlist')
+        .then(r => r.json())
+        .then(queue => {
+            const list = document.getElementById('queue-list');
+            if (!queue || queue.length === 0 || queue.error) {
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#9835;</div>Fila vazia</div>';
+                return;
+            }
+
+            list.innerHTML = queue.map((song, i) => `
+                <div class="browser-item" onclick="playPosition(${song.pos || i})">
+                    <div class="browser-item-icon">&#9835;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
+                        <div class="browser-item-subtitle">${song.artist || 'Artista desconhecido'}</div>
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Erro ao carregar fila:', err));
+}
+
+// Carregar lista de artistas
+function loadArtists() {
+    fetch('/api/music/artists')
+        .then(r => r.json())
+        .then(artists => {
+            const list = document.getElementById('artists-list');
+            if (!artists || artists.length === 0 || artists.error) {
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128100;</div>Nenhum artista</div>';
+                return;
+            }
+
+            list.innerHTML = artists.map(artist => `
+                <div class="browser-item" onclick="loadArtistSongs('${artist.replace(/'/g, "\\'")}')">
+                    <div class="browser-item-icon">&#128100;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">${artist}</div>
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Erro ao carregar artistas:', err));
+}
+
+// Carregar musicas de um artista
+function loadArtistSongs(artist) {
+    fetch('/api/music/artist/' + encodeURIComponent(artist))
+        .then(r => r.json())
+        .then(songs => {
+            const list = document.getElementById('artists-list');
+            if (!songs || songs.length === 0 || songs.error) {
+                list.innerHTML = '<div class="browser-empty">Nenhuma musica</div>';
+                return;
+            }
+
+            // Botao voltar + lista de musicas
+            list.innerHTML = `
+                <div class="browser-item" onclick="loadArtists()">
+                    <div class="browser-item-icon">&#8592;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">Voltar</div>
+                    </div>
+                </div>
+            ` + songs.map(song => `
+                <div class="browser-item" onclick="addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">
+                    <div class="browser-item-icon">&#9835;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
+                        <div class="browser-item-subtitle">${song.album || ''}</div>
+                    </div>
+                    <button class="browser-item-action" onclick="event.stopPropagation(); addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">+</button>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Erro ao carregar musicas:', err));
+}
+
+// Carregar playlists salvas
+function loadPlaylists() {
+    fetch('/api/music/playlists')
+        .then(r => r.json())
+        .then(playlists => {
+            const list = document.getElementById('playlists-list');
+            if (!playlists || playlists.length === 0 || playlists.error) {
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128195;</div>Nenhuma playlist</div>';
+                return;
+            }
+
+            list.innerHTML = playlists.map(pl => `
+                <div class="browser-item" onclick="loadPlaylist('${(pl.playlist || '').replace(/'/g, "\\'")}')">
+                    <div class="browser-item-icon">&#128195;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">${pl.playlist}</div>
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Erro ao carregar playlists:', err));
+}
+
+// Carregar uma playlist
+function loadPlaylist(name) {
+    fetch('/api/music/playlists/' + encodeURIComponent(name) + '/load', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            // Mudar para aba da fila e atualizar
+            document.querySelector('.browser-tab[data-browser="queue"]').click();
+            updateData();
+        })
+        .catch(err => console.error('Erro ao carregar playlist:', err));
+}
+
+// ============ BUSCA ============
+function handleSearch(event) {
+    if (event.key === 'Enter') {
+        doSearch();
+    }
+}
+
+function doSearch() {
+    const query = document.getElementById('search-input').value.trim();
+    if (!query) return;
+
+    fetch('/api/music/search?q=' + encodeURIComponent(query))
+        .then(r => r.json())
+        .then(results => {
+            const list = document.getElementById('search-results');
+            if (!results || results.length === 0 || results.error) {
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128269;</div>Nenhum resultado</div>';
+                return;
+            }
+
+            list.innerHTML = results.map(song => `
+                <div class="browser-item" onclick="addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">
+                    <div class="browser-item-icon">&#9835;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
+                        <div class="browser-item-subtitle">${song.artist || 'Artista desconhecido'}</div>
+                    </div>
+                    <button class="browser-item-action" onclick="event.stopPropagation(); addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">+</button>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Erro na busca:', err));
+}
+
+// ============ ACOES DO BROWSER ============
+function playPosition(pos) {
+    fetch('/api/music/play/' + pos, { method: 'POST' })
+        .then(r => r.json())
+        .then(() => updateData())
+        .catch(err => console.error('Erro:', err));
+}
+
+function addToQueue(file) {
+    fetch('/api/music/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uri: file })
+    })
+        .then(r => r.json())
+        .then(() => {
+            // Atualiza a fila se estiver visivel
+            if (document.getElementById('browser-queue').classList.contains('active')) {
+                loadQueue();
+            }
+        })
+        .catch(err => console.error('Erro:', err));
+}
+
+// Carregar fila inicial
+loadQueue();

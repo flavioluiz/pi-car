@@ -386,6 +386,221 @@ body::after {
     text-align: center;
 }
 
+/* Controles extras (shuffle, repeat, volume) */
+.music-extra-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.mode-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-btn:hover {
+    border-color: var(--accent-purple);
+    color: var(--accent-purple);
+}
+
+.mode-btn.active {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+}
+
+/* ============ BROWSER DE MUSICA ============ */
+.music-browser {
+    margin-top: 15px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.browser-tabs {
+    display: flex;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.browser-tab {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.browser-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+}
+
+.browser-tab.active {
+    color: var(--accent-cyan);
+    background: var(--bg-card);
+}
+
+.browser-content {
+    height: 200px;
+    overflow: hidden;
+}
+
+.browser-panel {
+    display: none;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.browser-panel.active {
+    display: block;
+}
+
+.browser-list {
+    padding: 5px;
+}
+
+.browser-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    gap: 10px;
+}
+
+.browser-item:hover {
+    background: var(--bg-card-hover);
+}
+
+.browser-item.active {
+    background: rgba(0, 245, 255, 0.1);
+    border-left: 3px solid var(--accent-cyan);
+}
+
+.browser-item-icon {
+    font-size: 1.2rem;
+    color: var(--accent-cyan);
+    min-width: 24px;
+}
+
+.browser-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.browser-item-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.browser-item-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.browser-item-action {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.browser-item-action:hover {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+/* Barra de busca */
+.search-bar {
+    display: flex;
+    padding: 10px;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+}
+
+.search-bar input::placeholder {
+    color: var(--text-secondary);
+}
+
+.search-btn {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.search-btn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+/* Estado vazio do browser */
+.browser-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.browser-empty-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
 /* ============ PAINEL DE VEICULO (OBD) ============ */
 .gauges-grid {
     display: grid;

@@ -16,6 +16,8 @@ music_data = {
     'elapsed': 0,
     'duration': 0,
     'volume': 100,
+    'random': False,
+    'repeat': False,
     'connected': False
 }
 
@@ -53,6 +55,8 @@ class MPDService:
                 music_data['volume'] = int(status.get('volume', 100))
                 music_data['elapsed'] = float(status.get('elapsed', 0))
                 music_data['duration'] = float(status.get('duration', 0))
+                music_data['random'] = status.get('random', '0') == '1'
+                music_data['repeat'] = status.get('repeat', '0') == '1'
                 music_data['artist'] = song.get('artist', 'Desconhecido')
                 music_data['title'] = song.get('title', song.get('file', 'Sem titulo'))
                 music_data['album'] = song.get('album', '')
@@ -136,6 +140,157 @@ class MPDService:
         try:
             if uri:
                 client.add(uri)
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def search(self, query):
+        """Busca musicas por titulo, artista ou album"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            results = client.search('any', query)
+            client.close()
+            client.disconnect()
+            return results
+        except Exception as e:
+            return {'error': str(e)}
+
+    def list_artists(self):
+        """Retorna lista de artistas"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            artists = client.list('artist')
+            client.close()
+            client.disconnect()
+            # Filtra artistas vazios e ordena
+            return sorted([a for a in artists if a])
+        except Exception as e:
+            return {'error': str(e)}
+
+    def list_by_artist(self, artist):
+        """Retorna musicas de um artista"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            songs = client.find('artist', artist)
+            client.close()
+            client.disconnect()
+            return songs
+        except Exception as e:
+            return {'error': str(e)}
+
+    def list_playlists(self):
+        """Lista playlists salvas em ~/.mpd/playlists"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            playlists = client.listplaylists()
+            client.close()
+            client.disconnect()
+            return playlists
+        except Exception as e:
+            return {'error': str(e)}
+
+    def load_playlist(self, name):
+        """Carrega playlist salva (substitui fila atual)"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.clear()
+            client.load(name)
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def save_playlist(self, name):
+        """Salva playlist atual"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            # Remove playlist existente com mesmo nome (se houver)
+            try:
+                client.rm(name)
+            except:
+                pass
+            client.save(name)
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def toggle_random(self):
+        """Alterna modo shuffle"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            status = client.status()
+            current = status.get('random', '0') == '1'
+            client.random(0 if current else 1)
+            client.close()
+            client.disconnect()
+            return {'success': True, 'random': not current}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def toggle_repeat(self):
+        """Alterna modo repeat"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            status = client.status()
+            current = status.get('repeat', '0') == '1'
+            client.repeat(0 if current else 1)
+            client.close()
+            client.disconnect()
+            return {'success': True, 'repeat': not current}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def play_pos(self, pos):
+        """Toca musica na posicao especifica da fila"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.play(int(pos))
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def clear_queue(self):
+        """Limpa a fila atual"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.clear()
             client.close()
             client.disconnect()
             return {'success': True}
