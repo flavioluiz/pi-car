@@ -56,7 +56,9 @@ class MPDService:
                 music_data['elapsed'] = float(status.get('elapsed', 0))
                 music_data['duration'] = float(status.get('duration', 0))
                 music_data['random'] = status.get('random', '0') == '1'
-                music_data['repeat'] = status.get('repeat', '0') == '1'
+                # Repeat ativo = repeat + single (repete musica atual)
+                music_data['repeat'] = (status.get('repeat', '0') == '1' and
+                                        status.get('single', '0') == '1')
                 music_data['artist'] = song.get('artist', 'Desconhecido')
                 music_data['title'] = song.get('title', song.get('file', 'Sem titulo'))
                 music_data['album'] = song.get('album', '')
@@ -265,18 +267,24 @@ class MPDService:
             return {'error': str(e)}
 
     def toggle_repeat(self):
-        """Alterna modo repeat"""
+        """Alterna modo repeat (repete musica atual)"""
         client = self._get_client()
         if not client:
             return {'error': 'MPD nao conectado'}
 
         try:
             status = client.status()
-            current = status.get('repeat', '0') == '1'
-            client.repeat(0 if current else 1)
+            # Para repetir uma musica, precisamos de repeat + single
+            current_repeat = status.get('repeat', '0') == '1'
+            current_single = status.get('single', '0') == '1'
+            # Considera ativo se ambos estao ligados
+            is_active = current_repeat and current_single
+            new_state = 0 if is_active else 1
+            client.repeat(new_state)
+            client.single(new_state)
             client.close()
             client.disconnect()
-            return {'success': True, 'repeat': not current}
+            return {'success': True, 'repeat': not is_active}
         except Exception as e:
             return {'error': str(e)}
 
