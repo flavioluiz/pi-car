@@ -169,6 +169,9 @@ function loadMusicContent(type) {
     }
 }
 
+// Armazena URIs da fila atual para marcar icones
+let queueFiles = new Set();
+
 // Carregar fila atual
 function loadQueue() {
     fetch('/api/music/playlist')
@@ -176,21 +179,51 @@ function loadQueue() {
         .then(queue => {
             const list = document.getElementById('queue-list');
             if (!queue || queue.length === 0 || queue.error) {
+                queueFiles.clear();
                 list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#9835;</div>Fila vazia</div>';
                 return;
             }
 
-            list.innerHTML = queue.map((song, i) => `
+            // Atualiza conjunto de arquivos na fila
+            queueFiles = new Set(queue.map(s => s.file));
+
+            list.innerHTML = `
+                <div class="browser-header">
+                    <span>${queue.length} musica${queue.length > 1 ? 's' : ''}</span>
+                    <button class="browser-header-btn" onclick="clearQueue()">Limpar</button>
+                </div>
+            ` + queue.map((song, i) => `
                 <div class="browser-item" onclick="playPosition(${song.pos || i})">
                     <div class="browser-item-icon">&#9835;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
                         <div class="browser-item-subtitle">${song.artist || 'Artista desconhecido'}</div>
                     </div>
+                    <button class="browser-item-remove" onclick="event.stopPropagation(); removeFromQueue(${song.pos || i})">&#10005;</button>
                 </div>
             `).join('');
         })
         .catch(err => console.error('Erro ao carregar fila:', err));
+}
+
+// Remover da fila
+function removeFromQueue(pos) {
+    fetch('/api/music/remove/' + pos, { method: 'POST' })
+        .then(r => r.json())
+        .then(() => loadQueue())
+        .catch(err => console.error('Erro:', err));
+}
+
+// Limpar fila
+function clearQueue() {
+    fetch('/api/music/clear', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            queueFiles.clear();
+            loadQueue();
+            updateData();
+        })
+        .catch(err => console.error('Erro:', err));
 }
 
 // Carregar lista de artistas
@@ -235,16 +268,20 @@ function loadArtistSongs(artist) {
                         <div class="browser-item-title">Voltar</div>
                     </div>
                 </div>
-            ` + songs.map(song => `
-                <div class="browser-item" onclick="addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">
-                    <div class="browser-item-icon">&#9835;</div>
+            ` + songs.map(song => {
+                const file = (song.file || '').replace(/'/g, "\\'");
+                const inQueue = queueFiles.has(song.file);
+                return `
+                <div class="browser-item" data-file="${song.file || ''}">
+                    <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
                         <div class="browser-item-subtitle">${song.album || ''}</div>
                     </div>
-                    <button class="browser-item-action" onclick="event.stopPropagation(); addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">+</button>
+                    <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
+                    <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
                 </div>
-            `).join('');
+            `}).join('');
         })
         .catch(err => console.error('Erro ao carregar musicas:', err));
 }
@@ -261,27 +298,38 @@ function loadPlaylists() {
             }
 
             list.innerHTML = playlists.map(pl => `
-                <div class="browser-item" onclick="loadPlaylist('${(pl.playlist || '').replace(/'/g, "\\'")}')">
+                <div class="browser-item">
                     <div class="browser-item-icon">&#128195;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${pl.playlist}</div>
                     </div>
+                    <button class="browser-item-action play" onclick="event.stopPropagation(); playPlaylist('${(pl.playlist || '').replace(/'/g, "\\'")}')">&#9654;</button>
+                    <button class="browser-item-action" onclick="event.stopPropagation(); addPlaylistToQueue('${(pl.playlist || '').replace(/'/g, "\\'")}')">+</button>
                 </div>
             `).join('');
         })
         .catch(err => console.error('Erro ao carregar playlists:', err));
 }
 
-// Carregar uma playlist
-function loadPlaylist(name) {
-    fetch('/api/music/playlists/' + encodeURIComponent(name) + '/load', { method: 'POST' })
+// Tocar playlist (substitui fila)
+function playPlaylist(name) {
+    fetch('/api/music/playlists/' + encodeURIComponent(name) + '/play', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
-            // Mudar para aba da fila e atualizar
-            document.querySelector('.music-tab[data-music="queue"]').click();
+            document.querySelector('.music-tab[data-music="playing"]').click();
             updateData();
         })
-        .catch(err => console.error('Erro ao carregar playlist:', err));
+        .catch(err => console.error('Erro:', err));
+}
+
+// Adicionar playlist a fila
+function addPlaylistToQueue(name) {
+    fetch('/api/music/playlists/' + encodeURIComponent(name) + '/add', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            loadQueue();
+        })
+        .catch(err => console.error('Erro:', err));
 }
 
 // ============ BUSCA ============
@@ -293,9 +341,10 @@ function handleSearch(event) {
 
 function doSearch() {
     const query = document.getElementById('search-input').value.trim();
-    if (!query) return;
+    // Se vazio, busca todas as musicas
+    const url = query ? '/api/music/search?q=' + encodeURIComponent(query) : '/api/music/all';
 
-    fetch('/api/music/search?q=' + encodeURIComponent(query))
+    fetch(url)
         .then(r => r.json())
         .then(results => {
             const list = document.getElementById('search-results');
@@ -304,18 +353,41 @@ function doSearch() {
                 return;
             }
 
-            list.innerHTML = results.map(song => `
-                <div class="browser-item" onclick="addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">
-                    <div class="browser-item-icon">&#9835;</div>
+            list.innerHTML = results.map(song => {
+                const file = (song.file || '').replace(/'/g, "\\'");
+                const inQueue = queueFiles.has(song.file);
+                return `
+                <div class="browser-item" data-file="${song.file || ''}">
+                    <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
                         <div class="browser-item-subtitle">${song.artist || 'Artista desconhecido'}</div>
                     </div>
-                    <button class="browser-item-action" onclick="event.stopPropagation(); addToQueue('${(song.file || '').replace(/'/g, "\\'")}')">+</button>
+                    <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
+                    <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
                 </div>
-            `).join('');
+            `}).join('');
         })
         .catch(err => console.error('Erro na busca:', err));
+}
+
+// Renderiza lista de musicas (usado em busca e artistas)
+function renderSongList(songs, listElement) {
+    listElement.innerHTML = songs.map(song => {
+        const file = (song.file || '').replace(/'/g, "\\'");
+        const inQueue = queueFiles.has(song.file);
+        return `
+            <div class="browser-item" data-file="${song.file || ''}">
+                <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
+                <div class="browser-item-info">
+                    <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
+                    <div class="browser-item-subtitle">${song.artist || song.album || 'Artista desconhecido'}</div>
+                </div>
+                <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
+                <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
+            </div>
+        `;
+    }).join('');
 }
 
 // ============ ACOES DO BROWSER ============
@@ -334,10 +406,48 @@ function addToQueue(file) {
     })
         .then(r => r.json())
         .then(() => {
-            // Atualiza a fila se estiver visivel
+            queueFiles.add(file);
             if (document.getElementById('music-queue').classList.contains('active')) {
                 loadQueue();
             }
+        })
+        .catch(err => console.error('Erro:', err));
+}
+
+// Adicionar e marcar visualmente
+function addToQueueAndMark(btn, file) {
+    fetch('/api/music/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uri: file })
+    })
+        .then(r => r.json())
+        .then(() => {
+            queueFiles.add(file);
+            btn.classList.add('added');
+            // Marca o icone tambem
+            const item = btn.closest('.browser-item');
+            if (item) {
+                const icon = item.querySelector('.browser-item-icon');
+                if (icon) icon.classList.add('in-queue');
+            }
+        })
+        .catch(err => console.error('Erro:', err));
+}
+
+// Tocar musica (substitui fila)
+function playSong(file) {
+    fetch('/api/music/play-uri', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uri: file })
+    })
+        .then(r => r.json())
+        .then(() => {
+            queueFiles.clear();
+            queueFiles.add(file);
+            document.querySelector('.music-tab[data-music="playing"]').click();
+            updateData();
         })
         .catch(err => console.error('Erro:', err));
 }

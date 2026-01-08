@@ -140,3 +140,52 @@ def music_clear():
     if 'error' in result:
         return jsonify(result), 500
     return jsonify(result)
+
+
+@music_bp.route('/remove/<int:pos>', methods=['POST'])
+def music_remove(pos):
+    """Remove musica da fila pela posicao"""
+    result = mpd_service.remove_from_queue(pos)
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@music_bp.route('/playlists/<path:name>/add', methods=['POST'])
+def music_add_playlist(name):
+    """Adiciona playlist a fila atual"""
+    result = mpd_service.add_playlist_to_queue(name)
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@music_bp.route('/playlists/<path:name>/play', methods=['POST'])
+def music_play_playlist(name):
+    """Toca playlist (substitui fila)"""
+    result = mpd_service.play_playlist(name)
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@music_bp.route('/play-uri', methods=['POST'])
+def music_play_uri():
+    """Toca musica (substitui fila)"""
+    data = request.json
+    uri = data.get('uri') if data else None
+    if not uri:
+        return jsonify({'error': 'URI nao fornecido'}), 400
+    result = mpd_service.play_uri(uri)
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@music_bp.route('/all')
+def music_all():
+    """Lista todas as musicas"""
+    result = mpd_service.list_all_songs()
+    if isinstance(result, dict) and 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)

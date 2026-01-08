@@ -631,14 +631,80 @@ body::after {
     border: 1px solid var(--border-color);
     background: transparent;
     color: var(--text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
+    min-width: 32px;
 }
 
 .browser-item-action:hover {
     border-color: var(--accent-green);
     color: var(--accent-green);
+}
+
+.browser-item-action.play {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+}
+
+.browser-item-action.play:hover {
+    background: var(--accent-cyan);
+    color: var(--bg-dark);
+}
+
+.browser-item-action.added {
+    color: var(--accent-green);
+    border-color: var(--accent-green);
+}
+
+/* Icone marcado como na fila */
+.browser-item-icon.in-queue {
+    color: var(--accent-green);
+}
+
+/* Botao remover da fila */
+.browser-item-remove {
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.browser-item-remove:hover {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    background: rgba(255, 170, 0, 0.1);
+}
+
+/* Header da fila */
+.browser-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.browser-header-btn {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 1px solid var(--accent-orange);
+    background: transparent;
+    color: var(--accent-orange);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.browser-header-btn:hover {
+    background: var(--accent-orange);
+    color: var(--bg-dark);
 }
 
 /* Barra de busca */

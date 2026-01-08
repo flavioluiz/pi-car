@@ -307,3 +307,78 @@ class MPDService:
             return {'success': True}
         except Exception as e:
             return {'error': str(e)}
+
+    def remove_from_queue(self, pos):
+        """Remove musica da fila pela posicao"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.delete(int(pos))
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def add_playlist_to_queue(self, name):
+        """Adiciona playlist a fila atual (sem limpar)"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.load(name)
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def play_uri(self, uri):
+        """Limpa fila, adiciona musica e toca"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.clear()
+            client.add(uri)
+            client.play()
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def play_playlist(self, name):
+        """Limpa fila, carrega playlist e toca"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.clear()
+            client.load(name)
+            client.play()
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def list_all_songs(self):
+        """Lista todas as musicas da biblioteca"""
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            songs = client.listallinfo()
+            client.close()
+            client.disconnect()
+            # Filtra apenas arquivos (ignora diretorios)
+            return [s for s in songs if 'file' in s]
+        except Exception as e:
+            return {'error': str(e)}
