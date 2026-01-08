@@ -69,62 +69,33 @@ bash install.sh
 sudo reboot
 ```
 
-Após o reinício, o sistema iniciará automaticamente com o dashboard Pi-Car.
+O script de instalação irá:
+- Atualizar o sistema (apt update/upgrade)
+- Instalar interface gráfica mínima (X11 + Openbox)
+- Instalar MPD, GPSD, Navit, Chromium
+- Instalar RTL-SDR e ferramentas de rádio
+- Configurar Bluetooth para OBD-II
+- Instalar dependências Python (Flask, python-mpd2, gps3, obd)
+- Configurar autostart do servidor Flask e Chromium em modo kiosk
+
+Após o reinício, o sistema iniciará automaticamente com o dashboard Pi-Car em tela cheia.
 
 📖 **Detalhes completos**: Veja [INSTALACAO.md](INSTALACAO.md) para instruções detalhadas.
 
-### Manual
+### Instalação Manual
 
 Se preferir instalar cada componente manualmente, consulte o guia [INSTALACAO.md](INSTALACAO.md).
 
-### 2. Configurar MPD
-
-Edite `/etc/mpd.conf`:
-
-```conf
-music_directory    "/home/SEU_USUARIO/Music"
-playlist_directory "/home/SEU_USUARIO/.mpd/playlists"
-db_file            "/home/SEU_USUARIO/.mpd/database"
-log_file           "/home/SEU_USUARIO/.mpd/log"
-pid_file           "/home/SEU_USUARIO/.mpd/pid"
-state_file         "/home/SEU_USUARIO/.mpd/state"
-
-audio_output {
-    type    "alsa"
-    name    "Headphones"
-    device  "hw:0,0"
-}
-
-bind_to_address "localhost"
-port            "6600"
-```
-
-Iniciar MPD:
+### Executar Manualmente (sem autostart)
 
 ```bash
-mkdir -p ~/.mpd/playlists
-touch ~/.mpd/database
-sudo systemctl enable mpd
-sudo systemctl start mpd
-```
-
-### 3. Clonar e Executar
-
-```bash
-# Clonar repositório
-git clone https://github.com/SEU_USUARIO/pi-car.git
-cd pi-car
-
-# Dar permissão de execução
-chmod +x start_dashboard.sh
-
-# Executar
+cd ~/pi-car
 ./start_dashboard.sh
 ```
 
 Acesse: **http://localhost:5000**
 
-### 4. Modo Kiosk (Tela Cheia)
+### Modo Kiosk (Tela Cheia)
 
 ```bash
 chromium --kiosk --noerrdialogs --disable-infobars --no-first-run http://localhost:5000
@@ -136,7 +107,9 @@ Sair: `Alt+F4` ou `Ctrl+W`
 
 ## 🚀 Autostart
 
-Para iniciar automaticamente com o X:
+O script de instalação configura o autostart automaticamente. Se precisar configurar manualmente:
+
+### Configurar autostart do Openbox
 
 ```bash
 mkdir -p ~/.config/openbox
@@ -152,14 +125,22 @@ xset -dpms
 xset s noblank
 
 # Iniciar dashboard
-/home/SEU_USUARIO/pi-car/start_dashboard.sh &
+~/pi-car/start_dashboard.sh &
 
 # Aguardar servidor
-sleep 3
+sleep 4
 
 # Chromium em modo kiosk
-chromium --kiosk --noerrdialogs --disable-infobars --no-first-run http://localhost:5000 &
+chromium --kiosk --noerrdialogs --disable-infobars --no-first-run --disable-session-crashed-bubble --disable-restore-session-state http://localhost:5000 &
 ```
+
+### Configurar .xinitrc
+
+```bash
+echo "exec openbox-session" > ~/.xinitrc
+```
+
+### Auto-login no X
 
 Para iniciar X automaticamente no boot, adicione ao `~/.bash_profile`:
 
@@ -195,13 +176,10 @@ Para iniciar X automaticamente no boot, adicione ao `~/.bash_profile`:
 pi-car/
 ├── app.py                  # Servidor Flask + interface web
 ├── start_dashboard.sh      # Script de inicialização
-├── car-dashboard.desktop   # Arquivo .desktop para autostart
-├── README.md
-├── LICENSE
-└── docs/
-    ├── INSTALL.md          # Guia detalhado de instalação
-    ├── HARDWARE.md         # Lista de hardware e conexões
-    └── WIRING.md           # Diagramas elétricos
+├── install.sh              # Script de instalação automatizada
+├── README.md               # Este arquivo
+├── INSTALACAO.md           # Guia detalhado de instalação
+└── LICENSE
 ```
 
 ---

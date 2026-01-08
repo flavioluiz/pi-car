@@ -5,7 +5,7 @@ Guia completo para configurar o ambiente de desenvolvimento e produção do Pi-C
 ## Requisitos
 
 - Raspberry Pi 4 (2GB+ RAM recomendado)
-- Raspberry Pi OS Lite (64-bit)
+- Raspberry Pi OS Lite (64-bit) - Debian Bookworm/Trixie
 - Conexão com internet
 - Acesso SSH ou terminal físico
 
@@ -24,13 +24,16 @@ cd pi-car
 bash install.sh
 ```
 
-Este script instalará automaticamente:
-- Interface gráfica (Openbox)
-- MPD (Music Player Daemon)
-- GPSD (serviço GPS)
-- Navit (navegação)
-- Navegador Chromium
-- Dependências Python (Flask, python-mpd2, gps3, obd)
+O script instalará e configurará automaticamente:
+- **Sistema**: Atualização completa (apt update/upgrade)
+- **Interface gráfica**: X11 + Openbox (mínimo necessário)
+- **Áudio**: ALSA, MPD (Music Player Daemon), MPC
+- **GPS**: GPSD, gpsd-clients, Navit (navegação offline)
+- **Navegador**: Chromium (modo kiosk)
+- **Rádio SDR**: RTL-SDR, GQRX (se disponível)
+- **Bluetooth**: Para conexão com ELM327 (OBD-II)
+- **Python**: Flask, python-mpd2, gps3, obd
+- **Autostart**: Servidor Flask + Chromium em modo kiosk
 
 ### 3. Reiniciar
 
@@ -38,7 +41,7 @@ Este script instalará automaticamente:
 sudo reboot
 ```
 
-Após o reinício, o sistema iniciará automaticamente o Chromium em modo kiosk com o dashboard Pi-Car.
+Após o reinício, o sistema iniciará automaticamente o Chromium em modo kiosk com o dashboard Pi-Car em tela cheia.
 
 ## Instalação Manual
 
@@ -102,7 +105,7 @@ sudo systemctl start gpsd
 ### Navegador
 
 ```bash
-sudo apt install -y chromium-browser
+sudo apt install -y chromium
 ```
 
 ### Dependências Python
@@ -133,13 +136,13 @@ xset -dpms
 xset s noblank
 
 # Iniciar dashboard
-/caminho/para/pi-car/start_dashboard.sh &
+~/pi-car/start_dashboard.sh &
 
 # Aguardar servidor
-sleep 3
+sleep 4
 
 # Chromium em modo kiosk
-chromium-browser --kiosk --noerrdialogs --disable-infobars --no-first-run http://localhost:5000 &
+chromium --kiosk --noerrdialogs --disable-infobars --no-first-run --disable-session-crashed-bubble --disable-restore-session-state http://localhost:5000 &
 ```
 
 ## Testar sem Autostart
@@ -160,7 +163,7 @@ chmod +x start_dashboard.sh
 
 ### Abrir navegador
 ```bash
-chromium-browser http://localhost:5000
+chromium http://localhost:5000
 ```
 
 ## Configurar Módulos de Hardware
@@ -227,9 +230,9 @@ ls -l /dev/rfcomm*
 ### Navegador não abre
 
 ```bash
-chromium-browser --version
+chromium --version
 export DISPLAY=:0
-chromium-browser http://localhost:5000
+chromium http://localhost:5000
 ```
 
 ## Logs
