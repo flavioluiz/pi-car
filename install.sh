@@ -126,6 +126,11 @@ install_system_packages() {
         htop \
         nano
 
+    log_info "Instalando fontes (emoji e símbolos)..."
+    sudo apt install -y \
+        fonts-noto-color-emoji \
+        fonts-symbola || log_warn "Algumas fontes não disponíveis, pulando..."
+
     log_info "Pacotes do sistema instalados!"
 }
 
@@ -295,6 +300,7 @@ install_picar() {
 
     # Garantir permissões de execução
     chmod +x "$INSTALL_DIR/start_dashboard.sh"
+    chmod +x "$INSTALL_DIR/update_music.sh"
     chmod +x "$INSTALL_DIR/app.py" 2>/dev/null || true
 
     log_info "Pi-Car instalado em: $INSTALL_DIR"
@@ -356,9 +362,17 @@ AUTOSTART
 finalize() {
     log_step "Finalizando instalação"
 
-    # Atualizar banco de dados do MPD
-    log_info "Atualizando banco de dados do MPD..."
-    mpc update 2>/dev/null || true
+    # Atualizar biblioteca de músicas (se houver)
+    log_info "Atualizando biblioteca de músicas..."
+    if [ -d "$HOME/Music" ] && [ "$(find "$HOME/Music" -type f \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) 2>/dev/null | head -1)" ]; then
+        mpc update --wait 2>/dev/null || true
+        mpc clear 2>/dev/null || true
+        mpc add / 2>/dev/null || true
+        log_info "Músicas adicionadas à playlist!"
+    else
+        log_warn "Nenhuma música encontrada em ~/Music"
+        log_info "Copie músicas para ~/Music e execute: ./update_music.sh"
+    fi
 
     # Limpar cache do apt
     sudo apt autoremove -y

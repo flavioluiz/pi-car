@@ -499,28 +499,28 @@ HTML_TEMPLATE = '''
         
         /* ============ PAINEL DE MÚSICA ============ */
         .music-now-playing {
-            text-align: center;
-            padding: 30px 20px;
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            gap: 20px;
         }
-        
+
         .music-artwork {
-            width: 200px;
-            height: 200px;
-            margin: 0 auto 25px;
+            width: 80px;
+            height: 80px;
+            min-width: 80px;
             background: linear-gradient(135deg, var(--bg-card-hover), var(--bg-dark));
-            border-radius: 15px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
+            font-size: 1.5rem;
             color: var(--accent-cyan);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.4),
-                inset 0 0 60px rgba(0, 245, 255, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
         }
-        
+
         .music-artwork::after {
             content: '';
             position: absolute;
@@ -528,33 +528,44 @@ HTML_TEMPLATE = '''
             left: -50%;
             width: 200%;
             height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(0, 245, 255, 0.1), transparent);
+            background: conic-gradient(from 0deg, transparent, rgba(0, 245, 255, 0.15), transparent);
             animation: rotate 8s linear infinite;
         }
-        
+
         @keyframes rotate {
             to { transform: rotate(360deg); }
         }
-        
+
         .music-artwork.playing::after {
-            animation-duration: 3s;
+            animation-duration: 2s;
         }
-        
+
+        .music-info {
+            flex: 1;
+            min-width: 0;
+        }
+
         .music-title {
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
+
         .music-artist {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--accent-cyan);
-            margin-bottom: 25px;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
+
         .music-progress {
-            margin-bottom: 25px;
+            margin-bottom: 10px;
         }
         
         .progress-bar {
@@ -585,73 +596,75 @@ HTML_TEMPLATE = '''
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-        
+
         .control-btn {
-            width: 60px;
-            height: 60px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: 2px solid var(--border-color);
             background: var(--bg-card);
             color: var(--text-primary);
-            font-size: 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        
+
         .control-btn:hover {
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
             transform: scale(1.05);
         }
-        
+
         .control-btn:active {
             transform: scale(0.95);
         }
-        
+
         .control-btn.play-pause {
-            width: 80px;
-            height: 80px;
-            font-size: 2rem;
+            width: 54px;
+            height: 54px;
+            font-size: 1.2rem;
             background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
             border: none;
             color: var(--bg-dark);
         }
-        
+
         .volume-control {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
         }
-        
+
         .volume-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             border: 1px solid var(--border-color);
             background: var(--bg-card);
             color: var(--text-primary);
-            font-size: 1.2rem;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .volume-btn:hover {
             border-color: var(--accent-orange);
             color: var(--accent-orange);
         }
-        
+
         .volume-display {
             font-family: 'Orbitron', monospace;
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--accent-orange);
-            min-width: 60px;
+            min-width: 50px;
             text-align: center;
         }
         
@@ -786,37 +799,34 @@ HTML_TEMPLATE = '''
             .header {
                 padding: 10px 15px;
             }
-            
+
             .logo {
                 font-size: 1.1rem;
             }
-            
+
             .clock {
                 font-size: 1.3rem;
             }
-            
+
             .tab {
-                padding: 10px;
-                font-size: 0.7rem;
+                padding: 10px 8px;
+                font-size: 0.75rem;
             }
-            
-            .tab-icon {
-                font-size: 1.2rem;
-            }
-            
+
             .music-artwork {
-                width: 150px;
-                height: 150px;
+                width: 60px;
+                height: 60px;
+                min-width: 60px;
             }
-            
+
             .music-title {
-                font-size: 1.4rem;
+                font-size: 1.1rem;
             }
-            
+
             .gauges-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .gauge-value {
                 font-size: 2rem;
             }
@@ -837,22 +847,10 @@ HTML_TEMPLATE = '''
     
     <!-- Abas de navegação -->
     <nav class="tabs">
-        <button class="tab active" data-panel="music">
-            <span class="tab-icon">🎵</span>
-            Música
-        </button>
-        <button class="tab" data-panel="vehicle">
-            <span class="tab-icon">🚗</span>
-            Veículo
-        </button>
-        <button class="tab" data-panel="gps">
-            <span class="tab-icon">📍</span>
-            GPS
-        </button>
-        <button class="tab" data-panel="radio">
-            <span class="tab-icon">📻</span>
-            Rádio
-        </button>
+        <button class="tab active" data-panel="music">MUSICA</button>
+        <button class="tab" data-panel="vehicle">VEICULO</button>
+        <button class="tab" data-panel="gps">GPS</button>
+        <button class="tab" data-panel="radio">RADIO</button>
     </nav>
     
     <!-- Painéis -->
@@ -861,32 +859,29 @@ HTML_TEMPLATE = '''
         <!-- Painel: Música -->
         <section class="panel active" id="panel-music">
             <div class="music-now-playing">
-                <div class="music-artwork" id="music-artwork">
-                    🎵
-                </div>
-                <div class="music-title" id="music-title">Nenhuma música</div>
-                <div class="music-artist" id="music-artist">—</div>
-                
-                <div class="music-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                <div class="music-artwork" id="music-artwork">&#9835;</div>
+                <div class="music-info">
+                    <div class="music-title" id="music-title">Nenhuma musica</div>
+                    <div class="music-artist" id="music-artist">-</div>
+                    <div class="music-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-time">
+                            <span id="time-elapsed">0:00</span>
+                            <span id="time-duration">0:00</span>
+                        </div>
                     </div>
-                    <div class="progress-time">
-                        <span id="time-elapsed">0:00</span>
-                        <span id="time-duration">0:00</span>
+                    <div class="music-controls">
+                        <button class="control-btn" onclick="musicControl('prev')">&#9664;&#9664;</button>
+                        <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">&#9654;</button>
+                        <button class="control-btn" onclick="musicControl('next')">&#9654;&#9654;</button>
                     </div>
-                </div>
-                
-                <div class="music-controls">
-                    <button class="control-btn" onclick="musicControl('prev')">⏮</button>
-                    <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">▶</button>
-                    <button class="control-btn" onclick="musicControl('next')">⏭</button>
-                </div>
-                
-                <div class="volume-control">
-                    <button class="volume-btn" onclick="musicControl('voldown')">🔉</button>
-                    <span class="volume-display" id="volume-display">100%</span>
-                    <button class="volume-btn" onclick="musicControl('volup')">🔊</button>
+                    <div class="volume-control">
+                        <button class="volume-btn" onclick="musicControl('voldown')">-</button>
+                        <span class="volume-display" id="volume-display">100%</span>
+                        <button class="volume-btn" onclick="musicControl('volup')">+</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -918,8 +913,8 @@ HTML_TEMPLATE = '''
                 </div>
             </div>
             <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
-                <div class="icon">🔌</div>
-                <p>OBD-II não conectado</p>
+                <div class="icon">[OBD]</div>
+                <p>OBD-II nao conectado</p>
                 <p style="font-size: 0.9rem; margin-top: 10px;">Conecte o adaptador ELM327</p>
             </div>
         </section>
@@ -940,29 +935,29 @@ HTML_TEMPLATE = '''
                         <div id="gps-coords">Aguardando sinal GPS...</div>
                     </div>
                     <button class="navit-btn" onclick="openNavit()">
-                        🗺️ Abrir Navegação
+                        ABRIR NAVEGACAO
                     </button>
                 </div>
             </div>
             <div id="gps-disconnected" class="disconnected-msg" style="display: none;">
-                <div class="icon">📡</div>
-                <p>GPS não conectado</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Verifique o módulo GPS</p>
+                <div class="icon">[GPS]</div>
+                <p>GPS nao conectado</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Verifique o modulo GPS</p>
             </div>
         </section>
-        
+
         <!-- Painel: Rádio SDR -->
         <section class="panel" id="panel-radio">
             <div class="card">
-                <div class="card-title">📻 Rádio SDR</div>
+                <div class="card-title">Radio SDR</div>
                 <div class="disconnected-msg">
-                    <div class="icon">📡</div>
+                    <div class="icon">[SDR]</div>
                     <p>RTL-SDR</p>
                     <p style="font-size: 0.9rem; margin-top: 10px; color: var(--text-secondary);">
                         Em desenvolvimento...
                     </p>
                     <button class="navit-btn" style="margin-top: 20px;" onclick="openGqrx()">
-                        🎚️ Abrir GQRX
+                        ABRIR GQRX
                     </button>
                 </div>
             </div>
@@ -1011,9 +1006,9 @@ HTML_TEMPLATE = '''
                     document.getElementById('ind-gps').classList.toggle('connected', data.gps.connected);
                     document.getElementById('ind-obd').classList.toggle('connected', data.obd.connected);
                     
-                    // Música
-                    document.getElementById('music-title').textContent = data.music.title || 'Nenhuma música';
-                    document.getElementById('music-artist').textContent = data.music.artist || '—';
+                    // Musica
+                    document.getElementById('music-title').textContent = data.music.title || 'Nenhuma musica';
+                    document.getElementById('music-artist').textContent = data.music.artist || '-';
                     document.getElementById('volume-display').textContent = data.music.volume + '%';
                     document.getElementById('time-elapsed').textContent = formatTime(data.music.elapsed);
                     document.getElementById('time-duration').textContent = formatTime(data.music.duration);
@@ -1024,11 +1019,11 @@ HTML_TEMPLATE = '''
                     const btnPlay = document.getElementById('btn-play');
                     const artwork = document.getElementById('music-artwork');
                     if (data.music.state === 'play') {
-                        btnPlay.textContent = '⏸';
+                        btnPlay.innerHTML = '&#9612;&#9612;';
                         btnPlay.onclick = () => musicControl('pause');
                         artwork.classList.add('playing');
                     } else {
-                        btnPlay.textContent = '▶';
+                        btnPlay.innerHTML = '&#9654;';
                         btnPlay.onclick = () => musicControl('play');
                         artwork.classList.remove('playing');
                     }
