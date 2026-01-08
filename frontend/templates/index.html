@@ -51,15 +51,6 @@
                         <div class="music-info">
                             <div class="music-title" id="music-title">Nenhuma musica</div>
                             <div class="music-artist" id="music-artist">-</div>
-                            <div class="music-progress">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                                </div>
-                                <div class="progress-time">
-                                    <span id="time-elapsed">0:00</span>
-                                    <span id="time-duration">0:00</span>
-                                </div>
-                            </div>
                             <div class="music-controls">
                                 <button class="control-btn" onclick="musicControl('prev')">&#9664;&#9664;</button>
                                 <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">&#9654;</button>
@@ -74,6 +65,15 @@
                                 </div>
                                 <button class="mode-btn" id="btn-repeat" onclick="toggleRepeat()" title="Repeat">&#8634;</button>
                             </div>
+                        </div>
+                    </div>
+                    <div class="music-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-time">
+                            <span id="time-elapsed">0:00</span>
+                            <span id="time-duration">0:00</span>
                         </div>
                     </div>
                 </div>

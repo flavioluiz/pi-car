@@ -479,33 +479,97 @@ body::after {
     display: block;
 }
 
-/* Player na aba Tocando */
-.music-panel .music-now-playing {
-    padding: 20px;
+/* Player na aba Tocando - Layout horizontal */
+#music-playing {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#music-playing .music-now-playing {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
     align-items: center;
+    padding: 15px;
     gap: 15px;
 }
 
-.music-panel .music-artwork {
-    width: 120px;
-    height: 120px;
-    font-size: 2.5rem;
+#music-playing .music-artwork {
+    width: 100px;
+    height: 100px;
+    min-width: 100px;
+    font-size: 2rem;
 }
 
-.music-panel .music-info {
-    width: 100%;
-    text-align: center;
+#music-playing .music-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
 }
 
-.music-panel .music-title {
-    font-size: 1.4rem;
-    text-align: center;
+#music-playing .music-title {
+    font-size: 1.1rem;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.music-panel .music-artist {
-    text-align: center;
+#music-playing .music-artist {
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+#music-playing .music-controls {
+    margin-bottom: 5px;
+    justify-content: flex-start;
+}
+
+#music-playing .control-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 0.9rem;
+}
+
+#music-playing .control-btn.play-pause {
+    width: 46px;
+    height: 46px;
+    font-size: 1rem;
+}
+
+#music-playing .music-extra-controls {
+    margin-top: 0;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+#music-playing .mode-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+}
+
+#music-playing .volume-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+}
+
+#music-playing .volume-display {
+    font-size: 0.85rem;
+    min-width: 40px;
+}
+
+/* Barra de progresso na parte inferior */
+#music-playing .music-progress {
+    padding: 10px 15px 15px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
 }
 
 .browser-list {
