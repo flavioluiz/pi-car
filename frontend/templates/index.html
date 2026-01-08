@@ -33,73 +33,73 @@
 
         <!-- Painel: Musica -->
         <section class="panel active" id="panel-music">
-            <!-- Player atual -->
-            <div class="music-now-playing">
-                <div class="music-artwork" id="music-artwork">&#9835;</div>
-                <div class="music-info">
-                    <div class="music-title" id="music-title">Nenhuma musica</div>
-                    <div class="music-artist" id="music-artist">-</div>
-                    <div class="music-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-time">
-                            <span id="time-elapsed">0:00</span>
-                            <span id="time-duration">0:00</span>
-                        </div>
-                    </div>
-                    <div class="music-controls">
-                        <button class="control-btn" onclick="musicControl('prev')">&#9664;&#9664;</button>
-                        <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">&#9654;</button>
-                        <button class="control-btn" onclick="musicControl('next')">&#9654;&#9654;</button>
-                    </div>
-                    <div class="music-extra-controls">
-                        <button class="mode-btn" id="btn-shuffle" onclick="toggleShuffle()" title="Shuffle">&#8645;</button>
-                        <div class="volume-control">
-                            <button class="volume-btn" onclick="musicControl('voldown')">-</button>
-                            <span class="volume-display" id="volume-display">100%</span>
-                            <button class="volume-btn" onclick="musicControl('volup')">+</button>
-                        </div>
-                        <button class="mode-btn" id="btn-repeat" onclick="toggleRepeat()" title="Repeat">&#8634;</button>
-                    </div>
-                </div>
+            <!-- Submenu de musica -->
+            <div class="music-tabs">
+                <button class="music-tab active" data-music="playing">Tocando</button>
+                <button class="music-tab" data-music="queue">Fila</button>
+                <button class="music-tab" data-music="artists">Artistas</button>
+                <button class="music-tab" data-music="playlists">Playlists</button>
+                <button class="music-tab" data-music="search">Buscar</button>
             </div>
 
-            <!-- Browser de musica -->
-            <div class="music-browser">
-                <!-- Tabs do browser -->
-                <div class="browser-tabs">
-                    <button class="browser-tab active" data-browser="queue">Fila</button>
-                    <button class="browser-tab" data-browser="artists">Artistas</button>
-                    <button class="browser-tab" data-browser="playlists">Playlists</button>
-                    <button class="browser-tab" data-browser="search">Buscar</button>
+            <!-- Conteudo das abas -->
+            <div class="music-content">
+                <!-- Aba: Tocando (player atual) -->
+                <div class="music-panel active" id="music-playing">
+                    <div class="music-now-playing">
+                        <div class="music-artwork" id="music-artwork">&#9835;</div>
+                        <div class="music-info">
+                            <div class="music-title" id="music-title">Nenhuma musica</div>
+                            <div class="music-artist" id="music-artist">-</div>
+                            <div class="music-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-time">
+                                    <span id="time-elapsed">0:00</span>
+                                    <span id="time-duration">0:00</span>
+                                </div>
+                            </div>
+                            <div class="music-controls">
+                                <button class="control-btn" onclick="musicControl('prev')">&#9664;&#9664;</button>
+                                <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">&#9654;</button>
+                                <button class="control-btn" onclick="musicControl('next')">&#9654;&#9654;</button>
+                            </div>
+                            <div class="music-extra-controls">
+                                <button class="mode-btn" id="btn-shuffle" onclick="toggleShuffle()" title="Shuffle">&#8645;</button>
+                                <div class="volume-control">
+                                    <button class="volume-btn" onclick="musicControl('voldown')">-</button>
+                                    <span class="volume-display" id="volume-display">100%</span>
+                                    <button class="volume-btn" onclick="musicControl('volup')">+</button>
+                                </div>
+                                <button class="mode-btn" id="btn-repeat" onclick="toggleRepeat()" title="Repeat">&#8634;</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Conteudo do browser -->
-                <div class="browser-content">
-                    <!-- Fila atual -->
-                    <div class="browser-panel active" id="browser-queue">
-                        <div class="browser-list" id="queue-list"></div>
-                    </div>
+                <!-- Aba: Fila -->
+                <div class="music-panel" id="music-queue">
+                    <div class="browser-list" id="queue-list"></div>
+                </div>
 
-                    <!-- Artistas -->
-                    <div class="browser-panel" id="browser-artists">
-                        <div class="browser-list" id="artists-list"></div>
-                    </div>
+                <!-- Aba: Artistas -->
+                <div class="music-panel" id="music-artists">
+                    <div class="browser-list" id="artists-list"></div>
+                </div>
 
-                    <!-- Playlists -->
-                    <div class="browser-panel" id="browser-playlists">
-                        <div class="browser-list" id="playlists-list"></div>
-                    </div>
+                <!-- Aba: Playlists -->
+                <div class="music-panel" id="music-playlists">
+                    <div class="browser-list" id="playlists-list"></div>
+                </div>
 
-                    <!-- Busca -->
-                    <div class="browser-panel" id="browser-search">
-                        <div class="search-bar">
-                            <input type="text" id="search-input" placeholder="Buscar musicas..." onkeyup="handleSearch(event)">
-                            <button class="search-btn" onclick="doSearch()">&#128269;</button>
-                        </div>
-                        <div class="browser-list" id="search-results"></div>
+                <!-- Aba: Buscar -->
+                <div class="music-panel" id="music-search">
+                    <div class="search-input-container">
+                        <input type="text" id="search-input" placeholder="Digite para buscar..." readonly>
                     </div>
+                    <div id="virtual-keyboard"></div>
+                    <div class="browser-list" id="search-results"></div>
                 </div>
             </div>
         </section>

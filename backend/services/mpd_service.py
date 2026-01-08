@@ -167,11 +167,22 @@ class MPDService:
             return {'error': 'MPD nao conectado'}
 
         try:
-            artists = client.list('artist')
+            result = client.list('artist')
             client.close()
             client.disconnect()
-            # Filtra artistas vazios e ordena
-            return sorted([a for a in artists if a])
+
+            # Normaliza resultado (pode ser lista de strings ou dicts)
+            artists = []
+            for item in result:
+                if isinstance(item, str):
+                    if item:
+                        artists.append(item)
+                elif isinstance(item, dict):
+                    artist = item.get('artist', '')
+                    if artist:
+                        artists.append(artist)
+
+            return sorted(set(artists))
         except Exception as e:
             return {'error': str(e)}
 

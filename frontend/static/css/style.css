@@ -419,26 +419,20 @@ body::after {
     box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
 }
 
-/* ============ BROWSER DE MUSICA ============ */
-.music-browser {
-    margin-top: 15px;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.browser-tabs {
+/* ============ SUBMENU DE MUSICA ============ */
+.music-tabs {
     display: flex;
-    background: var(--bg-dark);
+    background: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
 }
 
-.browser-tab {
+.music-tab {
     flex: 1;
-    padding: 10px 8px;
+    min-width: 60px;
+    padding: 12px 8px;
     text-align: center;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -447,31 +441,71 @@ body::after {
     border: none;
     cursor: pointer;
     transition: all 0.2s;
+    position: relative;
 }
 
-.browser-tab:hover {
+.music-tab:hover {
     color: var(--text-primary);
     background: var(--bg-card-hover);
 }
 
-.browser-tab.active {
+.music-tab.active {
     color: var(--accent-cyan);
-    background: var(--bg-card);
 }
 
-.browser-content {
-    height: 200px;
+.music-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-cyan);
+}
+
+.music-content {
+    height: calc(100vh - 200px);
+    max-height: 400px;
     overflow: hidden;
 }
 
-.browser-panel {
+.music-panel {
     display: none;
     height: 100%;
     overflow-y: auto;
 }
 
-.browser-panel.active {
+.music-panel.active {
     display: block;
+}
+
+/* Player na aba Tocando */
+.music-panel .music-now-playing {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.music-panel .music-artwork {
+    width: 120px;
+    height: 120px;
+    font-size: 2.5rem;
+}
+
+.music-panel .music-info {
+    width: 100%;
+    text-align: center;
+}
+
+.music-panel .music-title {
+    font-size: 1.4rem;
+    text-align: center;
+}
+
+.music-panel .music-artist {
+    text-align: center;
 }
 
 .browser-list {
@@ -582,6 +616,87 @@ body::after {
 .search-btn:hover {
     border-color: var(--accent-cyan);
     color: var(--accent-cyan);
+}
+
+/* Container do input de busca */
+.search-input-container {
+    padding: 10px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-input-container input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-input-container input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+}
+
+/* Teclado virtual */
+#virtual-keyboard {
+    padding: 8px;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.keyboard-key {
+    min-width: 28px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.keyboard-key:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-cyan);
+}
+
+.keyboard-key:active {
+    transform: scale(0.95);
+    background: var(--accent-cyan);
+    color: var(--bg-dark);
+}
+
+.keyboard-key.space {
+    flex: 1;
+    max-width: 120px;
+    font-size: 0.7rem;
+}
+
+.keyboard-key.special {
+    min-width: 60px;
+    font-size: 0.75rem;
+    background: var(--bg-card-hover);
+}
+
+.keyboard-key.special.search {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    border: none;
+    color: var(--bg-dark);
 }
 
 /* Estado vazio do browser */

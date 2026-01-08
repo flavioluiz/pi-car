@@ -131,26 +131,29 @@ function toggleRepeat() {
         .catch(err => console.error('Erro:', err));
 }
 
-// ============ BROWSER DE MUSICA ============
+// ============ SUBMENU DE MUSICA ============
 
-// Tabs do browser
-document.querySelectorAll('.browser-tab').forEach(tab => {
+// Tabs do submenu de musica
+document.querySelectorAll('.music-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        document.querySelectorAll('.browser-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.browser-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.music-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.music-panel').forEach(p => p.classList.remove('active'));
 
         tab.classList.add('active');
-        const panelId = 'browser-' + tab.dataset.browser;
+        const panelId = 'music-' + tab.dataset.music;
         document.getElementById(panelId).classList.add('active');
 
         // Carregar conteudo da tab
-        loadBrowserContent(tab.dataset.browser);
+        loadMusicContent(tab.dataset.music);
     });
 });
 
 // Carregar conteudo baseado na tab
-function loadBrowserContent(type) {
+function loadMusicContent(type) {
     switch (type) {
+        case 'playing':
+            // Player atualiza automaticamente
+            break;
         case 'queue':
             loadQueue();
             break;
@@ -275,7 +278,7 @@ function loadPlaylist(name) {
         .then(r => r.json())
         .then(() => {
             // Mudar para aba da fila e atualizar
-            document.querySelector('.browser-tab[data-browser="queue"]').click();
+            document.querySelector('.music-tab[data-music="queue"]').click();
             updateData();
         })
         .catch(err => console.error('Erro ao carregar playlist:', err));
@@ -332,12 +335,60 @@ function addToQueue(file) {
         .then(r => r.json())
         .then(() => {
             // Atualiza a fila se estiver visivel
-            if (document.getElementById('browser-queue').classList.contains('active')) {
+            if (document.getElementById('music-queue').classList.contains('active')) {
                 loadQueue();
             }
         })
         .catch(err => console.error('Erro:', err));
 }
+
+// ============ TECLADO VIRTUAL ============
+const keyboardLayout = [
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M', ' ']
+];
+
+function createKeyboard() {
+    const container = document.getElementById('virtual-keyboard');
+    if (!container) return;
+
+    container.innerHTML = keyboardLayout.map(row =>
+        `<div class="keyboard-row">${row.map(key =>
+            key === ' '
+                ? `<button class="keyboard-key space" onclick="keyPress(' ')">ESPACO</button>`
+                : `<button class="keyboard-key" onclick="keyPress('${key}')">${key}</button>`
+        ).join('')}</div>`
+    ).join('') + `
+        <div class="keyboard-row">
+            <button class="keyboard-key special" onclick="keyBackspace()">&#9003;</button>
+            <button class="keyboard-key special" onclick="keyClear()">LIMPAR</button>
+            <button class="keyboard-key special search" onclick="doSearch()">BUSCAR</button>
+        </div>
+    `;
+}
+
+function keyPress(key) {
+    const input = document.getElementById('search-input');
+    input.value += key;
+    input.focus();
+}
+
+function keyBackspace() {
+    const input = document.getElementById('search-input');
+    input.value = input.value.slice(0, -1);
+    input.focus();
+}
+
+function keyClear() {
+    const input = document.getElementById('search-input');
+    input.value = '';
+    input.focus();
+}
+
+// Inicializar teclado
+createKeyboard();
 
 // Carregar fila inicial
 loadQueue();
