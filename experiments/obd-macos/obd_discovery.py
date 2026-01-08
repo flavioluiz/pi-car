@@ -44,7 +44,7 @@ def discover_commands():
             value = response.value if response.value else "Sem valor"
             
             # Extrair magnitude se for uma unidade
-            if hasattr(value, 'magnitude'):
+            if hasattr(value, 'magnitude') and hasattr(value, 'units'):
                 display = f"{value.magnitude} {value.units}"
             else:
                 display = str(value)
