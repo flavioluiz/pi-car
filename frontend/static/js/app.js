@@ -1,26 +1,26 @@
 // ============ TABS ============
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        // Remove active de todas as tabs
+        // Remove active from all tabs
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
-        // Ativa a tab clicada
+        // Activate clicked tab
         tab.classList.add('active');
         document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
     });
 });
 
-// ============ RELOGIO ============
+// ============ CLOCK ============
 function updateClock() {
     const now = new Date();
     document.getElementById('clock').textContent =
-        now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 updateClock();
 setInterval(updateClock, 1000);
 
-// ============ FORMATAR TEMPO ============
+// ============ FORMAT TIME ============
 function formatTime(seconds) {
     if (!seconds || isNaN(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -28,26 +28,26 @@ function formatTime(seconds) {
     return mins + ':' + secs.toString().padStart(2, '0');
 }
 
-// ============ ATUALIZAR DADOS ============
-let currentDuration = 0; // Armazena duracao para seek
+// ============ UPDATE DATA ============
+let currentDuration = 0; // Store duration for seek
 
 function updateData() {
     fetch('/api/status')
         .then(r => r.json())
         .then(data => {
-            // Indicadores de conexao
+            // Connection indicators
             document.getElementById('ind-music').classList.toggle('connected', data.music.connected);
             document.getElementById('ind-gps').classList.toggle('connected', data.gps.connected);
             document.getElementById('ind-obd').classList.toggle('connected', data.obd.connected);
 
-            // Musica
-            document.getElementById('music-title').textContent = data.music.title || 'Nenhuma musica';
+            // Music
+            document.getElementById('music-title').textContent = data.music.title || 'No music';
             document.getElementById('music-artist').textContent = data.music.artist || '-';
             document.getElementById('volume-display').textContent = data.music.volume + '%';
             document.getElementById('time-elapsed').textContent = formatTime(data.music.elapsed);
             document.getElementById('time-duration').textContent = formatTime(data.music.duration);
 
-            // Armazena duracao para uso no seek
+            // Store duration for seek
             currentDuration = data.music.duration || 0;
 
             const progress = data.music.duration > 0 ? (data.music.elapsed / data.music.duration * 100) : 0;
@@ -65,7 +65,7 @@ function updateData() {
                 artwork.classList.remove('playing');
             }
 
-            // Shuffle e Repeat
+            // Shuffle and Repeat
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
             document.getElementById('btn-repeat').classList.toggle('active', data.music.repeat);
 
@@ -95,22 +95,22 @@ function updateData() {
                 document.getElementById('gps-disconnected').style.display = 'block';
             }
         })
-        .catch(err => console.error('Erro ao atualizar:', err));
+        .catch(err => console.error('Error updating:', err));
 }
 
-// Atualizar a cada 1 segundo
+// Update every 1 second
 updateData();
 setInterval(updateData, 1000);
 
-// ============ CONTROLES DE MUSICA ============
+// ============ MUSIC CONTROLS ============
 function musicControl(action) {
     fetch('/api/music/' + action)
         .then(r => r.json())
         .then(() => updateData())
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// Seek para posicao clicada na barra de progresso
+// Seek to clicked position on progress bar
 function seekToPosition(event) {
     if (currentDuration <= 0) return;
 
@@ -127,46 +127,46 @@ function seekToPosition(event) {
     })
         .then(r => r.json())
         .then(() => updateData())
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// Reiniciar musica atual
+// Restart current song
 function restartSong() {
     fetch('/api/music/restart', { method: 'POST' })
         .then(r => r.json())
         .then(() => updateData())
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// ============ ABRIR APPS EXTERNOS ============
+// ============ OPEN EXTERNAL APPS ============
 function openNavit() {
     fetch('/api/launch/navit').catch(() => {});
-    alert('Abrindo Navit...');
+    alert('Opening Navit...');
 }
 
 function openGqrx() {
     fetch('/api/launch/gqrx').catch(() => {});
-    alert('Abrindo GQRX...');
+    alert('Opening GQRX...');
 }
 
-// ============ SHUFFLE E REPEAT ============
+// ============ SHUFFLE AND REPEAT ============
 function toggleShuffle() {
     fetch('/api/music/shuffle', { method: 'POST' })
         .then(r => r.json())
         .then(() => updateData())
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
 function toggleRepeat() {
     fetch('/api/music/repeat', { method: 'POST' })
         .then(r => r.json())
         .then(() => updateData())
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// ============ SUBMENU DE MUSICA ============
+// ============ MUSIC SUBMENU ============
 
-// Tabs do submenu de musica
+// Music submenu tabs
 document.querySelectorAll('.music-tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.music-tab').forEach(t => t.classList.remove('active'));
@@ -176,16 +176,16 @@ document.querySelectorAll('.music-tab').forEach(tab => {
         const panelId = 'music-' + tab.dataset.music;
         document.getElementById(panelId).classList.add('active');
 
-        // Carregar conteudo da tab
+        // Load tab content
         loadMusicContent(tab.dataset.music);
     });
 });
 
-// Carregar conteudo baseado na tab
+// Load content based on tab
 function loadMusicContent(type) {
     switch (type) {
         case 'playing':
-            // Player atualiza automaticamente
+            // Player updates automatically
             break;
         case 'queue':
             loadQueue();
@@ -197,15 +197,15 @@ function loadMusicContent(type) {
             loadPlaylists();
             break;
         case 'search':
-            // Busca e acionada pelo usuario
+            // Search is triggered by user
             break;
     }
 }
 
-// Armazena URIs da fila atual para marcar icones
+// Store queue URIs to mark icons
 let queueFiles = new Set();
 
-// Carregar fila atual
+// Load current queue
 function loadQueue() {
     fetch('/api/music/playlist')
         .then(r => r.json())
@@ -213,41 +213,41 @@ function loadQueue() {
             const list = document.getElementById('queue-list');
             if (!queue || queue.length === 0 || queue.error) {
                 queueFiles.clear();
-                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#9835;</div>Fila vazia</div>';
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#9835;</div>Queue empty</div>';
                 return;
             }
 
-            // Atualiza conjunto de arquivos na fila
+            // Update queue files set
             queueFiles = new Set(queue.map(s => s.file));
 
             list.innerHTML = `
                 <div class="browser-header">
-                    <span>${queue.length} musica${queue.length > 1 ? 's' : ''}</span>
-                    <button class="browser-header-btn" onclick="clearQueue()">Limpar</button>
+                    <span>${queue.length} song${queue.length > 1 ? 's' : ''}</span>
+                    <button class="browser-header-btn" onclick="clearQueue()">Clear</button>
                 </div>
             ` + queue.map((song, i) => `
                 <div class="browser-item" onclick="playPosition(${song.pos || i})">
                     <div class="browser-item-icon">&#9835;</div>
                     <div class="browser-item-info">
-                        <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
-                        <div class="browser-item-subtitle">${song.artist || 'Artista desconhecido'}</div>
+                        <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
+                        <div class="browser-item-subtitle">${song.artist || 'Unknown artist'}</div>
                     </div>
                     <button class="browser-item-remove" onclick="event.stopPropagation(); removeFromQueue(${song.pos || i})">&#10005;</button>
                 </div>
             `).join('');
         })
-        .catch(err => console.error('Erro ao carregar fila:', err));
+        .catch(err => console.error('Error loading queue:', err));
 }
 
-// Remover da fila
+// Remove from queue
 function removeFromQueue(pos) {
     fetch('/api/music/remove/' + pos, { method: 'POST' })
         .then(r => r.json())
         .then(() => loadQueue())
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// Limpar fila
+// Clear queue
 function clearQueue() {
     fetch('/api/music/clear', { method: 'POST' })
         .then(r => r.json())
@@ -256,17 +256,17 @@ function clearQueue() {
             loadQueue();
             updateData();
         })
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// Carregar lista de artistas
+// Load artists list
 function loadArtists() {
     fetch('/api/music/artists')
         .then(r => r.json())
         .then(artists => {
             const list = document.getElementById('artists-list');
             if (!artists || artists.length === 0 || artists.error) {
-                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128100;</div>Nenhum artista</div>';
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128100;</div>No artists</div>';
                 return;
             }
 
@@ -279,26 +279,26 @@ function loadArtists() {
                 </div>
             `).join('');
         })
-        .catch(err => console.error('Erro ao carregar artistas:', err));
+        .catch(err => console.error('Error loading artists:', err));
 }
 
-// Carregar musicas de um artista
+// Load songs by artist
 function loadArtistSongs(artist) {
     fetch('/api/music/artist/' + encodeURIComponent(artist))
         .then(r => r.json())
         .then(songs => {
             const list = document.getElementById('artists-list');
             if (!songs || songs.length === 0 || songs.error) {
-                list.innerHTML = '<div class="browser-empty">Nenhuma musica</div>';
+                list.innerHTML = '<div class="browser-empty">No songs</div>';
                 return;
             }
 
-            // Botao voltar + lista de musicas
+            // Back button + song list
             list.innerHTML = `
                 <div class="browser-item" onclick="loadArtists()">
                     <div class="browser-item-icon">&#8592;</div>
                     <div class="browser-item-info">
-                        <div class="browser-item-title">Voltar</div>
+                        <div class="browser-item-title">Back</div>
                     </div>
                 </div>
             ` + songs.map(song => {
@@ -308,7 +308,7 @@ function loadArtistSongs(artist) {
                 <div class="browser-item" data-file="${song.file || ''}">
                     <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                     <div class="browser-item-info">
-                        <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
+                        <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
                         <div class="browser-item-subtitle">${song.album || ''}</div>
                     </div>
                     <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
@@ -316,17 +316,17 @@ function loadArtistSongs(artist) {
                 </div>
             `}).join('');
         })
-        .catch(err => console.error('Erro ao carregar musicas:', err));
+        .catch(err => console.error('Error loading songs:', err));
 }
 
-// Carregar playlists salvas
+// Load saved playlists
 function loadPlaylists() {
     fetch('/api/music/playlists')
         .then(r => r.json())
         .then(playlists => {
             const list = document.getElementById('playlists-list');
             if (!playlists || playlists.length === 0 || playlists.error) {
-                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128195;</div>Nenhuma playlist</div>';
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128195;</div>No playlists</div>';
                 return;
             }
 
@@ -341,10 +341,10 @@ function loadPlaylists() {
                 </div>
             `).join('');
         })
-        .catch(err => console.error('Erro ao carregar playlists:', err));
+        .catch(err => console.error('Error loading playlists:', err));
 }
 
-// Tocar playlist (substitui fila)
+// Play playlist (replaces queue)
 function playPlaylist(name) {
     fetch('/api/music/playlists/' + encodeURIComponent(name) + '/play', { method: 'POST' })
         .then(r => r.json())
@@ -352,20 +352,20 @@ function playPlaylist(name) {
             document.querySelector('.music-tab[data-music="playing"]').click();
             updateData();
         })
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// Adicionar playlist a fila
+// Add playlist to queue
 function addPlaylistToQueue(name) {
     fetch('/api/music/playlists/' + encodeURIComponent(name) + '/add', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
             loadQueue();
         })
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// ============ BUSCA ============
+// ============ SEARCH ============
 function handleSearch(event) {
     if (event.key === 'Enter') {
         doSearch();
@@ -374,7 +374,7 @@ function handleSearch(event) {
 
 function doSearch() {
     const query = document.getElementById('search-input').value.trim();
-    // Se vazio, busca todas as musicas
+    // If empty, search all songs
     const url = query ? '/api/music/search?q=' + encodeURIComponent(query) : '/api/music/all';
 
     fetch(url)
@@ -382,7 +382,7 @@ function doSearch() {
         .then(results => {
             const list = document.getElementById('search-results');
             if (!results || results.length === 0 || results.error) {
-                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128269;</div>Nenhum resultado</div>';
+                list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#128269;</div>No results</div>';
                 return;
             }
 
@@ -393,18 +393,18 @@ function doSearch() {
                 <div class="browser-item" data-file="${song.file || ''}">
                     <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                     <div class="browser-item-info">
-                        <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
-                        <div class="browser-item-subtitle">${song.artist || 'Artista desconhecido'}</div>
+                        <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
+                        <div class="browser-item-subtitle">${song.artist || 'Unknown artist'}</div>
                     </div>
                     <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
                     <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
                 </div>
             `}).join('');
         })
-        .catch(err => console.error('Erro na busca:', err));
+        .catch(err => console.error('Search error:', err));
 }
 
-// Renderiza lista de musicas (usado em busca e artistas)
+// Render song list (used in search and artists)
 function renderSongList(songs, listElement) {
     listElement.innerHTML = songs.map(song => {
         const file = (song.file || '').replace(/'/g, "\\'");
@@ -413,8 +413,8 @@ function renderSongList(songs, listElement) {
             <div class="browser-item" data-file="${song.file || ''}">
                 <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                 <div class="browser-item-info">
-                    <div class="browser-item-title">${song.title || song.file || 'Sem titulo'}</div>
-                    <div class="browser-item-subtitle">${song.artist || song.album || 'Artista desconhecido'}</div>
+                    <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
+                    <div class="browser-item-subtitle">${song.artist || song.album || 'Unknown artist'}</div>
                 </div>
                 <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
                 <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
@@ -423,12 +423,12 @@ function renderSongList(songs, listElement) {
     }).join('');
 }
 
-// ============ ACOES DO BROWSER ============
+// ============ BROWSER ACTIONS ============
 function playPosition(pos) {
     fetch('/api/music/play/' + pos, { method: 'POST' })
         .then(r => r.json())
         .then(() => updateData())
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
 function addToQueue(file) {
@@ -444,10 +444,10 @@ function addToQueue(file) {
                 loadQueue();
             }
         })
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// Adicionar e marcar visualmente
+// Add and mark visually
 function addToQueueAndMark(btn, file) {
     fetch('/api/music/add', {
         method: 'POST',
@@ -458,17 +458,17 @@ function addToQueueAndMark(btn, file) {
         .then(() => {
             queueFiles.add(file);
             btn.classList.add('added');
-            // Marca o icone tambem
+            // Mark the icon too
             const item = btn.closest('.browser-item');
             if (item) {
                 const icon = item.querySelector('.browser-item-icon');
                 if (icon) icon.classList.add('in-queue');
             }
         })
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// Tocar musica (substitui fila)
+// Play song (replaces queue)
 function playSong(file) {
     fetch('/api/music/play-uri', {
         method: 'POST',
@@ -482,10 +482,10 @@ function playSong(file) {
             document.querySelector('.music-tab[data-music="playing"]').click();
             updateData();
         })
-        .catch(err => console.error('Erro:', err));
+        .catch(err => console.error('Error:', err));
 }
 
-// ============ TECLADO VIRTUAL ============
+// ============ VIRTUAL KEYBOARD ============
 const keyboardLayout = [
     ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
     ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
@@ -500,14 +500,14 @@ function createKeyboard() {
     container.innerHTML = keyboardLayout.map(row =>
         `<div class="keyboard-row">${row.map(key =>
             key === ' '
-                ? `<button class="keyboard-key space" onclick="keyPress(' ')">ESPACO</button>`
+                ? `<button class="keyboard-key space" onclick="keyPress(' ')">SPACE</button>`
                 : `<button class="keyboard-key" onclick="keyPress('${key}')">${key}</button>`
         ).join('')}</div>`
     ).join('') + `
         <div class="keyboard-row">
             <button class="keyboard-key special" onclick="keyBackspace()">&#9003;</button>
-            <button class="keyboard-key special" onclick="keyClear()">LIMPAR</button>
-            <button class="keyboard-key special search" onclick="doSearch()">BUSCAR</button>
+            <button class="keyboard-key special" onclick="keyClear()">CLEAR</button>
+            <button class="keyboard-key special search" onclick="doSearch()">SEARCH</button>
         </div>
     `;
 }
@@ -530,8 +530,8 @@ function keyClear() {
     input.focus();
 }
 
-// Inicializar teclado
+// Initialize keyboard
 createKeyboard();
 
-// Carregar fila inicial
+// Load initial queue
 loadQueue();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -14,45 +14,45 @@
         <div class="logo">Pi·Car</div>
         <div class="clock" id="clock">00:00</div>
         <div class="status-indicators">
-            <div class="indicator" id="ind-music" title="Musica"></div>
+            <div class="indicator" id="ind-music" title="Music"></div>
             <div class="indicator" id="ind-gps" title="GPS"></div>
             <div class="indicator" id="ind-obd" title="OBD-II"></div>
         </div>
     </header>
 
-    <!-- Abas de navegacao -->
+    <!-- Navigation tabs -->
     <nav class="tabs">
-        <button class="tab active" data-panel="music">MUSICA</button>
-        <button class="tab" data-panel="vehicle">VEICULO</button>
+        <button class="tab active" data-panel="music">MUSIC</button>
+        <button class="tab" data-panel="vehicle">VEHICLE</button>
         <button class="tab" data-panel="gps">GPS</button>
         <button class="tab" data-panel="radio">RADIO</button>
     </nav>
 
-    <!-- Paineis -->
+    <!-- Panels -->
     <main class="panels">
 
-        <!-- Painel: Musica -->
+        <!-- Panel: Music -->
         <section class="panel active" id="panel-music">
-            <!-- Submenu de musica -->
+            <!-- Music submenu -->
             <div class="music-tabs">
-                <button class="music-tab active" data-music="playing">Tocando</button>
-                <button class="music-tab" data-music="queue">Fila</button>
-                <button class="music-tab" data-music="artists">Artistas</button>
+                <button class="music-tab active" data-music="playing">Playing</button>
+                <button class="music-tab" data-music="queue">Queue</button>
+                <button class="music-tab" data-music="artists">Artists</button>
                 <button class="music-tab" data-music="playlists">Playlists</button>
-                <button class="music-tab" data-music="search">Buscar</button>
+                <button class="music-tab" data-music="search">Search</button>
             </div>
 
-            <!-- Conteudo das abas -->
+            <!-- Tab content -->
             <div class="music-content">
-                <!-- Aba: Tocando (player atual) -->
+                <!-- Tab: Playing (current player) -->
                 <div class="music-panel active" id="music-playing">
                     <div class="music-now-playing">
                         <div class="music-artwork" id="music-artwork">&#9835;</div>
                         <div class="music-info">
-                            <div class="music-title" id="music-title">Nenhuma musica</div>
+                            <div class="music-title" id="music-title">No music</div>
                             <div class="music-artist" id="music-artist">-</div>
                             <div class="music-controls">
-                                <button class="control-btn small" onclick="restartSong()" title="Reiniciar">&#8634;</button>
+                                <button class="control-btn small" onclick="restartSong()" title="Restart">&#8634;</button>
                                 <button class="control-btn" onclick="musicControl('prev')">&#9664;&#9664;</button>
                                 <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">&#9654;</button>
                                 <button class="control-btn" onclick="musicControl('next')">&#9654;&#9654;</button>
@@ -79,25 +79,25 @@
                     </div>
                 </div>
 
-                <!-- Aba: Fila -->
+                <!-- Tab: Queue -->
                 <div class="music-panel" id="music-queue">
                     <div class="browser-list" id="queue-list"></div>
                 </div>
 
-                <!-- Aba: Artistas -->
+                <!-- Tab: Artists -->
                 <div class="music-panel" id="music-artists">
                     <div class="browser-list" id="artists-list"></div>
                 </div>
 
-                <!-- Aba: Playlists -->
+                <!-- Tab: Playlists -->
                 <div class="music-panel" id="music-playlists">
                     <div class="browser-list" id="playlists-list"></div>
                 </div>
 
-                <!-- Aba: Buscar -->
+                <!-- Tab: Search -->
                 <div class="music-panel" id="music-search">
                     <div class="search-input-container">
-                        <input type="text" id="search-input" placeholder="Digite para buscar..." readonly>
+                        <input type="text" id="search-input" placeholder="Type to search..." readonly>
                     </div>
                     <div id="virtual-keyboard"></div>
                     <div class="browser-list" id="search-results"></div>
@@ -105,40 +105,40 @@
             </div>
         </section>
 
-        <!-- Painel: Veiculo (OBD) -->
+        <!-- Panel: Vehicle (OBD) -->
         <section class="panel" id="panel-vehicle">
             <div id="obd-content">
                 <div class="gauges-grid">
                     <div class="gauge rpm">
                         <div class="gauge-value" id="obd-rpm">0</div>
                         <div class="gauge-unit">RPM</div>
-                        <div class="gauge-label">Rotacao</div>
+                        <div class="gauge-label">Engine</div>
                     </div>
                     <div class="gauge speed">
                         <div class="gauge-value" id="obd-speed">0</div>
                         <div class="gauge-unit">km/h</div>
-                        <div class="gauge-label">Velocidade</div>
+                        <div class="gauge-label">Speed</div>
                     </div>
                     <div class="gauge temp">
                         <div class="gauge-value" id="obd-temp">0</div>
                         <div class="gauge-unit">°C</div>
-                        <div class="gauge-label">Temperatura</div>
+                        <div class="gauge-label">Temperature</div>
                     </div>
                     <div class="gauge throttle">
                         <div class="gauge-value" id="obd-throttle">0</div>
                         <div class="gauge-unit">%</div>
-                        <div class="gauge-label">Acelerador</div>
+                        <div class="gauge-label">Throttle</div>
                     </div>
                 </div>
             </div>
             <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
                 <div class="icon">[OBD]</div>
-                <p>OBD-II nao conectado</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Conecte o adaptador ELM327</p>
+                <p>OBD-II not connected</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Connect the ELM327 adapter</p>
             </div>
         </section>
 
-        <!-- Painel: GPS -->
+        <!-- Panel: GPS -->
         <section class="panel" id="panel-gps">
             <div id="gps-content">
                 <div class="gps-info">
@@ -148,35 +148,35 @@
                     </div>
                     <div class="gps-stat">
                         <div class="gps-stat-value" id="gps-sats">0</div>
-                        <div class="gps-stat-label">Satelites</div>
+                        <div class="gps-stat-label">Satellites</div>
                     </div>
                     <div class="gps-stat gps-coords">
-                        <div id="gps-coords">Aguardando sinal GPS...</div>
+                        <div id="gps-coords">Waiting for GPS signal...</div>
                     </div>
                     <button class="navit-btn" onclick="openNavit()">
-                        ABRIR NAVEGACAO
+                        OPEN NAVIGATION
                     </button>
                 </div>
             </div>
             <div id="gps-disconnected" class="disconnected-msg" style="display: none;">
                 <div class="icon">[GPS]</div>
-                <p>GPS nao conectado</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Verifique o modulo GPS</p>
+                <p>GPS not connected</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Check the GPS module</p>
             </div>
         </section>
 
-        <!-- Painel: Radio SDR -->
+        <!-- Panel: SDR Radio -->
         <section class="panel" id="panel-radio">
             <div class="card">
-                <div class="card-title">Radio SDR</div>
+                <div class="card-title">SDR Radio</div>
                 <div class="disconnected-msg">
                     <div class="icon">[SDR]</div>
                     <p>RTL-SDR</p>
                     <p style="font-size: 0.9rem; margin-top: 10px; color: var(--text-secondary);">
-                        Em desenvolvimento...
+                        Under development...
                     </p>
                     <button class="navit-btn" style="margin-top: 20px;" onclick="openGqrx()">
-                        ABRIR GQRX
+                        OPEN GQRX
                     </button>
                 </div>
             </div>

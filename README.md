@@ -1,154 +1,154 @@
-# 🚗 Pi-Car
+# Pi-Car
 
-**Central Multimídia Veicular DIY com Raspberry Pi**
+**DIY Vehicle Infotainment System with Raspberry Pi**
 
-Sistema de infotainment para veículos antigos usando Raspberry Pi 4 com interface web touchscreen. Integra player de música, navegação GPS offline, diagnóstico OBD-II e rádio SDR.
+A vehicle infotainment system for older cars using Raspberry Pi 4 with a touchscreen web interface. Integrates music player, offline GPS navigation, OBD-II diagnostics, and SDR radio.
 
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
-![Versão](https://img.shields.io/badge/versão-0.1.0-blue)
-![Licença](https://img.shields.io/badge/licença-MIT-green)
-
----
-
-## ✨ Funcionalidades
-
-| Modulo | Descricao | Status |
-|--------|-----------|--------|
-| 🎵 **Musica** | Player MPD com controles basicos (play, pause, volume) | ✅ Funcionando |
-| 📍 **GPS** | Velocidade, satelites, coordenadas + integracao Navit | ⏳ v0.5 |
-| 🚗 **OBD-II** | RPM, velocidade, temperatura, posicao do acelerador | ⏳ v0.3 |
-| 📻 **Radio SDR** | Receptor RTL-SDR para FM, aviacao, amador | ⏳ v0.4 |
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Version](https://img.shields.io/badge/version-0.2.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 🖼️ Screenshots
+## Features
 
-*Em breve*
+| Module | Description | Status |
+|--------|-------------|--------|
+| **Music** | MPD player with library browsing, playlists, shuffle, repeat | Working |
+| **GPS** | Speed, satellites, coordinates + Navit integration | v0.5 |
+| **OBD-II** | RPM, speed, temperature, throttle position | v0.3 |
+| **SDR Radio** | RTL-SDR receiver for FM, aviation, amateur radio | v0.4 |
 
 ---
 
-## 🛠️ Hardware Necessário
+## Screenshots
 
-### Essencial
+*Coming soon*
+
+---
+
+## Required Hardware
+
+### Essential
 - Raspberry Pi 4 (2GB+ RAM)
-- Monitor touchscreen (HDMI)
-- Cartão microSD (16GB+)
-- Fonte de alimentação 5V 3A
+- Touchscreen monitor (HDMI)
+- microSD card (16GB+)
+- 5V 3A power supply
 
-### Módulos opcionais
-| Componente | Modelo sugerido | Preço estimado (BR) |
-|------------|-----------------|---------------------|
-| GPS USB | VK-162 (u-blox 7) | R$50-100 |
-| OBD-II | ELM327 Bluetooth | R$30-80 |
-| Rádio SDR | RTL-SDR V3 | R$80-150 |
+### Optional Modules
+| Component | Suggested Model | Est. Price (USD) |
+|-----------|-----------------|------------------|
+| USB GPS | VK-162 (u-blox 7) | $15-30 |
+| OBD-II | ELM327 Bluetooth | $10-25 |
+| SDR Radio | RTL-SDR V3 | $25-40 |
 
-### Para instalação veicular
-| Componente | Descrição | Preço estimado (BR) |
-|------------|-----------|---------------------|
-| Conversor DC-DC | 12V → 5V 3A+ USB | R$25-50 |
-| Fusível inline | 5A com porta-fusível | R$15-25 |
-| Add-a-fuse | Para tap na caixa de fusíveis | R$15-20 |
+### Vehicle Installation
+| Component | Description | Est. Price (USD) |
+|-----------|-------------|------------------|
+| DC-DC Converter | 12V → 5V 3A+ USB | $8-15 |
+| Inline Fuse | 5A with fuse holder | $5-10 |
+| Add-a-fuse | For fuse box tap | $5-8 |
 
 ---
 
-## 📦 Instalação
+## Installation
 
-**Instalação automatizada disponível!**
+**Automated installation available!**
 
-### Método Rápido (Recomendado)
+### Quick Method (Recommended)
 
-**Pré-requisito:** Raspberry Pi OS **Lite** (64-bit) instalado e configurado com acesso à internet.
+**Prerequisite:** Raspberry Pi OS **Lite** (64-bit) installed and configured with internet access.
 
 ```bash
-# Instalar git (não vem instalado no OS Lite)
+# Install git (not included in OS Lite)
 sudo apt update && sudo apt install -y git
 
-# Clonar repositório
+# Clone repository
 git clone https://github.com/flavioluiz/pi-car.git
 cd pi-car
 
-# Dar permissão de execução e executar
+# Make executable and run
 chmod +x install.sh
 ./install.sh
 
-# Reiniciar
+# Reboot
 sudo reboot
 ```
 
-O script de instalação irá:
-- Atualizar o sistema (apt update/upgrade)
-- Instalar interface gráfica mínima (X11 + Openbox)
-- Instalar MPD, GPSD, Navit, Chromium
-- Instalar RTL-SDR e ferramentas de rádio
-- Configurar Bluetooth para OBD-II
-- Instalar dependências Python (Flask, python-mpd2, gps3, obd)
-- Configurar autostart do servidor Flask e Chromium em modo kiosk
+The installation script will:
+- Update the system (apt update/upgrade)
+- Install minimal GUI (X11 + Openbox)
+- Install MPD, GPSD, Navit, Chromium
+- Install RTL-SDR and radio tools
+- Configure Bluetooth for OBD-II
+- Install Python dependencies (Flask, python-mpd2, gps3, obd)
+- Configure autostart for Flask server and Chromium kiosk mode
 
-Após o reinício, o sistema iniciará automaticamente com o dashboard Pi-Car em tela cheia.
+After reboot, the system will automatically start with the Pi-Car dashboard in fullscreen.
 
-📖 **Detalhes completos**: Veja [INSTALACAO.md](INSTALACAO.md) para instruções detalhadas.
+**Full details**: See [INSTALLATION.md](INSTALLATION.md) for detailed instructions.
 
-### Instalação Manual
+### Manual Installation
 
-Se preferir instalar cada componente manualmente, consulte o guia [INSTALACAO.md](INSTALACAO.md).
+If you prefer to install each component manually, see the [INSTALLATION.md](INSTALLATION.md) guide.
 
-### Executar Manualmente (sem autostart)
+### Run Manually (without autostart)
 
 ```bash
 cd ~/pi-car
 ./start_dashboard.sh
 ```
 
-Acesse: **http://localhost:5000**
+Access: **http://localhost:5000**
 
-### Modo Kiosk (Tela Cheia)
+### Kiosk Mode (Fullscreen)
 
 ```bash
 chromium --kiosk --noerrdialogs --disable-infobars --no-first-run http://localhost:5000
 ```
 
-Sair: `Alt+F4` ou `Ctrl+W`
+Exit: `Alt+F4` or `Ctrl+W`
 
 ---
 
-## 🚀 Autostart
+## Autostart
 
-O script de instalação configura o autostart automaticamente. Se precisar configurar manualmente:
+The installation script configures autostart automatically. For manual configuration:
 
-### Configurar autostart do Openbox
+### Configure Openbox autostart
 
 ```bash
 mkdir -p ~/.config/openbox
 nano ~/.config/openbox/autostart
 ```
 
-Adicione:
+Add:
 
 ```bash
-# Desativar screensaver
+# Disable screensaver
 xset s off
 xset -dpms
 xset s noblank
 
-# Iniciar dashboard
+# Start dashboard
 ~/pi-car/start_dashboard.sh &
 
-# Aguardar servidor
+# Wait for server
 sleep 4
 
-# Chromium em modo kiosk
+# Chromium in kiosk mode
 chromium --kiosk --noerrdialogs --disable-infobars --no-first-run --disable-session-crashed-bubble --disable-restore-session-state http://localhost:5000 &
 ```
 
-### Configurar .xinitrc
+### Configure .xinitrc
 
 ```bash
 echo "exec openbox-session" > ~/.xinitrc
 ```
 
-### Auto-login no X
+### Auto-login to X
 
-Para iniciar X automaticamente no boot, adicione ao `~/.bash_profile`:
+To start X automatically on boot, add to `~/.bash_profile`:
 
 ```bash
 [[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx
@@ -156,15 +156,14 @@ Para iniciar X automaticamente no boot, adicione ao `~/.bash_profile`:
 
 ---
 
-## 🔌 Instalação Elétrica no Veículo
+## Vehicle Electrical Installation
 
 ```
 ┌─────────────────┐
-│   Caixa de      │
-│   Fusíveis      │
+│    Fuse Box     │
 │                 │
 │  ┌───────────┐  │      ┌─────────────┐      ┌─────────────┐
-│  │ ACC Fuse  │──┼──────│ Fusível 5A  │──────│ Conv DC-DC  │──── 5V USB ──→ RPi
+│  │ ACC Fuse  │──┼──────│  5A Fuse    │──────│  DC-DC      │──── 5V USB ──→ RPi
 │  │ (add-a-   │  │      │  (inline)   │      │  12V → 5V   │
 │  │  fuse)    │  │      └─────────────┘      └──────┬──────┘
 │  └───────────┘  │                                  │
@@ -172,51 +171,51 @@ Para iniciar X automaticamente no boot, adicione ao `~/.bash_profile`:
 └─────────────────┘                             GND ─┴─→ Chassis
 ```
 
-**Importante:** Use a linha ACC para que o sistema só ligue com a ignição.
+**Important:** Use the ACC line so the system only powers on with ignition.
 
 ---
 
-## 📁 Estrutura do Projeto
+## Project Structure
 
 ```
 pi-car/
-├── app.py                      # Entry point - servidor Flask
-├── config.py                   # Configuracoes centralizadas
-├── start_dashboard.sh          # Script de inicializacao
-├── update_music.sh             # Script para atualizar biblioteca de musicas
-├── install.sh                  # Script de instalacao automatizada
-├── README.md                   # Este arquivo
-├── INSTALACAO.md               # Guia detalhado de instalacao
+├── app.py                      # Entry point - Flask server
+├── config.py                   # Centralized configuration
+├── start_dashboard.sh          # Startup script
+├── update_music.sh             # Music library update script
+├── install.sh                  # Automated installation script
+├── README.md                   # This file
+├── INSTALLATION.md             # Detailed installation guide
 │
-├── backend/                    # Logica do servidor
+├── backend/                    # Server logic
 │   ├── __init__.py
-│   ├── routes/                 # Endpoints da API (Flask Blueprints)
+│   ├── routes/                 # API endpoints (Flask Blueprints)
 │   │   ├── __init__.py
-│   │   ├── music.py            # /api/music/* - controle MPD
-│   │   ├── gps.py              # /api/gps/* - dados GPS
-│   │   ├── vehicle.py          # /api/vehicle/* - dados OBD-II
+│   │   ├── music.py            # /api/music/* - MPD control
+│   │   ├── gps.py              # /api/gps/* - GPS data
+│   │   ├── vehicle.py          # /api/vehicle/* - OBD-II data
 │   │   └── system.py           # /api/status, /api/launch/*
 │   │
-│   └── services/               # Servicos de integracao
+│   └── services/               # Integration services
 │       ├── __init__.py
-│       ├── mpd_service.py      # Conexao e controle MPD
-│       ├── gps_service.py      # Thread de monitoramento GPS
-│       └── obd_service.py      # Thread de monitoramento OBD-II
+│       ├── mpd_service.py      # MPD connection and control
+│       ├── gps_service.py      # GPS monitoring thread
+│       └── obd_service.py      # OBD-II monitoring thread
 │
-└── frontend/                   # Interface web
+└── frontend/                   # Web interface
     ├── static/
     │   ├── css/
-    │   │   └── style.css       # Estilos da interface
+    │   │   └── style.css       # Interface styles
     │   └── js/
-    │       └── app.js          # Logica JavaScript
+    │       └── app.js          # JavaScript logic
     │
     └── templates/
-        └── index.html          # Pagina principal
+        └── index.html          # Main page
 ```
 
 ---
 
-## 🔧 Arquitetura
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -256,73 +255,76 @@ pi-car/
 
 ---
 
-## 🎯 Roadmap
+## Roadmap
 
-### v0.1 (atual)
-- [x] Interface web basica com navegacao por abas
-- [x] Controle basico de musica (play, pause, next, prev, volume)
-- [x] Estrutura modular backend/frontend
-- [x] Modo kiosk com Chromium
+### v0.1
+- [x] Basic web interface with tab navigation
+- [x] Basic music control (play, pause, next, prev, volume)
+- [x] Modular backend/frontend structure
+- [x] Kiosk mode with Chromium
 
-### v0.2 - Musica
-- [ ] Biblioteca de musicas navegavel
-- [ ] Listagem por artista/album/genero
-- [ ] Gerenciamento de playlists
-- [ ] Shuffle e repeat
+### v0.2 - Music (Current)
+- [x] Browsable music library
+- [x] Artist listing
+- [x] Playlist management
+- [x] Shuffle and repeat
+- [x] Queue management
+- [x] Search functionality
+- [x] Seek and restart
 
 ### v0.3 - OBD-II
-- [ ] Leitura de dados do veiculo (RPM, velocidade, temperatura)
-- [ ] Exibicao em tempo real nos gauges
-- [ ] Conexao Bluetooth com ELM327
+- [ ] Vehicle data reading (RPM, speed, temperature)
+- [ ] Real-time gauge display
+- [ ] Bluetooth connection with ELM327
 
-### v0.4 - Radio SDR
-- [ ] Integracao basica com RTL-SDR
-- [ ] Sintonizacao de frequencias FM
-- [ ] Interface de controle do radio
+### v0.4 - SDR Radio
+- [ ] Basic RTL-SDR integration
+- [ ] FM frequency tuning
+- [ ] Radio control interface
 
 ### v0.5 - GPS
-- [ ] Leitura de posicao via gpsd
-- [ ] Exibicao de velocidade e satelites
-- [ ] Integracao com Navit para navegacao
+- [ ] Position reading via gpsd
+- [ ] Speed and satellite display
+- [ ] Navit navigation integration
 
-### Futuro
-- [ ] Temas (claro/escuro/auto)
-- [ ] Configuracoes pela interface
-- [ ] Codigos de erro OBD com descricao
-- [ ] Historico de viagens
-- [ ] Imagem pronta para download
-
----
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Por favor:
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
+### Future
+- [ ] Themes (light/dark/auto)
+- [ ] Settings via interface
+- [ ] OBD error codes with descriptions
+- [ ] Trip history
+- [ ] Ready-to-download image
 
 ---
 
-## 📄 Licença
+## Contributing
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Contributions are welcome! Please:
+
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
 ---
 
-## 🙏 Agradecimentos
+## License
+
+This project is under the MIT license. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
 
 - [MPD](https://www.musicpd.org/) - Music Player Daemon
-- [Navit](https://www.navit-project.org/) - Navegação open source
-- [python-obd](https://python-obd.readthedocs.io/) - Biblioteca OBD-II
+- [Navit](https://www.navit-project.org/) - Open source navigation
+- [python-obd](https://python-obd.readthedocs.io/) - OBD-II library
 - [RTL-SDR](https://www.rtl-sdr.com/) - Software Defined Radio
 
 ---
 
-## 📬 Contato
+## Contact
 
 Flavio
 
-Link do projeto: [https://github.com/flavioluiz/pi-car](https://github.com/flavioluiz/pi-car)
+Project link: [https://github.com/flavioluiz/pi-car](https://github.com/flavioluiz/pi-car)
