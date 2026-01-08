@@ -57,13 +57,19 @@ Sistema de infotainment para veículos antigos usando Raspberry Pi 4 com interfa
 
 ### Método Rápido (Recomendado)
 
+**Pré-requisito:** Raspberry Pi OS **Lite** (64-bit) instalado e configurado com acesso à internet.
+
 ```bash
+# Instalar git (não vem instalado no OS Lite)
+sudo apt update && sudo apt install -y git
+
 # Clonar repositório
 git clone https://github.com/flavioluiz/pi-car.git
 cd pi-car
 
-# Executar script de instalação
-bash install.sh
+# Dar permissão de execução e executar
+chmod +x install.sh
+./install.sh
 
 # Reiniciar
 sudo reboot

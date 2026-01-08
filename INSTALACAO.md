@@ -5,23 +5,33 @@ Guia completo para configurar o ambiente de desenvolvimento e produção do Pi-C
 ## Requisitos
 
 - Raspberry Pi 4 (2GB+ RAM recomendado)
-- Raspberry Pi OS Lite (64-bit) - Debian Bookworm/Trixie
+- **Raspberry Pi OS Lite (64-bit)** - Debian Bookworm/Trixie
+  - Importante: Use a versão **Lite** (sem desktop), o script instalará apenas o necessário
 - Conexão com internet
 - Acesso SSH ou terminal físico
 
 ## Instalação Automática
 
-### 1. Clonar o repositório
+### 1. Instalar git
+
+O git não vem instalado por padrão no Raspberry Pi OS Lite:
+
+```bash
+sudo apt update && sudo apt install -y git
+```
+
+### 2. Clonar o repositório
 
 ```bash
 git clone https://github.com/flavioluiz/pi-car.git
 cd pi-car
 ```
 
-### 2. Executar script de instalação
+### 3. Executar script de instalação
 
 ```bash
-bash install.sh
+chmod +x install.sh
+./install.sh
 ```
 
 O script instalará e configurará automaticamente:
@@ -35,7 +45,7 @@ O script instalará e configurará automaticamente:
 - **Python**: Flask, python-mpd2, gps3, obd
 - **Autostart**: Servidor Flask + Chromium em modo kiosk
 
-### 3. Reiniciar
+### 4. Reiniciar
 
 ```bash
 sudo reboot
