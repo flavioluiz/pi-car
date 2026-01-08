@@ -1,2 +1,7 @@
 __pycache__/
 *.pyc
+
+# Experiments - exclude virtual environments and temporary files
+experiments/*/venv/
+experiments/*/*.log
+experiments/*/output/

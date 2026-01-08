@@ -1,0 +1,2 @@
+# Dependências para testes OBD-II no macOS
+obd>=0.7.1
