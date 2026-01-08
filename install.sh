@@ -2,39 +2,39 @@
 #===============================================================================
 #
 #   Pi-Car Installer
-#   Central Multimídia Veicular para Raspberry Pi
+#   DIY Vehicle Infotainment System for Raspberry Pi
 #
-#   Uso: curl -sSL https://raw.githubusercontent.com/flavioluiz/pi-car/main/install.sh | bash
-#   Ou:  ./install.sh
+#   Usage: curl -sSL https://raw.githubusercontent.com/flavioluiz/pi-car/main/install.sh | bash
+#   Or:    ./install.sh
 #
-#   Testado em: Raspberry Pi OS Lite (Debian Trixie/Bookworm) 64-bit
+#   Tested on: Raspberry Pi OS Lite (Debian Trixie/Bookworm) 64-bit
 #
 #===============================================================================
 
 set -e
 
-# Cores para output
+# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Diretório de instalação
+# Installation directory
 INSTALL_DIR="$HOME/pi-car"
 USER=$(whoami)
 
 #-------------------------------------------------------------------------------
-# Funções auxiliares
+# Helper functions
 #-------------------------------------------------------------------------------
 
 print_banner() {
     echo -e "${CYAN}"
     echo "╔═══════════════════════════════════════════════════════════════════╗"
     echo "║                                                                   ║"
-    echo "║     🚗  Pi-Car - Central Multimídia Veicular                      ║"
+    echo "║     Pi-Car - DIY Vehicle Infotainment System                      ║"
     echo "║                                                                   ║"
-    echo "║     Instalador automático para Raspberry Pi OS Lite               ║"
+    echo "║     Automated installer for Raspberry Pi OS Lite                  ║"
     echo "║                                                                   ║"
     echo "╚═══════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
@@ -49,7 +49,7 @@ log_warn() {
 }
 
 log_error() {
-    echo -e "${RED}[ERRO]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_step() {
@@ -61,62 +61,62 @@ log_step() {
 
 check_root() {
     if [ "$EUID" -eq 0 ]; then
-        log_error "Não execute como root! Use seu usuário normal."
-        log_error "O script pedirá sudo quando necessário."
+        log_error "Do not run as root! Use your normal user."
+        log_error "The script will ask for sudo when needed."
         exit 1
     fi
 }
 
 check_raspberry_pi() {
     if ! grep -q "Raspberry Pi" /proc/cpuinfo 2>/dev/null; then
-        log_warn "Este não parece ser um Raspberry Pi."
-        read -p "Deseja continuar mesmo assim? (s/N) " -n 1 -r
+        log_warn "This does not appear to be a Raspberry Pi."
+        read -p "Do you want to continue anyway? (y/N) " -n 1 -r
         echo
-        if [[ ! $REPLY =~ ^[Ss]$ ]]; then
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             exit 1
         fi
     fi
 }
 
 #-------------------------------------------------------------------------------
-# Instalação de pacotes do sistema
+# System packages installation
 #-------------------------------------------------------------------------------
 
 install_system_packages() {
-    log_step "Atualizando sistema e instalando pacotes"
+    log_step "Updating system and installing packages"
 
     sudo apt update
     sudo apt upgrade -y
 
-    log_info "Instalando interface gráfica mínima (X11 + Openbox)..."
+    log_info "Installing minimal GUI (X11 + Openbox)..."
     sudo apt install -y \
         xorg \
         openbox \
         lxterminal \
         pcmanfm
 
-    log_info "Instalando áudio e player de música..."
+    log_info "Installing audio and music player..."
     sudo apt install -y \
         alsa-utils \
         mpd \
         mpc \
         ario
 
-    log_info "Instalando GPS e navegação..."
+    log_info "Installing GPS and navigation..."
     sudo apt install -y \
         gpsd \
         gpsd-clients \
         navit
 
-    log_info "Instalando navegador web..."
+    log_info "Installing web browser..."
     sudo apt install -y chromium
 
-    log_info "Instalando RTL-SDR (rádio)..."
+    log_info "Installing RTL-SDR (radio)..."
     sudo apt install -y \
         rtl-sdr \
-        gqrx-sdr || log_warn "GQRX não disponível, pulando..."
+        gqrx-sdr || log_warn "GQRX not available, skipping..."
 
-    log_info "Instalando ferramentas auxiliares..."
+    log_info "Installing auxiliary tools..."
     sudo apt install -y \
         git \
         python3-pip \
@@ -126,20 +126,20 @@ install_system_packages() {
         htop \
         nano
 
-    log_info "Instalando fontes (emoji e símbolos)..."
+    log_info "Installing fonts (emoji and symbols)..."
     sudo apt install -y \
         fonts-noto-color-emoji \
-        fonts-symbola || log_warn "Algumas fontes não disponíveis, pulando..."
+        fonts-symbola || log_warn "Some fonts not available, skipping..."
 
-    log_info "Pacotes do sistema instalados!"
+    log_info "System packages installed!"
 }
 
 #-------------------------------------------------------------------------------
-# Instalação de dependências Python
+# Python dependencies installation
 #-------------------------------------------------------------------------------
 
 install_python_packages() {
-    log_step "Instalando dependências Python"
+    log_step "Installing Python dependencies"
 
     pip3 install --break-system-packages \
         flask \
@@ -147,36 +147,36 @@ install_python_packages() {
         gps3 \
         obd
 
-    log_info "Pacotes Python instalados!"
+    log_info "Python packages installed!"
 }
 
 #-------------------------------------------------------------------------------
-# Configuração do MPD
+# MPD configuration
 #-------------------------------------------------------------------------------
 
 configure_mpd() {
-    log_step "Configurando MPD (Music Player Daemon)"
+    log_step "Configuring MPD (Music Player Daemon)"
 
-    # Corrigir permissões caso diretório tenha sido criado como root
+    # Fix permissions if directory was created as root
     if [ -d "$HOME/.mpd" ]; then
-        log_info "Corrigindo permissões de $HOME/.mpd..."
+        log_info "Fixing permissions for $HOME/.mpd..."
         sudo chown -R "$USER:$USER" "$HOME/.mpd"
     fi
 
-    # Criar diretórios necessários
+    # Create necessary directories
     mkdir -p "$HOME/Music"
     mkdir -p "$HOME/.mpd/playlists"
     touch "$HOME/.mpd/database"
 
-    # Backup da configuração original
+    # Backup original configuration
     if [ -f /etc/mpd.conf ]; then
         sudo cp /etc/mpd.conf /etc/mpd.conf.backup
     fi
 
-    # Criar nova configuração
+    # Create new configuration
     sudo tee /etc/mpd.conf > /dev/null << MPDCONF
 # Pi-Car MPD Configuration
-# Gerado automaticamente pelo instalador
+# Automatically generated by installer
 
 music_directory     "$HOME/Music"
 playlist_directory  "$HOME/.mpd/playlists"
@@ -193,7 +193,7 @@ port                "6600"
 auto_update         "yes"
 auto_update_depth   "3"
 
-# Saída de áudio - Jack 3.5mm
+# Audio output - 3.5mm Jack
 audio_output {
     type        "alsa"
     name        "Headphones"
@@ -201,7 +201,7 @@ audio_output {
     mixer_type  "software"
 }
 
-# Saída HDMI (backup)
+# HDMI output (backup)
 audio_output {
     type        "alsa"
     name        "HDMI"
@@ -210,26 +210,26 @@ audio_output {
     enabled     "no"
 }
 
-# Volume por software
+# Software volume
 mixer_type          "software"
 volume_normalization "no"
 MPDCONF
 
-    # Habilitar e iniciar MPD
+    # Enable and start MPD
     sudo systemctl enable mpd
     sudo systemctl restart mpd
 
-    log_info "MPD configurado!"
+    log_info "MPD configured!"
 }
 
 #-------------------------------------------------------------------------------
-# Configuração do GPS
+# GPS configuration
 #-------------------------------------------------------------------------------
 
 configure_gps() {
-    log_step "Configurando GPSD"
+    log_step "Configuring GPSD"
 
-    # Configurar gpsd para GPS USB comum (VK-162)
+    # Configure gpsd for common USB GPS (VK-162)
     sudo tee /etc/default/gpsd > /dev/null << GPSDCONF
 # Pi-Car GPSD Configuration
 START_DAEMON="true"
@@ -239,31 +239,31 @@ GPSD_OPTIONS="-n"
 GPSD_SOCKET="/var/run/gpsd.sock"
 GPSDCONF
 
-    # Habilitar gpsd
+    # Enable gpsd
     sudo systemctl enable gpsd
 
-    log_info "GPSD configurado!"
-    log_warn "GPSD iniciará automaticamente quando um GPS USB for conectado."
+    log_info "GPSD configured!"
+    log_warn "GPSD will start automatically when a USB GPS is connected."
 }
 
 #-------------------------------------------------------------------------------
-# Configuração do Bluetooth (OBD-II)
+# Bluetooth configuration (OBD-II)
 #-------------------------------------------------------------------------------
 
 configure_bluetooth() {
-    log_step "Configurando Bluetooth para OBD-II"
+    log_step "Configuring Bluetooth for OBD-II"
 
-    # Habilitar bluetooth
+    # Enable bluetooth
     sudo systemctl enable bluetooth
     sudo systemctl start bluetooth
 
-    # Adicionar usuário ao grupo bluetooth
+    # Add user to bluetooth group
     sudo usermod -a -G bluetooth "$USER"
 
-    log_info "Bluetooth habilitado!"
-    log_warn "Para parear o ELM327, use: bluetoothctl"
+    log_info "Bluetooth enabled!"
+    log_warn "To pair the ELM327, use: bluetoothctl"
     echo ""
-    echo "    Comandos do bluetoothctl:"
+    echo "    bluetoothctl commands:"
     echo "    > power on"
     echo "    > agent on"
     echo "    > scan on"
@@ -273,116 +273,116 @@ configure_bluetooth() {
 }
 
 #-------------------------------------------------------------------------------
-# Instalação do Pi-Car
+# Pi-Car installation
 #-------------------------------------------------------------------------------
 
 install_picar() {
-    log_step "Instalando Pi-Car"
+    log_step "Installing Pi-Car"
 
-    # Determinar diretório de origem do script
+    # Determine script source directory
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-    # Se estamos rodando de dentro de um clone do repositório, usar esse diretório
+    # If running from inside a repository clone, use that directory
     if [ -f "$SCRIPT_DIR/app.py" ] && [ -d "$SCRIPT_DIR/backend" ] && [ -d "$SCRIPT_DIR/frontend" ]; then
-        log_info "Repositorio local encontrado em: $SCRIPT_DIR"
+        log_info "Local repository found at: $SCRIPT_DIR"
         INSTALL_DIR="$SCRIPT_DIR"
     else
-        # Se não, clonar do GitHub
+        # Otherwise, clone from GitHub
         if [ -d "$INSTALL_DIR/.git" ]; then
-            log_info "Repositorio existente encontrado, atualizando..."
+            log_info "Existing repository found, updating..."
             cd "$INSTALL_DIR"
             git pull
         else
-            log_info "Clonando repositorio do GitHub..."
+            log_info "Cloning repository from GitHub..."
             git clone https://github.com/flavioluiz/pi-car.git "$INSTALL_DIR"
         fi
     fi
 
-    # Garantir permissões de execução
+    # Ensure execute permissions
     chmod +x "$INSTALL_DIR/start_dashboard.sh"
     chmod +x "$INSTALL_DIR/update_music.sh"
     chmod +x "$INSTALL_DIR/app.py" 2>/dev/null || true
 
-    log_info "Pi-Car instalado em: $INSTALL_DIR"
+    log_info "Pi-Car installed at: $INSTALL_DIR"
 }
 
 #-------------------------------------------------------------------------------
-# Configuração do Autostart
+# Autostart configuration
 #-------------------------------------------------------------------------------
 
 configure_autostart() {
-    log_step "Configurando inicialização automática"
+    log_step "Configuring automatic startup"
 
-    # Criar diretório de configuração do Openbox
+    # Create Openbox configuration directory
     mkdir -p "$HOME/.config/openbox"
 
-    # Configurar autostart do Openbox
+    # Configure Openbox autostart
     cat > "$HOME/.config/openbox/autostart" << AUTOSTART
 # Pi-Car Autostart
-# Desativar screensaver
+# Disable screensaver
 xset s off
 xset -dpms
 xset s noblank
 
-# Esconder cursor após 3 segundos de inatividade
+# Hide cursor after 3 seconds of inactivity
 # unclutter -idle 3 &
 
-# Iniciar Pi-Car
+# Start Pi-Car
 $INSTALL_DIR/start_dashboard.sh &
 
-# Aguardar servidor iniciar
+# Wait for server to start
 sleep 4
 
-# Abrir Chromium em modo kiosk
+# Open Chromium in kiosk mode
 chromium --kiosk --noerrdialogs --disable-infobars --no-first-run --disable-session-crashed-bubble --disable-restore-session-state http://localhost:5000 &
 AUTOSTART
 
-    # Configurar .xinitrc
+    # Configure .xinitrc
     echo "exec openbox-session" > "$HOME/.xinitrc"
 
-    # Perguntar sobre auto-login no X
+    # Ask about X auto-login
     echo ""
-    read -p "Deseja iniciar X automaticamente no boot? (S/n) " -n 1 -r
+    read -p "Do you want to start X automatically on boot? (Y/n) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-        # Adicionar ao .bash_profile
+        # Add to .bash_profile
         if ! grep -q "startx" "$HOME/.bash_profile" 2>/dev/null; then
             echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx' >> "$HOME/.bash_profile"
-            log_info "Auto-login no X configurado!"
+            log_info "X auto-login configured!"
         fi
     fi
 
-    log_info "Autostart configurado!"
+    log_info "Autostart configured!"
 }
 
 #-------------------------------------------------------------------------------
-# Configurações finais e limpeza
+# Final configuration and cleanup
 #-------------------------------------------------------------------------------
 
 finalize() {
-    log_step "Finalizando instalação"
+    log_step "Finalizing installation"
 
-    # Atualizar biblioteca de músicas (se houver)
-    log_info "Atualizando biblioteca de músicas..."
+    # Update music library (if any)
+    log_info "Updating music library..."
     if [ -d "$HOME/Music" ] && [ "$(find "$HOME/Music" -type f \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) 2>/dev/null | head -1)" ]; then
         mpc update --wait 2>/dev/null || true
         mpc clear 2>/dev/null || true
         mpc add / 2>/dev/null || true
-        log_info "Músicas adicionadas à playlist!"
+        log_info "Music added to playlist!"
     else
-        log_warn "Nenhuma música encontrada em ~/Music"
-        log_info "Copie músicas para ~/Music e execute: ./update_music.sh"
+        log_warn "No music found in ~/Music"
+        log_info "Copy music to ~/Music and run: ./update_music.sh"
     fi
 
-    # Limpar cache do apt
+    # Clean apt cache
     sudo apt autoremove -y
     sudo apt clean
 
-    log_info "Limpeza concluída!"
+    log_info "Cleanup complete!"
 }
 
 #-------------------------------------------------------------------------------
-# Resumo final
+# Final summary
 #-------------------------------------------------------------------------------
 
 print_summary() {
@@ -390,31 +390,31 @@ print_summary() {
     echo -e "${GREEN}"
     echo "╔═══════════════════════════════════════════════════════════════════╗"
     echo "║                                                                   ║"
-    echo "║     ✅  Instalação concluída com sucesso!                         ║"
+    echo "║     Installation completed successfully!                          ║"
     echo "║                                                                   ║"
     echo "╚═══════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
     echo ""
-    echo "📁 Diretório de instalação: $INSTALL_DIR"
-    echo "🎵 Diretório de músicas:    $HOME/Music"
+    echo "Installation directory: $INSTALL_DIR"
+    echo "Music directory:        $HOME/Music"
     echo ""
-    echo -e "${CYAN}Para iniciar manualmente:${NC}"
+    echo -e "${CYAN}To start manually:${NC}"
     echo "   cd $INSTALL_DIR && ./start_dashboard.sh"
     echo ""
-    echo -e "${CYAN}Para iniciar interface gráfica:${NC}"
+    echo -e "${CYAN}To start GUI:${NC}"
     echo "   startx"
     echo ""
-    echo -e "${CYAN}Para modo kiosk (tela cheia):${NC}"
+    echo -e "${CYAN}For kiosk mode (fullscreen):${NC}"
     echo "   chromium --kiosk http://localhost:5000"
     echo ""
-    echo -e "${YELLOW}Próximos passos recomendados:${NC}"
-    echo "   1. Copie músicas para ~/Music"
-    echo "   2. Execute 'mpc update' para atualizar biblioteca"
-    echo "   3. Pareie o ELM327 via 'bluetoothctl' (se tiver)"
-    echo "   4. Conecte o GPS USB (se tiver)"
-    echo "   5. Reinicie para testar autostart: sudo reboot"
+    echo -e "${YELLOW}Recommended next steps:${NC}"
+    echo "   1. Copy music to ~/Music"
+    echo "   2. Run 'mpc update' to update library"
+    echo "   3. Pair ELM327 via 'bluetoothctl' (if available)"
+    echo "   4. Connect USB GPS (if available)"
+    echo "   5. Reboot to test autostart: sudo reboot"
     echo ""
-    echo -e "${GREEN}Obrigado por usar o Pi-Car! 🚗${NC}"
+    echo -e "${GREEN}Thank you for using Pi-Car!${NC}"
     echo ""
 }
 
@@ -428,12 +428,12 @@ main() {
     check_raspberry_pi
 
     echo ""
-    echo "Este script irá instalar e configurar o Pi-Car."
+    echo "This script will install and configure Pi-Car."
     echo ""
-    read -p "Deseja continuar? (S/n) " -n 1 -r
+    read -p "Do you want to continue? (Y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Nn]$ ]]; then
-        echo "Instalação cancelada."
+        echo "Installation cancelled."
         exit 0
     fi
 
@@ -448,5 +448,5 @@ main() {
     print_summary
 }
 
-# Executar
+# Execute
 main "$@"
