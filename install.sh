@@ -152,8 +152,16 @@ install_python_packages() {
 configure_mpd() {
     log_step "Configurando MPD (Music Player Daemon)"
 
-    # Criar diretórios necessários
+    # Criar diretórios necessários (corrigir permissões se necessário)
     mkdir -p "$HOME/Music"
+    mkdir -p "$HOME/.mpd"
+
+    # Corrigir permissões caso diretório tenha sido criado como root
+    if [ -d "$HOME/.mpd" ] && [ ! -w "$HOME/.mpd" ]; then
+        log_warn "Corrigindo permissões de $HOME/.mpd..."
+        sudo chown -R "$USER:$USER" "$HOME/.mpd"
+    fi
+
     mkdir -p "$HOME/.mpd/playlists"
     touch "$HOME/.mpd/database"
 
