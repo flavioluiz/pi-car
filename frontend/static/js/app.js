@@ -563,6 +563,10 @@ document.querySelectorAll('.radio-tab').forEach(tab => {
     });
 });
 
+// Current radio playing state
+let currentRadioPlaying = false;
+let currentRadioVolume = 80;
+
 // Update radio display from status data
 function updateRadioDisplay(radioData) {
     if (!radioData) return;
@@ -578,6 +582,8 @@ function updateRadioDisplay(radioData) {
         // Update display
         currentRadioFreq = radioData.frequency || 99.5;
         currentRadioMode = radioData.mode || 'FM';
+        currentRadioPlaying = radioData.playing || false;
+        currentRadioVolume = radioData.volume || 80;
 
         document.getElementById('radio-freq').textContent = currentRadioFreq.toFixed(1);
         document.getElementById('radio-mode').textContent = currentRadioMode;
@@ -586,6 +592,20 @@ function updateRadioDisplay(radioData) {
         // Update mode selector buttons
         document.getElementById('mode-fm').classList.toggle('active', currentRadioMode === 'FM');
         document.getElementById('mode-am').classList.toggle('active', currentRadioMode === 'AM');
+
+        // Update play button
+        const playBtn = document.getElementById('radio-play-btn');
+        const playIcon = document.getElementById('radio-play-icon');
+        if (currentRadioPlaying) {
+            playBtn.classList.add('playing');
+            playIcon.innerHTML = '&#9632;'; // Stop symbol
+        } else {
+            playBtn.classList.remove('playing');
+            playIcon.innerHTML = '&#9654;'; // Play symbol
+        }
+
+        // Update volume display
+        document.getElementById('radio-vol').textContent = currentRadioVolume + '%';
 
         // Update signal strength
         updateSignalStrength(radioData.signal_strength || -100);
@@ -662,6 +682,54 @@ function radioSetMode(mode) {
             }
         })
         .catch(err => console.error('Radio mode error:', err));
+}
+
+// Toggle play/stop
+function radioTogglePlay() {
+    const endpoint = currentRadioPlaying ? '/api/radio/stop' : '/api/radio/play';
+    fetch(endpoint, { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                currentRadioPlaying = result.playing;
+                const playBtn = document.getElementById('radio-play-btn');
+                const playIcon = document.getElementById('radio-play-icon');
+                if (currentRadioPlaying) {
+                    playBtn.classList.add('playing');
+                    playIcon.innerHTML = '&#9632;';
+                } else {
+                    playBtn.classList.remove('playing');
+                    playIcon.innerHTML = '&#9654;';
+                }
+            }
+        })
+        .catch(err => console.error('Radio play error:', err));
+}
+
+// Volume up
+function radioVolumeUp() {
+    fetch('/api/radio/volume/up', { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                currentRadioVolume = result.volume;
+                document.getElementById('radio-vol').textContent = currentRadioVolume + '%';
+            }
+        })
+        .catch(err => console.error('Volume error:', err));
+}
+
+// Volume down
+function radioVolumeDown() {
+    fetch('/api/radio/volume/down', { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                currentRadioVolume = result.volume;
+                document.getElementById('radio-vol').textContent = currentRadioVolume + '%';
+            }
+        })
+        .catch(err => console.error('Volume error:', err));
 }
 
 // Load presets from server

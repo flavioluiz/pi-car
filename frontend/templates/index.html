@@ -207,9 +207,19 @@
                         <button class="tune-btn big" onclick="radioTuneStep(0.1)">&#9654;</button>
                         <button class="tune-btn" onclick="radioTuneStep(1)">+</button>
                     </div>
-                    <div class="radio-mode-selector">
-                        <button class="mode-select active" id="mode-fm" onclick="radioSetMode('FM')">FM</button>
-                        <button class="mode-select" id="mode-am" onclick="radioSetMode('AM')">AM</button>
+                    <div class="radio-controls">
+                        <div class="radio-mode-selector">
+                            <button class="mode-select active" id="mode-fm" onclick="radioSetMode('FM')">FM</button>
+                            <button class="mode-select" id="mode-am" onclick="radioSetMode('AM')">AM</button>
+                        </div>
+                        <button class="radio-play-btn" id="radio-play-btn" onclick="radioTogglePlay()">
+                            <span id="radio-play-icon">&#9654;</span>
+                        </button>
+                        <div class="radio-volume">
+                            <button class="vol-btn" onclick="radioVolumeDown()">-</button>
+                            <span class="vol-display" id="radio-vol">80%</span>
+                            <button class="vol-btn" onclick="radioVolumeUp()">+</button>
+                        </div>
                     </div>
                     <div class="radio-quick-presets">
                         <button class="quick-preset" onclick="radioTune(99.5, 'FM')">99.5 FM</button>

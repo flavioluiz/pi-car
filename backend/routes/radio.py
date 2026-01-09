@@ -243,3 +243,102 @@ def radio_favorites_clear():
         return jsonify({'success': True})
     else:
         return jsonify({'error': 'failed to save favorites'}), 500
+
+
+@radio_bp.route('/play', methods=['POST'])
+def radio_play():
+    """Inicia a reproducao do radio."""
+    service = get_rtlsdr_service()
+    result = service.play()
+
+    if 'error' in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
+
+
+@radio_bp.route('/stop', methods=['POST'])
+def radio_stop():
+    """Para a reproducao do radio."""
+    service = get_rtlsdr_service()
+    result = service.stop_playback()
+    return jsonify(result)
+
+
+@radio_bp.route('/volume', methods=['POST'])
+def radio_volume():
+    """Define o volume do sistema.
+
+    Body JSON:
+        volume: nivel de 0 a 100
+    """
+    data = request.get_json() or {}
+    volume = data.get('volume')
+
+    if volume is None:
+        return jsonify({'error': 'volume required'}), 400
+
+    try:
+        volume = int(volume)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'invalid volume'}), 400
+
+    service = get_rtlsdr_service()
+    result = service.set_volume(volume)
+
+    if 'error' in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
+
+
+@radio_bp.route('/volume/<action>', methods=['POST'])
+def radio_volume_action(action):
+    """Ajusta o volume (up/down).
+
+    Args:
+        action: 'up' ou 'down'
+    """
+    service = get_rtlsdr_service()
+    current = radio_data.get('volume', 80)
+
+    if action == 'up':
+        new_vol = min(100, current + 5)
+    elif action == 'down':
+        new_vol = max(0, current - 5)
+    else:
+        return jsonify({'error': 'invalid action, use up or down'}), 400
+
+    result = service.set_volume(new_vol)
+
+    if 'error' in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
+
+
+@radio_bp.route('/squelch', methods=['POST'])
+def radio_squelch():
+    """Define o nivel de squelch.
+
+    Body JSON:
+        level: nivel de 0 a 100 (0 = desligado)
+    """
+    data = request.get_json() or {}
+    level = data.get('level')
+
+    if level is None:
+        return jsonify({'error': 'level required'}), 400
+
+    try:
+        level = int(level)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'invalid level'}), 400
+
+    service = get_rtlsdr_service()
+    result = service.set_squelch(level)
+
+    if 'error' in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
