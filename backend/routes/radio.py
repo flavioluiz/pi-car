@@ -139,9 +139,41 @@ def radio_gains():
 
 @radio_bp.route('/fft')
 def radio_fft():
-    """Retorna dados FFT para espectrograma."""
+    """Retorna dados FFT para espectrograma.
+
+    Query params:
+        center: frequencia central em MHz (opcional)
+        span: largura de banda em MHz (opcional, default: 2.0)
+    """
+    center = request.args.get('center', type=float)
+    span = request.args.get('span', type=float, default=2.0)
+
     service = get_rtlsdr_service()
-    result = service.get_fft()
+    result = service.get_fft(center_freq=center, span_mhz=span)
+
+    if 'error' in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
+
+
+@radio_bp.route('/spectrum/start', methods=['POST'])
+def radio_spectrum_start():
+    """Inicia modo espectrograma (para audio)."""
+    service = get_rtlsdr_service()
+    result = service.start_spectrum_mode()
+
+    if 'error' in result:
+        return jsonify(result), 500
+
+    return jsonify(result)
+
+
+@radio_bp.route('/spectrum/stop', methods=['POST'])
+def radio_spectrum_stop():
+    """Para modo espectrograma e retoma audio."""
+    service = get_rtlsdr_service()
+    result = service.stop_spectrum_mode()
 
     if 'error' in result:
         return jsonify(result), 500

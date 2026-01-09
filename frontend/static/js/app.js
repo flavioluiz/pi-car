@@ -848,6 +848,8 @@ function radioClearFavorites() {
 let spectrogramCanvas = null;
 let spectrogramCtx = null;
 let spectrogramInterval = null;
+let spectrumModeActive = false;
+let spectrumSpan = 2.0; // MHz
 
 function startSpectrogram() {
     spectrogramCanvas = document.getElementById('spectrogram');
@@ -864,8 +866,19 @@ function startSpectrogram() {
         clearInterval(spectrogramInterval);
     }
 
-    // Start fetching FFT data
-    spectrogramInterval = setInterval(updateSpectrogram, 100);
+    // Start spectrum mode on server (pauses audio)
+    fetch('/api/radio/spectrum/start', { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+            spectrumModeActive = result.spectrum_mode || false;
+            updateSpectrumIndicator();
+            // Start fetching FFT data
+            spectrogramInterval = setInterval(updateSpectrogram, 200);
+        })
+        .catch(() => {
+            // Even if spectrum mode fails, show simulated data
+            spectrogramInterval = setInterval(updateSpectrogram, 200);
+        });
 }
 
 function stopSpectrogram() {
@@ -873,19 +886,69 @@ function stopSpectrogram() {
         clearInterval(spectrogramInterval);
         spectrogramInterval = null;
     }
+
+    // Stop spectrum mode on server (resumes audio)
+    if (spectrumModeActive) {
+        fetch('/api/radio/spectrum/stop', { method: 'POST' })
+            .then(r => r.json())
+            .then(() => {
+                spectrumModeActive = false;
+                updateSpectrumIndicator();
+            })
+            .catch(() => {});
+    }
+}
+
+function updateSpectrumIndicator() {
+    const indicator = document.getElementById('spectrum-mode-indicator');
+    if (indicator) {
+        indicator.textContent = spectrumModeActive ? 'LIVE' : 'SIM';
+        indicator.classList.toggle('live', spectrumModeActive);
+    }
 }
 
 function updateSpectrogram() {
     if (!spectrogramCtx) return;
 
-    fetch('/api/radio/fft')
+    const center = currentRadioFreq;
+    fetch(`/api/radio/fft?center=${center}&span=${spectrumSpan}`)
         .then(r => r.json())
         .then(data => {
             if (data.error || !data.fft) return;
 
+            // Update indicator based on real/simulated data
+            const indicator = document.getElementById('spectrum-mode-indicator');
+            if (indicator) {
+                indicator.textContent = data.real ? 'LIVE' : 'SIM';
+                indicator.classList.toggle('live', data.real);
+            }
+
+            // Update frequency labels if real data
+            if (data.start_freq && data.end_freq) {
+                const startLabel = document.getElementById('spectrum-start');
+                const endLabel = document.getElementById('spectrum-end');
+                if (startLabel) startLabel.textContent = data.start_freq.toFixed(1);
+                if (endLabel) endLabel.textContent = data.end_freq.toFixed(1);
+            }
+
             drawSpectrogram(data.fft);
         })
         .catch(() => {});
+}
+
+function setSpectrumSpan(span) {
+    spectrumSpan = span;
+    document.getElementById('spectrum-span').textContent = span.toFixed(1);
+
+    // Update active button state
+    document.querySelectorAll('.span-btn').forEach(btn => {
+        btn.classList.toggle('active', parseFloat(btn.textContent) === span);
+    });
+
+    // Update frequency range labels
+    const center = currentRadioFreq;
+    document.getElementById('spectrum-start').textContent = (center - span/2).toFixed(1);
+    document.getElementById('spectrum-end').textContent = (center + span/2).toFixed(1);
 }
 
 function drawSpectrogram(fftData) {

@@ -99,9 +99,12 @@ class RTLSDRService:
         self._rtl_fm_path = shutil.which('rtl_fm')
         self._aplay_path = shutil.which('aplay')
 
-        # FFT data for spectrogram (optional, uses rtl_power)
+        # FFT data for spectrogram (uses rtl_power)
         self._fft_data: Optional[List[float]] = None
         self._fft_thread: Optional[threading.Thread] = None
+        self._spectrum_mode = False
+        self._spectrum_process: Optional[subprocess.Popen] = None
+        self._rtl_power_path = shutil.which('rtl_power')
 
     def _pause_music(self) -> None:
         """Pause MPD music playback when radio starts."""
@@ -415,20 +418,149 @@ class RTLSDRService:
         self._stop_playback()
         return {'success': True, 'playing': False}
 
-    def get_fft(self) -> Dict[str, Any]:
+    def start_spectrum_mode(self) -> Dict[str, Any]:
         """
-        Get FFT data for spectrogram.
-        Note: This is a simplified implementation.
+        Start spectrum analysis mode.
+        This stops audio playback and uses rtl_power for spectrum capture.
+
+        Returns:
+            Dict with result status
+        """
+        if not self._rtl_power_path:
+            return {'error': 'rtl_power not installed'}
+
+        if not self._running:
+            return {'error': 'RTL-SDR not running'}
+
+        with self._lock:
+            # Stop audio playback to free the device
+            self._stop_playback_internal()
+            self._spectrum_mode = True
+            radio_data['playing'] = False
+
+        logger.info("Spectrum mode started")
+        return {'success': True, 'spectrum_mode': True}
+
+    def stop_spectrum_mode(self) -> Dict[str, Any]:
+        """
+        Stop spectrum analysis mode and resume audio.
+
+        Returns:
+            Dict with result status
+        """
+        with self._lock:
+            self._spectrum_mode = False
+            if self._spectrum_process:
+                try:
+                    self._spectrum_process.terminate()
+                    self._spectrum_process.wait(timeout=1)
+                except:
+                    try:
+                        self._spectrum_process.kill()
+                    except:
+                        pass
+                self._spectrum_process = None
+
+        # Resume audio playback
+        if self._running:
+            self._start_playback()
+
+        logger.info("Spectrum mode stopped, audio resumed")
+        return {'success': True, 'spectrum_mode': False}
+
+    def get_fft(self, center_freq: float = None, span_mhz: float = 2.0) -> Dict[str, Any]:
+        """
+        Get FFT data for spectrogram using rtl_power.
+
+        Args:
+            center_freq: Center frequency in MHz (default: current frequency)
+            span_mhz: Frequency span in MHz (default: 2.0)
 
         Returns:
             Dict with FFT data and metadata
         """
-        # Generate simulated FFT data for now
-        # Real implementation would use rtl_power or separate SDR access
         if not NUMPY_AVAILABLE:
             return {'error': 'numpy not available'}
 
-        # Generate noise floor with a peak at center
+        if not self._rtl_power_path:
+            # Fall back to simulated data if rtl_power not available
+            return self._get_simulated_fft()
+
+        if center_freq is None:
+            center_freq = radio_data['frequency']
+
+        # If not in spectrum mode, return simulated data to avoid stopping audio
+        if not self._spectrum_mode:
+            return self._get_simulated_fft()
+
+        # Calculate frequency range
+        start_freq = center_freq - (span_mhz / 2)
+        end_freq = center_freq + (span_mhz / 2)
+
+        # Convert to Hz for rtl_power
+        start_hz = int(start_freq * 1e6)
+        end_hz = int(end_freq * 1e6)
+        bin_size = 10000  # 10 kHz bin size
+
+        try:
+            # Run rtl_power for a quick sweep
+            # Format: rtl_power -f start:end:bin_size -i 0.1 -1 -
+            cmd = [
+                'rtl_power',
+                '-f', f'{start_hz}:{end_hz}:{bin_size}',
+                '-i', '0.1',  # Integration time
+                '-1',  # Single sweep
+                '-'  # Output to stdout
+            ]
+
+            logger.debug(f"Running rtl_power: {' '.join(cmd)}")
+
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if result.returncode != 0:
+                logger.warning(f"rtl_power failed: {result.stderr}")
+                return self._get_simulated_fft()
+
+            # Parse CSV output from rtl_power
+            # Format: date, time, start_hz, end_hz, step_hz, samples, dB values...
+            fft_data = []
+            for line in result.stdout.strip().split('\n'):
+                if not line:
+                    continue
+                parts = line.split(',')
+                if len(parts) > 6:
+                    # Power values start at index 6
+                    powers = [float(p) for p in parts[6:] if p.strip()]
+                    fft_data.extend(powers)
+
+            if not fft_data:
+                logger.warning("No FFT data from rtl_power")
+                return self._get_simulated_fft()
+
+            return {
+                'fft': fft_data,
+                'frequency': center_freq,
+                'start_freq': start_freq,
+                'end_freq': end_freq,
+                'span': span_mhz,
+                'bins': len(fft_data),
+                'real': True
+            }
+
+        except subprocess.TimeoutExpired:
+            logger.warning("rtl_power timeout")
+            return self._get_simulated_fft()
+        except Exception as e:
+            logger.error(f"FFT capture error: {e}")
+            return self._get_simulated_fft()
+
+    def _get_simulated_fft(self) -> Dict[str, Any]:
+        """Generate simulated FFT data when real capture not available."""
         bins = 256
         noise = np.random.normal(-80, 5, bins)
 
@@ -444,7 +576,8 @@ class RTLSDRService:
             'fft': fft_data.tolist(),
             'frequency': radio_data['frequency'],
             'sample_rate': radio_data['sample_rate'],
-            'bins': bins
+            'bins': bins,
+            'real': False
         }
 
     def get_status(self) -> Dict[str, Any]:

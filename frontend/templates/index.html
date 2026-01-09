@@ -232,11 +232,23 @@
 
                 <!-- Tab: Spectrum -->
                 <div class="radio-panel" id="radio-spectrum">
+                    <div class="spectrum-header">
+                        <span id="spectrum-mode-indicator" class="spectrum-indicator">SIM</span>
+                        <span class="spectrum-note">Audio pauses during LIVE mode</span>
+                    </div>
                     <canvas id="spectrogram" width="800" height="200"></canvas>
                     <div class="spectrum-controls">
                         <div class="spectrum-info">
-                            <span>Center: <span id="spectrum-center">99.5</span> MHz</span>
-                            <span>Span: <span id="spectrum-span">2.4</span> MHz</span>
+                            <span id="spectrum-start">98.5</span> MHz
+                            <span class="spectrum-center-label">Center: <span id="spectrum-center">99.5</span> MHz</span>
+                            <span id="spectrum-end">100.5</span> MHz
+                        </div>
+                        <div class="spectrum-span-controls">
+                            <span>Span:</span>
+                            <button class="span-btn" onclick="setSpectrumSpan(1.0)">1 MHz</button>
+                            <button class="span-btn active" onclick="setSpectrumSpan(2.0)">2 MHz</button>
+                            <button class="span-btn" onclick="setSpectrumSpan(5.0)">5 MHz</button>
+                            <button class="span-btn" onclick="setSpectrumSpan(10.0)">10 MHz</button>
                         </div>
                     </div>
                 </div>
