@@ -168,8 +168,8 @@ class RTLSDRService:
 
     def _start_playback(self) -> bool:
         """Start rtl_fm -> aplay pipeline."""
-        # Pause music before starting radio
-        self._pause_music()
+        # Pause music before starting radio (in background to not block)
+        threading.Thread(target=self._pause_music, daemon=True).start()
 
         with self._lock:
             # Stop existing playback
@@ -283,8 +283,13 @@ class RTLSDRService:
         Returns:
             Dict with result status
         """
+        logger.info(f"tune() called: freq={frequency_mhz}, running={self._running}")
+
         if not self._running:
-            return {'error': 'RTL-SDR not running'}
+            # Try to start if not running
+            logger.warning("RTL-SDR not running, attempting to start...")
+            if not self.start():
+                return {'error': 'RTL-SDR not running and could not start'}
 
         # Validate frequency range
         if frequency_mhz < 24 or frequency_mhz > 1800:
@@ -454,5 +459,15 @@ def get_rtlsdr_service() -> RTLSDRService:
     """Get or create the RTL-SDR service singleton."""
     global _service_instance
     if _service_instance is None:
+        logger.info("Creating new RTLSDRService singleton")
         _service_instance = RTLSDRService()
+    else:
+        logger.debug(f"Returning existing singleton (running={_service_instance._running})")
     return _service_instance
+
+
+def set_rtlsdr_service(service: RTLSDRService) -> None:
+    """Set the RTL-SDR service singleton (for initialization)."""
+    global _service_instance
+    _service_instance = service
+    logger.info("RTLSDRService singleton set externally")
