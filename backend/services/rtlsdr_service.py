@@ -121,6 +121,8 @@ class RTLSDRService:
         Returns:
             True if started successfully, False otherwise.
         """
+        logger.info(f"start() called. rtl_fm={self._rtl_fm_path}, aplay={self._aplay_path}")
+
         if not self._rtl_fm_path:
             logger.error("rtl_fm not found. Install: sudo apt install rtl-sdr")
             radio_data['error'] = 'rtl_fm not installed'
@@ -132,6 +134,7 @@ class RTLSDRService:
             return False
 
         # Test if RTL-SDR device is available
+        logger.info("Testing RTL-SDR device...")
         try:
             result = subprocess.run(
                 ['rtl_test', '-t'],
@@ -139,23 +142,28 @@ class RTLSDRService:
                 text=True,
                 timeout=5
             )
+            logger.info(f"rtl_test result: returncode={result.returncode}")
             if 'No supported devices found' in result.stderr:
+                logger.error("No RTL-SDR device found")
                 radio_data['error'] = 'No RTL-SDR device found'
                 radio_data['connected'] = False
                 return False
         except subprocess.TimeoutExpired:
-            pass  # rtl_test runs indefinitely, timeout is expected
+            logger.info("rtl_test timed out (expected, device likely OK)")
         except Exception as e:
             logger.warning(f"rtl_test check failed: {e}")
 
         self._running = True
         radio_data['connected'] = True
         radio_data['error'] = None
+        logger.info("RTL-SDR marked as running")
 
         # Start playing at default frequency
-        self._start_playback()
+        logger.info("Starting initial playback...")
+        result = self._start_playback()
+        logger.info(f"Initial playback result: {result}")
 
-        logger.info("RTL-SDR service started")
+        logger.info("RTL-SDR service started successfully")
         return True
 
     def stop(self) -> None:
@@ -217,13 +225,15 @@ class RTLSDRService:
 
             try:
                 logger.info(f"Starting radio: {freq_hz/1e6:.3f} MHz, mode={mode}")
+                logger.info(f"rtl_fm cmd: {' '.join(rtl_fm_cmd)}")
 
                 # Start rtl_fm
                 self._rtl_fm_process = subprocess.Popen(
                     rtl_fm_cmd,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.DEVNULL
+                    stderr=subprocess.PIPE
                 )
+                logger.info(f"rtl_fm started, pid={self._rtl_fm_process.pid}")
 
                 # Pipe to aplay
                 self._aplay_process = subprocess.Popen(
@@ -232,12 +242,15 @@ class RTLSDRService:
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL
                 )
+                logger.info(f"aplay started, pid={self._aplay_process.pid}")
 
                 radio_data['playing'] = True
                 return True
 
             except Exception as e:
                 logger.error(f"Failed to start playback: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
                 radio_data['error'] = str(e)
                 self._stop_playback_internal()
                 return False
