@@ -145,7 +145,10 @@ install_python_packages() {
         flask \
         python-mpd2 \
         gps3 \
-        obd
+        obd \
+        pyrtlsdr \
+        numpy \
+        scipy
 
     log_info "Python packages installed!"
 }
