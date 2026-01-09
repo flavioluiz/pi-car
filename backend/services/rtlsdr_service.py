@@ -97,6 +97,23 @@ class RTLSDRService:
         self._fft_data: Optional[List[float]] = None
         self._fft_thread: Optional[threading.Thread] = None
 
+    def _pause_music(self) -> None:
+        """Pause MPD music playback when radio starts."""
+        try:
+            from mpd import MPDClient
+            import config
+            client = MPDClient()
+            client.timeout = 2
+            client.connect(config.MPD_HOST, config.MPD_PORT)
+            status = client.status()
+            if status.get('state') == 'play':
+                client.pause()
+                logger.info("Paused music for radio")
+            client.close()
+            client.disconnect()
+        except Exception as e:
+            logger.debug(f"Could not pause music: {e}")
+
     def start(self) -> bool:
         """
         Start the RTL-SDR service.
@@ -151,6 +168,9 @@ class RTLSDRService:
 
     def _start_playback(self) -> bool:
         """Start rtl_fm -> aplay pipeline."""
+        # Pause music before starting radio
+        self._pause_music()
+
         with self._lock:
             # Stop existing playback
             self._stop_playback_internal()
@@ -160,16 +180,21 @@ class RTLSDRService:
             squelch = radio_data['squelch']
 
             # Build rtl_fm command
-            # FM: -M fm (or wbfm for wide FM)
-            # AM: -M am
+            # FM: -M wbfm (wide FM for broadcast)
+            # AM: -M am (for aviation - 25 kHz channel spacing)
             if mode == 'FM':
                 modulation = 'wbfm'  # Wide FM for broadcast
                 sample_rate = 170000  # Good for FM broadcast
                 audio_rate = 48000
-            else:  # AM
+                gain = '40'
+            else:  # AM (aviation)
                 modulation = 'am'
-                sample_rate = 12500  # Narrower for AM voice
+                sample_rate = 25000  # 25 kHz for aviation AM
                 audio_rate = 48000
+                gain = '49.6'  # Max gain for weak signals
+                # Aviation uses squelch to reduce noise
+                if squelch == 0:
+                    squelch = 50  # Default squelch for aviation
 
             rtl_fm_cmd = [
                 'rtl_fm',
@@ -178,7 +203,7 @@ class RTLSDRService:
                 '-s', str(sample_rate),
                 '-r', str(audio_rate),
                 '-l', str(squelch),  # squelch level
-                '-g', '40',  # gain (can be adjusted)
+                '-g', gain,  # gain
             ]
 
             aplay_cmd = [

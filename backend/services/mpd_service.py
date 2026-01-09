@@ -73,6 +73,17 @@ class MPDService:
 
         return music_data
 
+    def _stop_radio(self):
+        """Stop radio playback when music starts."""
+        try:
+            from backend.services.rtlsdr_service import get_rtlsdr_service, radio_data
+            if radio_data.get('playing'):
+                service = get_rtlsdr_service()
+                service.stop_playback()
+                print("Radio stopped for music playback")
+        except Exception as e:
+            print(f"Could not stop radio: {e}")
+
     def control(self, action):
         """Executa acao no player"""
         client = self._get_client()
@@ -81,6 +92,7 @@ class MPDService:
 
         try:
             if action == 'play':
+                self._stop_radio()  # Stop radio when music starts
                 client.play()
             elif action == 'pause':
                 client.pause()
