@@ -535,3 +535,432 @@ createKeyboard();
 
 // Load initial queue
 loadQueue();
+
+// ============ RADIO SDR ============
+
+// Current radio state
+let currentRadioFreq = 99.5;
+let currentRadioMode = 'FM';
+
+// Radio tab navigation
+document.querySelectorAll('.radio-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.radio-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.radio-panel').forEach(p => p.classList.remove('active'));
+
+        tab.classList.add('active');
+        const panelId = 'radio-' + tab.dataset.radio;
+        document.getElementById(panelId).classList.add('active');
+
+        // Load content when switching tabs
+        if (tab.dataset.radio === 'presets') {
+            loadRadioPresets();
+        } else if (tab.dataset.radio === 'favorites') {
+            loadRadioFavorites();
+        } else if (tab.dataset.radio === 'spectrum') {
+            startSpectrogram();
+        }
+    });
+});
+
+// Update radio display from status data
+function updateRadioDisplay(radioData) {
+    if (!radioData) return;
+
+    // Update connection indicator
+    document.getElementById('ind-radio').classList.toggle('connected', radioData.connected);
+
+    // Show/hide connected content
+    if (radioData.connected) {
+        document.getElementById('radio-content').style.display = 'block';
+        document.getElementById('radio-disconnected').style.display = 'none';
+
+        // Update display
+        currentRadioFreq = radioData.frequency || 99.5;
+        currentRadioMode = radioData.mode || 'FM';
+
+        document.getElementById('radio-freq').textContent = currentRadioFreq.toFixed(1);
+        document.getElementById('radio-mode').textContent = currentRadioMode;
+        document.getElementById('freq-input').value = currentRadioFreq.toFixed(1);
+
+        // Update mode selector buttons
+        document.getElementById('mode-fm').classList.toggle('active', currentRadioMode === 'FM');
+        document.getElementById('mode-am').classList.toggle('active', currentRadioMode === 'AM');
+
+        // Update signal strength
+        updateSignalStrength(radioData.signal_strength || -100);
+
+        // Update spectrum info
+        document.getElementById('spectrum-center').textContent = currentRadioFreq.toFixed(1);
+        document.getElementById('spectrum-span').textContent = (radioData.sample_rate || 2.4).toFixed(1);
+    } else {
+        document.getElementById('radio-content').style.display = 'none';
+        document.getElementById('radio-disconnected').style.display = 'block';
+    }
+}
+
+// Update signal strength bars
+function updateSignalStrength(dbm) {
+    const bars = document.querySelectorAll('.signal-bar');
+    document.getElementById('signal-dbm').textContent = dbm.toFixed(0) + ' dBm';
+
+    // Map dBm to number of bars (rough approximation)
+    // -100 dBm = 0 bars, -30 dBm = 5 bars
+    const normalized = Math.max(0, Math.min(5, Math.floor((dbm + 100) / 14)));
+
+    bars.forEach((bar, i) => {
+        bar.classList.toggle('active', i < normalized);
+    });
+}
+
+// Tune to frequency with step
+function radioTuneStep(step) {
+    const newFreq = currentRadioFreq + step;
+    radioTune(newFreq, currentRadioMode);
+}
+
+// Tune from manual input
+function radioTuneManual() {
+    const freq = parseFloat(document.getElementById('freq-input').value);
+    if (!isNaN(freq) && freq >= 24 && freq <= 1800) {
+        radioTune(freq, currentRadioMode);
+    }
+}
+
+// Tune to specific frequency and mode
+function radioTune(freq, mode) {
+    fetch('/api/radio/tune', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ frequency: freq, mode: mode })
+    })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                currentRadioFreq = result.frequency;
+                document.getElementById('radio-freq').textContent = currentRadioFreq.toFixed(1);
+                document.getElementById('freq-input').value = currentRadioFreq.toFixed(1);
+            }
+        })
+        .catch(err => console.error('Radio tune error:', err));
+}
+
+// Set radio mode (FM/AM)
+function radioSetMode(mode) {
+    fetch('/api/radio/mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: mode })
+    })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                currentRadioMode = mode;
+                document.getElementById('radio-mode').textContent = mode;
+                document.getElementById('mode-fm').classList.toggle('active', mode === 'FM');
+                document.getElementById('mode-am').classList.toggle('active', mode === 'AM');
+            }
+        })
+        .catch(err => console.error('Radio mode error:', err));
+}
+
+// Load presets from server
+function loadRadioPresets() {
+    fetch('/api/radio/presets')
+        .then(r => r.json())
+        .then(data => {
+            // FM Presets
+            const fmList = document.getElementById('fm-presets');
+            if (data.fm && data.fm.length > 0) {
+                fmList.innerHTML = data.fm.map(p => `
+                    <div class="preset-item" onclick="radioTune(${p.freq}, '${p.mode}')">
+                        <div class="freq">${p.freq.toFixed(1)}</div>
+                        <div class="label">${p.label}</div>
+                        <div class="mode-badge">${p.mode}</div>
+                    </div>
+                `).join('');
+            }
+
+            // Airport Presets - SBSJ
+            if (data.airports && data.airports.SBSJ) {
+                const sbsjList = document.getElementById('airport-presets-sbsj');
+                sbsjList.innerHTML = data.airports.SBSJ.frequencies.map(p => `
+                    <div class="preset-item" onclick="radioTune(${p.freq}, '${p.mode}')">
+                        <div class="freq">${p.freq.toFixed(3)}</div>
+                        <div class="label">${p.label}</div>
+                        <div class="mode-badge">${p.mode}</div>
+                    </div>
+                `).join('');
+            }
+
+            // Airport Presets - SBGR
+            if (data.airports && data.airports.SBGR) {
+                const sbgrList = document.getElementById('airport-presets-sbgr');
+                sbgrList.innerHTML = data.airports.SBGR.frequencies.map(p => `
+                    <div class="preset-item" onclick="radioTune(${p.freq}, '${p.mode}')">
+                        <div class="freq">${p.freq.toFixed(3)}</div>
+                        <div class="label">${p.label}</div>
+                        <div class="mode-badge">${p.mode}</div>
+                    </div>
+                `).join('');
+            }
+        })
+        .catch(err => console.error('Error loading presets:', err));
+}
+
+// Load favorites
+function loadRadioFavorites() {
+    fetch('/api/radio/favorites')
+        .then(r => r.json())
+        .then(data => {
+            const list = document.getElementById('favorites-list');
+            if (!data.favorites || data.favorites.length === 0) {
+                list.innerHTML = '<div class="empty-message">No favorites yet. Tune to a frequency and tap "+ FAV"</div>';
+                return;
+            }
+
+            list.innerHTML = data.favorites.map((fav, i) => `
+                <div class="favorite-item" onclick="radioTune(${fav.freq}, '${fav.mode}')">
+                    <div class="favorite-info">
+                        <span class="favorite-freq">${fav.freq.toFixed(3)}</span>
+                        <span class="favorite-name">${fav.name || ''}</span>
+                        <span class="favorite-mode">${fav.mode}</span>
+                    </div>
+                    <button class="favorite-remove" onclick="event.stopPropagation(); radioRemoveFavorite(${i})">&#10005;</button>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error('Error loading favorites:', err));
+}
+
+// Add current frequency to favorites
+function radioAddFavorite() {
+    const name = prompt('Name for this favorite (optional):') || '';
+
+    fetch('/api/radio/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            freq: currentRadioFreq,
+            mode: currentRadioMode,
+            name: name
+        })
+    })
+        .then(r => r.json())
+        .then(result => {
+            if (result.success) {
+                alert('Added to favorites!');
+            } else if (result.error) {
+                alert(result.error);
+            }
+        })
+        .catch(err => console.error('Error adding favorite:', err));
+}
+
+// Remove favorite
+function radioRemoveFavorite(index) {
+    fetch('/api/radio/favorites/' + index, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(() => loadRadioFavorites())
+        .catch(err => console.error('Error removing favorite:', err));
+}
+
+// Clear all favorites
+function radioClearFavorites() {
+    if (confirm('Remove all favorites?')) {
+        fetch('/api/radio/favorites/clear', { method: 'POST' })
+            .then(r => r.json())
+            .then(() => loadRadioFavorites())
+            .catch(err => console.error('Error clearing favorites:', err));
+    }
+}
+
+// ============ SPECTROGRAM ============
+
+let spectrogramCanvas = null;
+let spectrogramCtx = null;
+let spectrogramInterval = null;
+
+function startSpectrogram() {
+    spectrogramCanvas = document.getElementById('spectrogram');
+    if (!spectrogramCanvas) return;
+
+    spectrogramCtx = spectrogramCanvas.getContext('2d');
+
+    // Set canvas size
+    spectrogramCanvas.width = spectrogramCanvas.offsetWidth;
+    spectrogramCanvas.height = spectrogramCanvas.offsetHeight;
+
+    // Clear any existing interval
+    if (spectrogramInterval) {
+        clearInterval(spectrogramInterval);
+    }
+
+    // Start fetching FFT data
+    spectrogramInterval = setInterval(updateSpectrogram, 100);
+}
+
+function stopSpectrogram() {
+    if (spectrogramInterval) {
+        clearInterval(spectrogramInterval);
+        spectrogramInterval = null;
+    }
+}
+
+function updateSpectrogram() {
+    if (!spectrogramCtx) return;
+
+    fetch('/api/radio/fft')
+        .then(r => r.json())
+        .then(data => {
+            if (data.error || !data.fft) return;
+
+            drawSpectrogram(data.fft);
+        })
+        .catch(() => {});
+}
+
+function drawSpectrogram(fftData) {
+    const width = spectrogramCanvas.width;
+    const height = spectrogramCanvas.height;
+    const bins = fftData.length;
+
+    // Clear canvas
+    spectrogramCtx.fillStyle = '#0a0a0f';
+    spectrogramCtx.fillRect(0, 0, width, height);
+
+    // Draw grid lines
+    spectrogramCtx.strokeStyle = '#2a2a3a';
+    spectrogramCtx.lineWidth = 1;
+
+    // Horizontal grid lines
+    for (let i = 0; i < 5; i++) {
+        const y = (height / 5) * i;
+        spectrogramCtx.beginPath();
+        spectrogramCtx.moveTo(0, y);
+        spectrogramCtx.lineTo(width, y);
+        spectrogramCtx.stroke();
+    }
+
+    // Draw FFT data
+    const barWidth = width / bins;
+    const gradient = spectrogramCtx.createLinearGradient(0, height, 0, 0);
+    gradient.addColorStop(0, '#00ff88');
+    gradient.addColorStop(0.5, '#00f5ff');
+    gradient.addColorStop(1, '#ff6b35');
+
+    spectrogramCtx.fillStyle = gradient;
+    spectrogramCtx.beginPath();
+    spectrogramCtx.moveTo(0, height);
+
+    for (let i = 0; i < bins; i++) {
+        // Normalize FFT value (typically -100 to 0 dB)
+        const normalized = Math.max(0, Math.min(1, (fftData[i] + 100) / 80));
+        const barHeight = normalized * height;
+        const x = i * barWidth;
+
+        spectrogramCtx.lineTo(x, height - barHeight);
+    }
+
+    spectrogramCtx.lineTo(width, height);
+    spectrogramCtx.closePath();
+    spectrogramCtx.fill();
+
+    // Draw center line
+    spectrogramCtx.strokeStyle = '#ff6b35';
+    spectrogramCtx.lineWidth = 2;
+    spectrogramCtx.beginPath();
+    spectrogramCtx.moveTo(width / 2, 0);
+    spectrogramCtx.lineTo(width / 2, height);
+    spectrogramCtx.stroke();
+}
+
+// Stop spectrogram when leaving spectrum tab
+document.querySelectorAll('.radio-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        if (tab.dataset.radio !== 'spectrum') {
+            stopSpectrogram();
+        }
+    });
+});
+
+// ============ INTEGRATE RADIO INTO UPDATE LOOP ============
+
+// Modify updateData to include radio
+const originalUpdateData = updateData;
+updateData = function() {
+    fetch('/api/status')
+        .then(r => r.json())
+        .then(data => {
+            // Connection indicators
+            document.getElementById('ind-music').classList.toggle('connected', data.music.connected);
+            document.getElementById('ind-gps').classList.toggle('connected', data.gps.connected);
+            document.getElementById('ind-obd').classList.toggle('connected', data.obd.connected);
+
+            // Radio indicator and display
+            if (data.radio) {
+                updateRadioDisplay(data.radio);
+            }
+
+            // Music
+            document.getElementById('music-title').textContent = data.music.title || 'No music';
+            document.getElementById('music-artist').textContent = data.music.artist || '-';
+            document.getElementById('volume-display').textContent = data.music.volume + '%';
+            document.getElementById('time-elapsed').textContent = formatTime(data.music.elapsed);
+            document.getElementById('time-duration').textContent = formatTime(data.music.duration);
+
+            // Store duration for seek
+            currentDuration = data.music.duration || 0;
+
+            const progress = data.music.duration > 0 ? (data.music.elapsed / data.music.duration * 100) : 0;
+            document.getElementById('progress-fill').style.width = progress + '%';
+
+            const btnPlay = document.getElementById('btn-play');
+            const artwork = document.getElementById('music-artwork');
+            if (data.music.state === 'play') {
+                btnPlay.innerHTML = '&#9612;&#9612;';
+                btnPlay.onclick = () => musicControl('pause');
+                artwork.classList.add('playing');
+            } else {
+                btnPlay.innerHTML = '&#9654;';
+                btnPlay.onclick = () => musicControl('play');
+                artwork.classList.remove('playing');
+            }
+
+            // Shuffle and Repeat
+            document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
+            document.getElementById('btn-repeat').classList.toggle('active', data.music.repeat);
+
+            // OBD
+            if (data.obd.connected) {
+                document.getElementById('obd-content').style.display = 'block';
+                document.getElementById('obd-disconnected').style.display = 'none';
+                document.getElementById('obd-rpm').textContent = Math.round(data.obd.rpm);
+                document.getElementById('obd-speed').textContent = Math.round(data.obd.speed);
+                document.getElementById('obd-temp').textContent = Math.round(data.obd.coolant_temp);
+                document.getElementById('obd-throttle').textContent = Math.round(data.obd.throttle);
+            } else {
+                document.getElementById('obd-content').style.display = 'none';
+                document.getElementById('obd-disconnected').style.display = 'block';
+            }
+
+            // GPS
+            if (data.gps.connected && data.gps.lat) {
+                document.getElementById('gps-content').style.display = 'block';
+                document.getElementById('gps-disconnected').style.display = 'none';
+                document.getElementById('gps-speed').textContent = Math.round(data.gps.speed);
+                document.getElementById('gps-sats').textContent = data.gps.satellites;
+                document.getElementById('gps-coords').textContent =
+                    `${data.gps.lat.toFixed(6)}, ${data.gps.lon.toFixed(6)}`;
+            } else {
+                document.getElementById('gps-content').style.display = 'none';
+                document.getElementById('gps-disconnected').style.display = 'block';
+            }
+        })
+        .catch(err => console.error('Error updating:', err));
+};
+
+// Load presets on page load if radio panel exists
+if (document.getElementById('fm-presets')) {
+    loadRadioPresets();
+}

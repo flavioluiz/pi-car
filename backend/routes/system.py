@@ -9,6 +9,7 @@ from flask import Blueprint, jsonify
 from backend.services.mpd_service import MPDService, music_data
 from backend.services.gps_service import gps_data
 from backend.services.obd_service import obd_data
+from backend.services.rtlsdr_service import radio_data
 
 system_bp = Blueprint('system', __name__)
 mpd_service = MPDService()  # Usado para status e rotas de compatibilidade
@@ -23,7 +24,8 @@ def api_status():
     return jsonify({
         'gps': gps_data,
         'obd': obd_data,
-        'music': music_data
+        'music': music_data,
+        'radio': radio_data
     })
 
 

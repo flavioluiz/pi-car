@@ -19,12 +19,13 @@ app = Flask(
 )
 
 # Registrar blueprints
-from backend.routes import music_bp, gps_bp, vehicle_bp, system_bp
+from backend.routes import music_bp, gps_bp, vehicle_bp, system_bp, radio_bp
 
 app.register_blueprint(music_bp, url_prefix='/api/music')
 app.register_blueprint(gps_bp, url_prefix='/api/gps')
 app.register_blueprint(vehicle_bp, url_prefix='/api/vehicle')
 app.register_blueprint(system_bp, url_prefix='/api')
+app.register_blueprint(radio_bp, url_prefix='/api/radio')
 
 
 @app.route('/')
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     print("Iniciando Central Multimidia...")
 
     # Importar e iniciar servicos
-    from backend.services import GPSService, OBDService
+    from backend.services import GPSService, OBDService, RTLSDRService
 
     # Thread GPS
     gps_service = GPSService()
@@ -49,6 +50,13 @@ if __name__ == '__main__':
     obd_service = OBDService()
     obd_service.start()
     print("Thread OBD iniciada")
+
+    # Thread RTL-SDR
+    rtlsdr_service = RTLSDRService()
+    if rtlsdr_service.start():
+        print("Thread RTL-SDR iniciada")
+    else:
+        print("RTL-SDR nao disponivel (verifique conexao USB)")
 
     print("")
     print("=" * 50)

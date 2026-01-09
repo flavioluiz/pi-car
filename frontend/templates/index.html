@@ -17,6 +17,7 @@
             <div class="indicator" id="ind-music" title="Music"></div>
             <div class="indicator" id="ind-gps" title="GPS"></div>
             <div class="indicator" id="ind-obd" title="OBD-II"></div>
+            <div class="indicator" id="ind-radio" title="Radio"></div>
         </div>
     </header>
 
@@ -167,18 +168,104 @@
 
         <!-- Panel: SDR Radio -->
         <section class="panel" id="panel-radio">
-            <div class="card">
-                <div class="card-title">SDR Radio</div>
-                <div class="disconnected-msg">
-                    <div class="icon">[SDR]</div>
-                    <p>RTL-SDR</p>
-                    <p style="font-size: 0.9rem; margin-top: 10px; color: var(--text-secondary);">
-                        Under development...
-                    </p>
-                    <button class="navit-btn" style="margin-top: 20px;" onclick="openGqrx()">
-                        OPEN GQRX
-                    </button>
+            <!-- Radio connected content -->
+            <div id="radio-content">
+                <!-- Radio submenu -->
+                <div class="music-tabs">
+                    <button class="radio-tab active" data-radio="tuner">Tuner</button>
+                    <button class="radio-tab" data-radio="spectrum">Spectrum</button>
+                    <button class="radio-tab" data-radio="presets">Presets</button>
+                    <button class="radio-tab" data-radio="favorites">Favorites</button>
                 </div>
+
+                <!-- Tab: Tuner -->
+                <div class="radio-panel active" id="radio-tuner">
+                    <div class="radio-display">
+                        <div class="radio-mode" id="radio-mode">FM</div>
+                        <div class="radio-frequency">
+                            <span id="radio-freq">99.5</span>
+                            <span class="radio-freq-unit">MHz</span>
+                        </div>
+                        <div class="radio-signal">
+                            <div class="signal-bars" id="signal-bars">
+                                <div class="signal-bar"></div>
+                                <div class="signal-bar"></div>
+                                <div class="signal-bar"></div>
+                                <div class="signal-bar"></div>
+                                <div class="signal-bar"></div>
+                            </div>
+                            <span id="signal-dbm">-100 dBm</span>
+                        </div>
+                    </div>
+                    <div class="radio-tuning">
+                        <button class="tune-btn" onclick="radioTuneStep(-1)">-</button>
+                        <button class="tune-btn big" onclick="radioTuneStep(-0.1)">&#9664;</button>
+                        <div class="tune-display">
+                            <input type="number" id="freq-input" step="0.1" min="24" max="1800" value="99.5">
+                            <button class="tune-go" onclick="radioTuneManual()">GO</button>
+                        </div>
+                        <button class="tune-btn big" onclick="radioTuneStep(0.1)">&#9654;</button>
+                        <button class="tune-btn" onclick="radioTuneStep(1)">+</button>
+                    </div>
+                    <div class="radio-mode-selector">
+                        <button class="mode-select active" id="mode-fm" onclick="radioSetMode('FM')">FM</button>
+                        <button class="mode-select" id="mode-am" onclick="radioSetMode('AM')">AM</button>
+                    </div>
+                    <div class="radio-quick-presets">
+                        <button class="quick-preset" onclick="radioTune(99.5, 'FM')">99.5 FM</button>
+                        <button class="quick-preset" onclick="radioTune(118.5, 'AM')">SBSJ TWR</button>
+                        <button class="quick-preset" onclick="radioTune(119.25, 'AM')">SBSJ APP</button>
+                        <button class="quick-preset" onclick="radioAddFavorite()">+ FAV</button>
+                    </div>
+                </div>
+
+                <!-- Tab: Spectrum -->
+                <div class="radio-panel" id="radio-spectrum">
+                    <canvas id="spectrogram" width="800" height="200"></canvas>
+                    <div class="spectrum-controls">
+                        <div class="spectrum-info">
+                            <span>Center: <span id="spectrum-center">99.5</span> MHz</span>
+                            <span>Span: <span id="spectrum-span">2.4</span> MHz</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Presets -->
+                <div class="radio-panel" id="radio-presets">
+                    <div class="preset-section">
+                        <div class="preset-title">FM Stations</div>
+                        <div class="preset-list" id="fm-presets"></div>
+                    </div>
+                    <div class="preset-section">
+                        <div class="preset-title">Aviation - SBSJ (Sao Jose dos Campos)</div>
+                        <div class="preset-list" id="airport-presets-sbsj"></div>
+                    </div>
+                    <div class="preset-section">
+                        <div class="preset-title">Aviation - SBGR (Guarulhos)</div>
+                        <div class="preset-list" id="airport-presets-sbgr"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Favorites -->
+                <div class="radio-panel" id="radio-favorites">
+                    <div class="favorites-header">
+                        <span>My Favorites</span>
+                        <button class="clear-favs" onclick="radioClearFavorites()">Clear All</button>
+                    </div>
+                    <div class="preset-list" id="favorites-list">
+                        <div class="empty-message">No favorites yet. Tune to a frequency and tap "+ FAV"</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Radio disconnected message -->
+            <div id="radio-disconnected" class="disconnected-msg" style="display: none;">
+                <div class="icon">[SDR]</div>
+                <p>RTL-SDR not connected</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Check USB connection</p>
+                <button class="navit-btn" style="margin-top: 20px;" onclick="openGqrx()">
+                    OPEN GQRX
+                </button>
             </div>
         </section>
 
