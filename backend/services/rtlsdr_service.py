@@ -82,8 +82,14 @@ FM_PRESETS: List[Dict[str, Any]] = [
 class RTLSDRService:
     """Service class for RTL-SDR device control using rtl_fm."""
 
+    _instance_counter = 0  # Class variable to track instances
+
     def __init__(self):
         """Initialize RTL-SDR service."""
+        RTLSDRService._instance_counter += 1
+        self._instance_id = RTLSDRService._instance_counter
+        logger.info(f"RTLSDRService __init__ called, instance_id={self._instance_id}")
+
         self._rtl_fm_process: Optional[subprocess.Popen] = None
         self._aplay_process: Optional[subprocess.Popen] = None
         self._running = False
@@ -296,7 +302,7 @@ class RTLSDRService:
         Returns:
             Dict with result status
         """
-        logger.info(f"tune() called: freq={frequency_mhz}, running={self._running}")
+        logger.info(f"tune() called: freq={frequency_mhz}, running={self._running}, instance_id={self._instance_id}")
 
         if not self._running:
             # Try to start if not running
