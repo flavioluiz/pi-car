@@ -39,7 +39,7 @@ if __name__ == '__main__':
     print("Iniciando Central Multimidia...")
 
     # Importar e iniciar servicos
-    from backend.services import GPSService, OBDService, RTLSDRService
+    from backend.services import GPSService, OBDService, get_rtlsdr_service
 
     # Thread GPS
     gps_service = GPSService()
@@ -51,8 +51,8 @@ if __name__ == '__main__':
     obd_service.start()
     print("Thread OBD iniciada")
 
-    # Thread RTL-SDR
-    rtlsdr_service = RTLSDRService()
+    # Thread RTL-SDR (usa singleton para compartilhar com as rotas)
+    rtlsdr_service = get_rtlsdr_service()
     if rtlsdr_service.start():
         print("Thread RTL-SDR iniciada")
     else:

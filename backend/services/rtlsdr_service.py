@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 radio_data: Dict[str, Any] = {
     'connected': False,
     'playing': False,
-    'frequency': 99.5,  # MHz
+    'frequency': 97.5,  # MHz - Nativa FM SJC
     'mode': 'FM',
     'volume': 80,  # 0-100
     'squelch': 0,  # squelch level
@@ -64,12 +64,18 @@ AIRPORT_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# Common FM stations (can be customized)
+# FM stations - Sao Jose dos Campos region
 FM_PRESETS: List[Dict[str, Any]] = [
-    {'freq': 89.1, 'label': 'Cultura FM', 'mode': 'FM'},
-    {'freq': 91.3, 'label': 'Band FM', 'mode': 'FM'},
-    {'freq': 99.5, 'label': 'Jovem Pan', 'mode': 'FM'},
-    {'freq': 105.1, 'label': 'Mix FM', 'mode': 'FM'},
+    {'freq': 88.3, 'label': 'Band News', 'mode': 'FM'},
+    {'freq': 91.1, 'label': 'Metropolitana', 'mode': 'FM'},
+    {'freq': 93.5, 'label': 'Band FM Vale', 'mode': 'FM'},
+    {'freq': 95.7, 'label': 'Jovem Pan', 'mode': 'FM'},
+    {'freq': 97.5, 'label': 'Nativa FM', 'mode': 'FM'},
+    {'freq': 98.3, 'label': 'FM Vale', 'mode': 'FM'},
+    {'freq': 100.1, 'label': 'Gospel FM', 'mode': 'FM'},
+    {'freq': 102.7, 'label': 'Difusora', 'mode': 'FM'},
+    {'freq': 105.5, 'label': 'Transamérica', 'mode': 'FM'},
+    {'freq': 107.1, 'label': 'Mix FM', 'mode': 'FM'},
 ]
 
 
