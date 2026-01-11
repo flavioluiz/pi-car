@@ -843,13 +843,64 @@ function radioClearFavorites() {
     }
 }
 
-// ============ SPECTROGRAM ============
+// ============ SPECTROGRAM (WATERFALL) ============
 
 let spectrogramCanvas = null;
 let spectrogramCtx = null;
 let spectrogramInterval = null;
 let spectrumModeActive = false;
 let spectrumSpan = 2.0; // MHz
+
+// Waterfall configuration constants
+const WATERFALL_MAX_ROWS = 100; // Maximum number of rows to keep in history
+const WATERFALL_MIN_DB = -100;  // Minimum dB value for color mapping (weak signal)
+const WATERFALL_MAX_DB = -20;   // Maximum dB value for color mapping (strong signal)
+
+// Waterfall history buffer - stores previous FFT rows for scrolling display
+let waterfallHistory = [];
+
+// Color map for waterfall (converts dB value to RGB color)
+// Based on typical SDR color schemes: dark blue (weak) -> cyan -> green -> yellow -> red (strong)
+function dbToColor(db) {
+    // Normalize dB value to 0-1 range
+    const normalized = Math.max(0, Math.min(1, (db - WATERFALL_MIN_DB) / (WATERFALL_MAX_DB - WATERFALL_MIN_DB)));
+    
+    // Color gradient: dark blue -> blue -> cyan -> green -> yellow -> red
+    let r, g, b;
+    if (normalized < 0.2) {
+        // Dark blue to blue
+        const t = normalized / 0.2;
+        r = 0;
+        g = 0;
+        b = Math.floor(50 + t * 155);
+    } else if (normalized < 0.4) {
+        // Blue to cyan
+        const t = (normalized - 0.2) / 0.2;
+        r = 0;
+        g = Math.floor(t * 255);
+        b = 255;
+    } else if (normalized < 0.6) {
+        // Cyan to green
+        const t = (normalized - 0.4) / 0.2;
+        r = 0;
+        g = 255;
+        b = Math.floor(255 * (1 - t));
+    } else if (normalized < 0.8) {
+        // Green to yellow
+        const t = (normalized - 0.6) / 0.2;
+        r = Math.floor(t * 255);
+        g = 255;
+        b = 0;
+    } else {
+        // Yellow to red
+        const t = (normalized - 0.8) / 0.2;
+        r = 255;
+        g = Math.floor(255 * (1 - t));
+        b = 0;
+    }
+    
+    return `rgb(${r}, ${g}, ${b})`;
+}
 
 function startSpectrogram() {
     spectrogramCanvas = document.getElementById('spectrogram');
@@ -860,6 +911,13 @@ function startSpectrogram() {
     // Set canvas size
     spectrogramCanvas.width = spectrogramCanvas.offsetWidth;
     spectrogramCanvas.height = spectrogramCanvas.offsetHeight;
+
+    // Clear waterfall history when starting
+    waterfallHistory = [];
+
+    // Clear canvas with dark background
+    spectrogramCtx.fillStyle = '#0a0a0f';
+    spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
 
     // Clear any existing interval
     if (spectrogramInterval) {
@@ -876,7 +934,9 @@ function startSpectrogram() {
             spectrogramInterval = setInterval(updateSpectrogram, 200);
         })
         .catch(() => {
-            // Even if spectrum mode fails, show simulated data
+            // If spectrum mode fails, still start the interval but show waiting message
+            spectrumModeActive = false;
+            updateSpectrumIndicator();
             spectrogramInterval = setInterval(updateSpectrogram, 200);
         });
 }
@@ -902,7 +962,7 @@ function stopSpectrogram() {
 function updateSpectrumIndicator() {
     const indicator = document.getElementById('spectrum-mode-indicator');
     if (indicator) {
-        indicator.textContent = spectrumModeActive ? 'LIVE' : 'SIM';
+        indicator.textContent = spectrumModeActive ? 'LIVE' : 'WAITING';
         indicator.classList.toggle('live', spectrumModeActive);
     }
 }
@@ -914,31 +974,52 @@ function updateSpectrogram() {
     fetch(`/api/radio/fft?center=${center}&span=${spectrumSpan}`)
         .then(r => r.json())
         .then(data => {
-            if (data.error || !data.fft) return;
-
-            // Update indicator based on real/simulated data
+            // Update indicator based on real data availability
             const indicator = document.getElementById('spectrum-mode-indicator');
-            if (indicator) {
-                indicator.textContent = data.real ? 'LIVE' : 'SIM';
-                indicator.classList.toggle('live', data.real);
+            
+            if (data.error || !data.fft) {
+                // No data available - show waiting state
+                if (indicator) {
+                    indicator.textContent = 'WAITING';
+                    indicator.classList.remove('live');
+                }
+                return;
             }
 
-            // Update frequency labels if real data
-            if (data.start_freq && data.end_freq) {
+            // We have real data
+            if (indicator) {
+                indicator.textContent = 'LIVE';
+                indicator.classList.add('live');
+            }
+
+            // Update frequency labels
+            if (data.start_freq !== undefined && data.end_freq !== undefined) {
                 const startLabel = document.getElementById('spectrum-start');
                 const endLabel = document.getElementById('spectrum-end');
                 if (startLabel) startLabel.textContent = data.start_freq.toFixed(1);
                 if (endLabel) endLabel.textContent = data.end_freq.toFixed(1);
             }
 
-            drawSpectrogram(data.fft);
+            drawWaterfall(data.fft);
         })
-        .catch(() => {});
+        .catch(() => {
+            // On error, show waiting state
+            const indicator = document.getElementById('spectrum-mode-indicator');
+            if (indicator) {
+                indicator.textContent = 'WAITING';
+                indicator.classList.remove('live');
+            }
+        });
 }
 
 function setSpectrumSpan(span) {
     spectrumSpan = span;
-    document.getElementById('spectrum-span').textContent = span.toFixed(1);
+    
+    // Update span display if element exists
+    const spanDisplay = document.getElementById('spectrum-span');
+    if (spanDisplay) {
+        spanDisplay.textContent = span.toFixed(1);
+    }
 
     // Update active button state
     document.querySelectorAll('.span-btn').forEach(btn => {
@@ -949,61 +1030,70 @@ function setSpectrumSpan(span) {
     const center = currentRadioFreq;
     document.getElementById('spectrum-start').textContent = (center - span/2).toFixed(1);
     document.getElementById('spectrum-end').textContent = (center + span/2).toFixed(1);
+
+    // Clear waterfall history when span changes (since the frequency range changed)
+    waterfallHistory = [];
+    
+    // Clear canvas
+    if (spectrogramCtx && spectrogramCanvas) {
+        spectrogramCtx.fillStyle = '#0a0a0f';
+        spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+    }
 }
 
-function drawSpectrogram(fftData) {
+function drawWaterfall(fftData) {
     const width = spectrogramCanvas.width;
     const height = spectrogramCanvas.height;
     const bins = fftData.length;
+
+    // Add new FFT row to history
+    waterfallHistory.push(fftData.slice()); // Make a copy
+    
+    // Limit history size
+    if (waterfallHistory.length > WATERFALL_MAX_ROWS) {
+        waterfallHistory.shift(); // Remove oldest row
+    }
 
     // Clear canvas
     spectrogramCtx.fillStyle = '#0a0a0f';
     spectrogramCtx.fillRect(0, 0, width, height);
 
-    // Draw grid lines
-    spectrogramCtx.strokeStyle = '#2a2a3a';
+    // Calculate row height based on available height and history
+    const rowHeight = Math.max(2, height / WATERFALL_MAX_ROWS);
+    const pixelWidth = width / bins;
+
+    // Draw waterfall - newest data at bottom, oldest at top
+    for (let row = 0; row < waterfallHistory.length; row++) {
+        const fftRow = waterfallHistory[row];
+        // Calculate y position - newest row (last in array) should be at bottom
+        const y = height - (waterfallHistory.length - row) * rowHeight;
+        
+        for (let bin = 0; bin < fftRow.length; bin++) {
+            const x = bin * pixelWidth;
+            const db = fftRow[bin];
+            spectrogramCtx.fillStyle = dbToColor(db);
+            spectrogramCtx.fillRect(x, y, Math.ceil(pixelWidth), Math.ceil(rowHeight));
+        }
+    }
+
+    // Draw center frequency marker (thin vertical line)
+    spectrogramCtx.strokeStyle = 'rgba(255, 107, 53, 0.5)';
     spectrogramCtx.lineWidth = 1;
-
-    // Horizontal grid lines
-    for (let i = 0; i < 5; i++) {
-        const y = (height / 5) * i;
-        spectrogramCtx.beginPath();
-        spectrogramCtx.moveTo(0, y);
-        spectrogramCtx.lineTo(width, y);
-        spectrogramCtx.stroke();
-    }
-
-    // Draw FFT data
-    const barWidth = width / bins;
-    const gradient = spectrogramCtx.createLinearGradient(0, height, 0, 0);
-    gradient.addColorStop(0, '#00ff88');
-    gradient.addColorStop(0.5, '#00f5ff');
-    gradient.addColorStop(1, '#ff6b35');
-
-    spectrogramCtx.fillStyle = gradient;
-    spectrogramCtx.beginPath();
-    spectrogramCtx.moveTo(0, height);
-
-    for (let i = 0; i < bins; i++) {
-        // Normalize FFT value (typically -100 to 0 dB)
-        const normalized = Math.max(0, Math.min(1, (fftData[i] + 100) / 80));
-        const barHeight = normalized * height;
-        const x = i * barWidth;
-
-        spectrogramCtx.lineTo(x, height - barHeight);
-    }
-
-    spectrogramCtx.lineTo(width, height);
-    spectrogramCtx.closePath();
-    spectrogramCtx.fill();
-
-    // Draw center line
-    spectrogramCtx.strokeStyle = '#ff6b35';
-    spectrogramCtx.lineWidth = 2;
     spectrogramCtx.beginPath();
     spectrogramCtx.moveTo(width / 2, 0);
     spectrogramCtx.lineTo(width / 2, height);
     spectrogramCtx.stroke();
+
+    // Draw frequency grid lines (vertical)
+    spectrogramCtx.strokeStyle = 'rgba(100, 100, 120, 0.3)';
+    spectrogramCtx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+        const x = (width / 4) * i;
+        spectrogramCtx.beginPath();
+        spectrogramCtx.moveTo(x, 0);
+        spectrogramCtx.lineTo(x, height);
+        spectrogramCtx.stroke();
+    }
 }
 
 // Stop spectrogram when leaving spectrum tab
