@@ -243,12 +243,66 @@
                             <span class="spectrum-center-label">Center: <span id="spectrum-center">99.5</span> MHz</span>
                             <span id="spectrum-end">100.5</span> MHz
                         </div>
-                        <div class="spectrum-span-controls">
-                            <span>Span:</span>
-                            <button class="span-btn" onclick="setSpectrumSpan(1.0)">1 MHz</button>
-                            <button class="span-btn active" onclick="setSpectrumSpan(2.0)">2 MHz</button>
-                            <button class="span-btn" onclick="setSpectrumSpan(5.0)">5 MHz</button>
-                            <button class="span-btn" onclick="setSpectrumSpan(10.0)">10 MHz</button>
+                        <div class="spectrum-config-grid">
+                            <div class="spectrum-config-item">
+                                <label>Center Freq (MHz):</label>
+                                <input type="number" id="spectrum-center-input" step="0.1" min="24" max="1800" value="99.5">
+                                <button class="config-btn" onclick="applySpectrumCenterFreq()">Set</button>
+                            </div>
+                            <div class="spectrum-config-item">
+                                <label>Update Interval (ms):</label>
+                                <select id="spectrum-update-interval" onchange="applySpectrumUpdateInterval()">
+                                    <option value="50">50</option>
+                                    <option value="100" selected>100</option>
+                                    <option value="200">200</option>
+                                    <option value="500">500</option>
+                                </select>
+                            </div>
+                            <div class="spectrum-config-item">
+                                <label>Integration Time (s):</label>
+                                <select id="spectrum-integration-time" onchange="applySpectrumIntegrationTime()">
+                                    <option value="0.05">0.05</option>
+                                    <option value="0.1" selected>0.1</option>
+                                    <option value="0.2">0.2</option>
+                                    <option value="0.5">0.5</option>
+                                </select>
+                            </div>
+                            <div class="spectrum-config-item">
+                                <label>Max Rows:</label>
+                                <select id="spectrum-max-rows" onchange="applySpectrumMaxRows()">
+                                    <option value="50">50</option>
+                                    <option value="100" selected>100</option>
+                                    <option value="200">200</option>
+                                    <option value="300">300</option>
+                                </select>
+                            </div>
+                            <div class="spectrum-config-item">
+                                <label>DB Smoothing:</label>
+                                <select id="spectrum-db-smoothing" onchange="applySpectrumDbSmoothing()">
+                                    <option value="0.05">0.05</option>
+                                    <option value="0.1" selected>0.1</option>
+                                    <option value="0.2">0.2</option>
+                                    <option value="0.5">0.5</option>
+                                </select>
+                            </div>
+                            <div class="spectrum-config-item">
+                                <label>DB Margin (dB):</label>
+                                <select id="spectrum-db-margin" onchange="applySpectrumDbMargin()">
+                                    <option value="2">2</option>
+                                    <option value="5" selected>5</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                </select>
+                            </div>
+                            <div class="spectrum-config-item">
+                                <label>MIN Range (dB):</label>
+                                <select id="spectrum-min-range" onchange="applySpectrumMinRange()">
+                                    <option value="5">5</option>
+                                    <option value="10" selected>10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>

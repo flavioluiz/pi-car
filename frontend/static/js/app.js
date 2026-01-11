@@ -1,40 +1,40 @@
 // ============================================================================
 // SPECTROGRAM CONFIGURATION PARAMETERS
 // ============================================================================
-// These parameters can be adjusted for testing and performance tuning
+// These parameters can be adjusted dynamically via UI controls
 
 // Update interval for spectrogram in milliseconds
 // Lower = more frequent updates but more CPU/network usage
 // Default: 100ms (10 updates per second)
-const SPECTROGRAM_UPDATE_INTERVAL_MS = 100;
+let SPECTROGRAM_UPDATE_INTERVAL_MS = 100;
 
 // Integration time for RTL-SDR recording in seconds
 // This is how long rtl_power collects data for each FFT sweep
 // Lower = faster updates but potentially noisier data
 // Higher = smoother data but slower updates
 // Default: 0.1 seconds
-const SPECTROGRAM_INTEGRATION_TIME_S = 0.1;
+let SPECTROGRAM_INTEGRATION_TIME_S = 0.1;
 
 // Maximum number of waterfall rows to keep in history
 // More rows = longer history visible in waterfall but more memory
 // Default: 100 rows
-const SPECTROGRAM_MAX_ROWS = 100;
+let SPECTROGRAM_MAX_ROWS = 100;
 
 // Dynamic dB range smoothing factor (0-1)
 // Lower = slower adaptation to signal level changes, more stable contrast
 // Higher = faster adaptation, more responsive but may flicker
 // Default: 0.1
-const SPECTROGRAM_DB_SMOOTHING = 0.1;
+let SPECTROGRAM_DB_SMOOTHING = 0.1;
 
 // Extra margin in dB for dynamic range
 // Adds headroom above/below detected signal levels for better visibility
 // Default: 5 dB
-const SPECTROGRAM_DB_MARGIN = 5;
+let SPECTROGRAM_DB_MARGIN = 5;
 
 // Minimum dB range for visibility
 // Ensures at least this much range even if signals are very uniform
 // Default: 10 dB
-const SPECTROGRAM_MIN_RANGE = 10;
+let SPECTROGRAM_MIN_RANGE = 10;
 
 // ============================================================================
 
@@ -954,19 +954,29 @@ function startSpectrogram() {
     spectrogramCanvas.width = spectrogramCanvas.offsetWidth;
     spectrogramCanvas.height = spectrogramCanvas.offsetHeight;
 
-    // Clear waterfall history when starting
-    waterfallHistory = [];
+    // DO NOT clear waterfall history when starting - keep existing data
+    // This allows resuming where we left off
     
-    // Reset dynamic dB range for fresh contrast adaptation
-    waterfallMinDb = -80;
-    waterfallMaxDb = -30;
+    // Reset dynamic dB range only if history is empty
+    if (waterfallHistory.length === 0) {
+        waterfallMinDb = -80;
+        waterfallMaxDb = -30;
+    }
+
+    // Initialize center frequency input with current frequency
+    const centerInput = document.getElementById('spectrum-center-input');
+    if (centerInput) {
+        centerInput.value = currentRadioFreq.toFixed(1);
+    }
 
     // Update frequency labels to match current tuner frequency
     updateSpectrumFrequencyLabels();
 
-    // Clear canvas with dark background
-    spectrogramCtx.fillStyle = '#0a0a0f';
-    spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+    // Clear canvas with dark background only if no history
+    if (waterfallHistory.length === 0) {
+        spectrogramCtx.fillStyle = '#0a0a0f';
+        spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+    }
 
     // Clear any existing interval
     if (spectrogramInterval) {
@@ -1092,18 +1102,73 @@ function setSpectrumSpan(span) {
     // Update frequency range labels using helper function
     updateSpectrumFrequencyLabels();
 
-    // Clear waterfall history when span changes (since the frequency range changed)
-    waterfallHistory = [];
+    // DO NOT clear waterfall history - let it continue accumulating
+    // This allows users to see the change over time
+}
+
+// Apply new center frequency for spectrum
+function applySpectrumCenterFreq() {
+    const input = document.getElementById('spectrum-center-input');
+    const freq = parseFloat(input.value);
     
-    // Reset dynamic dB range for fresh contrast adaptation
-    waterfallMinDb = -80;
-    waterfallMaxDb = -30;
-    
-    // Clear canvas
-    if (spectrogramCtx && spectrogramCanvas) {
-        spectrogramCtx.fillStyle = '#0a0a0f';
-        spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+    if (!isNaN(freq) && freq >= 24 && freq <= 1800) {
+        currentRadioFreq = freq;
+        updateSpectrumFrequencyLabels();
+        // Update the tuner display as well
+        document.getElementById('radio-freq').textContent = freq.toFixed(1);
+        document.getElementById('freq-input').value = freq.toFixed(1);
+        // DO NOT clear history - continue with new frequency
+    } else {
+        alert('Invalid frequency. Must be between 24 and 1800 MHz.');
     }
+}
+
+// Apply new update interval
+function applySpectrumUpdateInterval() {
+    const select = document.getElementById('spectrum-update-interval');
+    SPECTROGRAM_UPDATE_INTERVAL_MS = parseInt(select.value);
+    
+    // Restart spectrogram with new interval if active
+    if (spectrogramInterval) {
+        clearInterval(spectrogramInterval);
+        spectrogramInterval = setInterval(updateSpectrogram, SPECTROGRAM_UPDATE_INTERVAL_MS);
+    }
+}
+
+// Apply new integration time
+function applySpectrumIntegrationTime() {
+    const select = document.getElementById('spectrum-integration-time');
+    SPECTROGRAM_INTEGRATION_TIME_S = parseFloat(select.value);
+    // Will be used in next FFT request
+}
+
+// Apply new max rows
+function applySpectrumMaxRows() {
+    const select = document.getElementById('spectrum-max-rows');
+    SPECTROGRAM_MAX_ROWS = parseInt(select.value);
+    
+    // Trim history if it exceeds new max
+    if (waterfallHistory.length > SPECTROGRAM_MAX_ROWS) {
+        waterfallHistory = waterfallHistory.slice(waterfallHistory.length - SPECTROGRAM_MAX_ROWS);
+    }
+}
+
+// Apply new DB smoothing
+function applySpectrumDbSmoothing() {
+    const select = document.getElementById('spectrum-db-smoothing');
+    SPECTROGRAM_DB_SMOOTHING = parseFloat(select.value);
+}
+
+// Apply new DB margin
+function applySpectrumDbMargin() {
+    const select = document.getElementById('spectrum-db-margin');
+    SPECTROGRAM_DB_MARGIN = parseFloat(select.value);
+}
+
+// Apply new MIN range
+function applySpectrumMinRange() {
+    const select = document.getElementById('spectrum-min-range');
+    SPECTROGRAM_MIN_RANGE = parseFloat(select.value);
 }
 
 function drawWaterfall(fftData) {
