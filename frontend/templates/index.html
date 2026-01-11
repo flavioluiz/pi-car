@@ -245,12 +245,13 @@
                         </div>
                         <div class="spectrum-config-grid">
                             <div class="spectrum-config-item">
-                                <label>Center Freq (MHz):</label>
+                                <label for="spectrum-center-input">Center Freq (MHz):</label>
                                 <input type="number" id="spectrum-center-input" step="0.1" min="24" max="1800" value="99.5">
                                 <button class="config-btn" onclick="applySpectrumCenterFreq()">Set</button>
+                                <span class="config-error" id="spectrum-freq-error"></span>
                             </div>
                             <div class="spectrum-config-item">
-                                <label>Update Interval (ms):</label>
+                                <label for="spectrum-update-interval">Update Interval (ms):</label>
                                 <select id="spectrum-update-interval" onchange="applySpectrumUpdateInterval()">
                                     <option value="50">50</option>
                                     <option value="100" selected>100</option>
@@ -259,7 +260,7 @@
                                 </select>
                             </div>
                             <div class="spectrum-config-item">
-                                <label>Integration Time (s):</label>
+                                <label for="spectrum-integration-time">Integration Time (s):</label>
                                 <select id="spectrum-integration-time" onchange="applySpectrumIntegrationTime()">
                                     <option value="0.05">0.05</option>
                                     <option value="0.1" selected>0.1</option>
@@ -268,7 +269,7 @@
                                 </select>
                             </div>
                             <div class="spectrum-config-item">
-                                <label>Max Rows:</label>
+                                <label for="spectrum-max-rows">Max Rows:</label>
                                 <select id="spectrum-max-rows" onchange="applySpectrumMaxRows()">
                                     <option value="50">50</option>
                                     <option value="100" selected>100</option>
@@ -277,7 +278,7 @@
                                 </select>
                             </div>
                             <div class="spectrum-config-item">
-                                <label>DB Smoothing:</label>
+                                <label for="spectrum-db-smoothing">DB Smoothing:</label>
                                 <select id="spectrum-db-smoothing" onchange="applySpectrumDbSmoothing()">
                                     <option value="0.05">0.05</option>
                                     <option value="0.1" selected>0.1</option>
@@ -286,7 +287,7 @@
                                 </select>
                             </div>
                             <div class="spectrum-config-item">
-                                <label>DB Margin (dB):</label>
+                                <label for="spectrum-db-margin">DB Margin (dB):</label>
                                 <select id="spectrum-db-margin" onchange="applySpectrumDbMargin()">
                                     <option value="2">2</option>
                                     <option value="5" selected>5</option>
@@ -295,7 +296,7 @@
                                 </select>
                             </div>
                             <div class="spectrum-config-item">
-                                <label>MIN Range (dB):</label>
+                                <label for="spectrum-min-range">MIN Range (dB):</label>
                                 <select id="spectrum-min-range" onchange="applySpectrumMinRange()">
                                     <option value="5">5</option>
                                     <option value="10" selected>10</option>

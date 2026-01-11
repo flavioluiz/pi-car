@@ -1097,7 +1097,11 @@ function updateTunerFrequencyDisplay(freq) {
 // Apply new center frequency for spectrum
 function applySpectrumCenterFreq() {
     const input = document.getElementById('spectrum-center-input');
+    const errorEl = document.getElementById('spectrum-freq-error');
     const freq = parseFloat(input.value);
+    
+    // Clear previous error
+    if (errorEl) errorEl.textContent = '';
     
     if (!isNaN(freq) && freq >= FREQ_MIN_MHZ && freq <= FREQ_MAX_MHZ) {
         // Update current radio frequency
@@ -1115,7 +1119,10 @@ function applySpectrumCenterFreq() {
         
         // DO NOT clear history - continue with new frequency
     } else {
-        alert(`Invalid frequency. Must be between ${FREQ_MIN_MHZ} and ${FREQ_MAX_MHZ} MHz.`);
+        // Show error message in UI
+        if (errorEl) {
+            errorEl.textContent = `Invalid: must be ${FREQ_MIN_MHZ}-${FREQ_MAX_MHZ} MHz`;
+        }
     }
 }
 

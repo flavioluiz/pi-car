@@ -1453,6 +1453,14 @@ body::after {
     transform: translateY(0);
 }
 
+.config-error {
+    font-size: 0.7rem;
+    color: #ff6b6b;
+    margin-top: 2px;
+    min-height: 1rem;
+    display: block;
+}
+
 /* Secoes de presets */
 .preset-section {
     margin-bottom: 20px;
