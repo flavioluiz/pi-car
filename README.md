@@ -5,7 +5,7 @@
 A vehicle infotainment system for older cars using Raspberry Pi 4 with a touchscreen web interface. Integrates music player, offline GPS navigation, OBD-II diagnostics, and SDR radio.
 
 ![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Version](https://img.shields.io/badge/version-0.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
@@ -15,9 +15,9 @@ A vehicle infotainment system for older cars using Raspberry Pi 4 with a touchsc
 | Module | Description | Status |
 |--------|-------------|--------|
 | **Music** | MPD player with library browsing, playlists, shuffle, repeat | Working |
+| **SDR Radio** | RTL-SDR receiver for FM/AM, aviation frequencies, waterfall spectrum | Working |
+| **OBD-II** | RPM, speed, temperature, throttle position | v0.4 |
 | **GPS** | Speed, satellites, coordinates + Navit integration | v0.5 |
-| **OBD-II** | RPM, speed, temperature, throttle position | v0.3 |
-| **SDR Radio** | RTL-SDR receiver for FM, aviation, amateur radio | v0.4 |
 
 ---
 
@@ -194,13 +194,15 @@ pi-car/
 │   │   ├── music.py            # /api/music/* - MPD control
 │   │   ├── gps.py              # /api/gps/* - GPS data
 │   │   ├── vehicle.py          # /api/vehicle/* - OBD-II data
+│   │   ├── radio.py            # /api/radio/* - SDR radio control
 │   │   └── system.py           # /api/status, /api/launch/*
 │   │
 │   └── services/               # Integration services
 │       ├── __init__.py
 │       ├── mpd_service.py      # MPD connection and control
 │       ├── gps_service.py      # GPS monitoring thread
-│       └── obd_service.py      # OBD-II monitoring thread
+│       ├── obd_service.py      # OBD-II monitoring thread
+│       └── rtlsdr_service.py   # RTL-SDR radio control
 │
 └── frontend/                   # Web interface
     ├── static/
@@ -231,26 +233,26 @@ pi-car/
 ┌─────────────────────────────▼───────────────────────────────┐
 │            Flask Server (:5000) - app.py + config.py        │
 │                                                             │
-│  ┌─────────────────── backend/routes/ ─────────────────┐   │
-│  │  music.py      gps.py      vehicle.py    system.py  │   │
-│  │  /api/music/*  /api/gps/*  /api/vehicle/* /api/*    │   │
-│  └──────────────────────┬──────────────────────────────┘   │
-│                         │                                   │
-│  ┌─────────────────── backend/services/ ───────────────┐   │
-│  │  mpd_service.py   gps_service.py   obd_service.py   │   │
-│  └──────┬─────────────────┬─────────────────┬──────────┘   │
-└─────────┼─────────────────┼─────────────────┼──────────────┘
-          │                 │                 │
-          ▼                 ▼                 ▼
-    ┌───────────┐    ┌───────────┐      ┌─────────────┐
-    │    MPD    │    │   gpsd    │      │  python-obd │
-    │  (:6600)  │    │  (:2947)  │      │             │
-    └───────────┘    └─────┬─────┘      └──────┬──────┘
-                           │                   │
-                     ┌─────▼─────┐       ┌─────▼─────┐
-                     │  GPS USB  │       │  ELM327   │
-                     │  VK-162   │       │ Bluetooth │
-                     └───────────┘       └───────────┘
+│  ┌─────────────────── backend/routes/ ──────────────────────┐   │
+│  │  music.py   gps.py   vehicle.py   radio.py   system.py  │   │
+│  │  /api/music/* /api/gps/* /api/vehicle/* /api/radio/*    │   │
+│  └──────────────────────────┬──────────────────────────────┘   │
+│                             │                                   │
+│  ┌─────────────────── backend/services/ ───────────────────┐   │
+│  │  mpd_service   gps_service   obd_service   rtlsdr_service│   │
+│  └────┬───────────────┬─────────────┬───────────────┬──────┘   │
+└───────┼───────────────┼─────────────┼───────────────┼──────────┘
+        │               │             │               │
+        ▼               ▼             ▼               ▼
+  ┌───────────┐  ┌───────────┐  ┌─────────────┐  ┌─────────────┐
+  │    MPD    │  │   gpsd    │  │  python-obd │  │  rtl_fm/    │
+  │  (:6600)  │  │  (:2947)  │  │             │  │  rtl_power  │
+  └───────────┘  └─────┬─────┘  └──────┬──────┘  └──────┬──────┘
+                       │               │                │
+                 ┌─────▼─────┐   ┌─────▼─────┐   ┌──────▼──────┐
+                 │  GPS USB  │   │  ELM327   │   │  RTL-SDR    │
+                 │  VK-162   │   │ Bluetooth │   │  USB dongle │
+                 └───────────┘   └───────────┘   └─────────────┘
 ```
 
 ---
@@ -263,7 +265,7 @@ pi-car/
 - [x] Modular backend/frontend structure
 - [x] Kiosk mode with Chromium
 
-### v0.2 - Music (Current)
+### v0.2 - Music
 - [x] Browsable music library
 - [x] Artist listing
 - [x] Playlist management
@@ -272,15 +274,20 @@ pi-car/
 - [x] Search functionality
 - [x] Seek and restart
 
-### v0.3 - OBD-II
+### v0.3 - SDR Radio (Current)
+- [x] RTL-SDR integration with rtl_fm/rtl_power
+- [x] FM/AM frequency tuning
+- [x] Radio control interface with presets
+- [x] Aviation frequency presets (SBSJ, SBGR)
+- [x] Favorites management
+- [x] Real-time waterfall spectrum analyzer
+- [x] Touch-friendly frequency adjustment buttons
+- [x] Configurable spectrum parameters
+
+### v0.4 - OBD-II
 - [ ] Vehicle data reading (RPM, speed, temperature)
 - [ ] Real-time gauge display
 - [ ] Bluetooth connection with ELM327
-
-### v0.4 - SDR Radio
-- [ ] Basic RTL-SDR integration
-- [ ] FM frequency tuning
-- [ ] Radio control interface
 
 ### v0.5 - GPS
 - [ ] Position reading via gpsd
