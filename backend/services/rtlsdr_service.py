@@ -477,21 +477,20 @@ class RTLSDRService:
             span_mhz: Frequency span in MHz (default: 2.0)
 
         Returns:
-            Dict with FFT data and metadata
+            Dict with FFT data and metadata, or error if not available
         """
         if not NUMPY_AVAILABLE:
             return {'error': 'numpy not available'}
 
         if not self._rtl_power_path:
-            # Fall back to simulated data if rtl_power not available
-            return self._get_simulated_fft()
+            return {'error': 'rtl_power not installed'}
 
         if center_freq is None:
             center_freq = radio_data['frequency']
 
-        # If not in spectrum mode, return simulated data to avoid stopping audio
+        # If not in spectrum mode, cannot capture FFT (would stop audio)
         if not self._spectrum_mode:
-            return self._get_simulated_fft()
+            return {'error': 'spectrum mode not active'}
 
         # Calculate frequency range
         start_freq = center_freq - (span_mhz / 2)
@@ -500,7 +499,11 @@ class RTLSDRService:
         # Convert to Hz for rtl_power
         start_hz = int(start_freq * 1e6)
         end_hz = int(end_freq * 1e6)
-        bin_size = 10000  # 10 kHz bin size
+        
+        # Calculate bin size based on span to get reasonable resolution
+        # Aim for approximately 256 bins
+        target_bins = 256
+        bin_size = max(1000, int((end_hz - start_hz) / target_bins))  # Minimum 1 kHz bins
 
         try:
             # Run rtl_power for a quick sweep
@@ -524,7 +527,7 @@ class RTLSDRService:
 
             if result.returncode != 0:
                 logger.warning(f"rtl_power failed: {result.stderr}")
-                return self._get_simulated_fft()
+                return {'error': f'rtl_power failed: {result.stderr}'}
 
             # Parse CSV output from rtl_power
             # Format: date, time, start_hz, end_hz, step_hz, samples, dB values...
@@ -540,7 +543,7 @@ class RTLSDRService:
 
             if not fft_data:
                 logger.warning("No FFT data from rtl_power")
-                return self._get_simulated_fft()
+                return {'error': 'no FFT data received'}
 
             return {
                 'fft': fft_data,
@@ -548,37 +551,15 @@ class RTLSDRService:
                 'start_freq': start_freq,
                 'end_freq': end_freq,
                 'span': span_mhz,
-                'bins': len(fft_data),
-                'real': True
+                'bins': len(fft_data)
             }
 
         except subprocess.TimeoutExpired:
             logger.warning("rtl_power timeout")
-            return self._get_simulated_fft()
+            return {'error': 'rtl_power timeout'}
         except Exception as e:
             logger.error(f"FFT capture error: {e}")
-            return self._get_simulated_fft()
-
-    def _get_simulated_fft(self) -> Dict[str, Any]:
-        """Generate simulated FFT data when real capture not available."""
-        bins = 256
-        noise = np.random.normal(-80, 5, bins)
-
-        # Add signal peak at center if playing
-        if radio_data['playing']:
-            center = bins // 2
-            signal = np.exp(-((np.arange(bins) - center) ** 2) / 100) * 30
-            fft_data = noise + signal
-        else:
-            fft_data = noise
-
-        return {
-            'fft': fft_data.tolist(),
-            'frequency': radio_data['frequency'],
-            'sample_rate': radio_data['sample_rate'],
-            'bins': bins,
-            'real': False
-        }
+            return {'error': str(e)}
 
     def get_status(self) -> Dict[str, Any]:
         """Get current radio status."""
