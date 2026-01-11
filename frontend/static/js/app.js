@@ -853,8 +853,12 @@ let spectrumSpan = 2.0; // MHz
 
 // Waterfall configuration constants
 const WATERFALL_MAX_ROWS = 100; // Maximum number of rows to keep in history
-const WATERFALL_MIN_DB = -100;  // Minimum dB value for color mapping (weak signal)
-const WATERFALL_MAX_DB = -20;   // Maximum dB value for color mapping (strong signal)
+
+// Dynamic dB range tracking for better contrast
+let waterfallMinDb = -80;  // Will be dynamically adjusted based on signal levels
+let waterfallMaxDb = -30;  // Will be dynamically adjusted based on signal levels
+const WATERFALL_DB_SMOOTHING = 0.1;  // How fast to adapt to new signal levels (0-1, lower = slower)
+const WATERFALL_DB_MARGIN = 5;  // Extra margin in dB for dynamic range
 
 // Waterfall history buffer - stores previous FFT rows for scrolling display
 let waterfallHistory = [];
@@ -862,8 +866,11 @@ let waterfallHistory = [];
 // Color map for waterfall (converts dB value to RGB color)
 // Based on typical SDR color schemes: dark blue (weak) -> cyan -> green -> yellow -> red (strong)
 function dbToColor(db) {
-    // Normalize dB value to 0-1 range
-    const normalized = Math.max(0, Math.min(1, (db - WATERFALL_MIN_DB) / (WATERFALL_MAX_DB - WATERFALL_MIN_DB)));
+    // Use dynamic range for normalization
+    const range = waterfallMaxDb - waterfallMinDb;
+    const normalized = range > 0 
+        ? Math.max(0, Math.min(1, (db - waterfallMinDb) / range))
+        : 0.5;
     
     // Color gradient: dark blue -> blue -> cyan -> green -> yellow -> red
     let r, g, b;
@@ -914,6 +921,13 @@ function startSpectrogram() {
 
     // Clear waterfall history when starting
     waterfallHistory = [];
+    
+    // Reset dynamic dB range for fresh contrast adaptation
+    waterfallMinDb = -80;
+    waterfallMaxDb = -30;
+
+    // Update frequency labels to match current tuner frequency
+    updateSpectrumFrequencyLabels();
 
     // Clear canvas with dark background
     spectrogramCtx.fillStyle = '#0a0a0f';
@@ -930,14 +944,14 @@ function startSpectrogram() {
         .then(result => {
             spectrumModeActive = result.spectrum_mode || false;
             updateSpectrumIndicator();
-            // Start fetching FFT data
-            spectrogramInterval = setInterval(updateSpectrogram, 200);
+            // Start fetching FFT data (100ms for faster updates)
+            spectrogramInterval = setInterval(updateSpectrogram, 100);
         })
         .catch(() => {
             // If spectrum mode fails, still start the interval but show waiting message
             spectrumModeActive = false;
             updateSpectrumIndicator();
-            spectrogramInterval = setInterval(updateSpectrogram, 200);
+            spectrogramInterval = setInterval(updateSpectrogram, 100);
         });
 }
 
@@ -965,6 +979,18 @@ function updateSpectrumIndicator() {
         indicator.textContent = spectrumModeActive ? 'LIVE' : 'WAITING';
         indicator.classList.toggle('live', spectrumModeActive);
     }
+}
+
+// Update spectrum frequency labels based on current tuner frequency and span
+function updateSpectrumFrequencyLabels() {
+    const center = currentRadioFreq;
+    const startLabel = document.getElementById('spectrum-start');
+    const endLabel = document.getElementById('spectrum-end');
+    const centerLabel = document.getElementById('spectrum-center');
+    
+    if (startLabel) startLabel.textContent = (center - spectrumSpan / 2).toFixed(1);
+    if (endLabel) endLabel.textContent = (center + spectrumSpan / 2).toFixed(1);
+    if (centerLabel) centerLabel.textContent = center.toFixed(1);
 }
 
 function updateSpectrogram() {
@@ -996,8 +1022,10 @@ function updateSpectrogram() {
             if (data.start_freq !== undefined && data.end_freq !== undefined) {
                 const startLabel = document.getElementById('spectrum-start');
                 const endLabel = document.getElementById('spectrum-end');
+                const centerLabel = document.getElementById('spectrum-center');
                 if (startLabel) startLabel.textContent = data.start_freq.toFixed(1);
                 if (endLabel) endLabel.textContent = data.end_freq.toFixed(1);
+                if (centerLabel) centerLabel.textContent = center.toFixed(1);
             }
 
             drawWaterfall(data.fft);
@@ -1026,13 +1054,15 @@ function setSpectrumSpan(span) {
         btn.classList.toggle('active', parseFloat(btn.textContent) === span);
     });
 
-    // Update frequency range labels
-    const center = currentRadioFreq;
-    document.getElementById('spectrum-start').textContent = (center - span/2).toFixed(1);
-    document.getElementById('spectrum-end').textContent = (center + span/2).toFixed(1);
+    // Update frequency range labels using helper function
+    updateSpectrumFrequencyLabels();
 
     // Clear waterfall history when span changes (since the frequency range changed)
     waterfallHistory = [];
+    
+    // Reset dynamic dB range for fresh contrast adaptation
+    waterfallMinDb = -80;
+    waterfallMaxDb = -30;
     
     // Clear canvas
     if (spectrogramCtx && spectrogramCanvas) {
@@ -1045,6 +1075,32 @@ function drawWaterfall(fftData) {
     const width = spectrogramCanvas.width;
     const height = spectrogramCanvas.height;
     const bins = fftData.length;
+
+    // Calculate min/max of current FFT data for dynamic range adjustment
+    let currentMin = Infinity;
+    let currentMax = -Infinity;
+    for (let i = 0; i < fftData.length; i++) {
+        if (fftData[i] < currentMin) currentMin = fftData[i];
+        if (fftData[i] > currentMax) currentMax = fftData[i];
+    }
+    
+    // Smoothly adapt the dynamic range to the actual signal levels
+    if (isFinite(currentMin) && isFinite(currentMax)) {
+        // Apply margin for better contrast
+        const targetMin = currentMin - WATERFALL_DB_MARGIN;
+        const targetMax = currentMax + WATERFALL_DB_MARGIN;
+        
+        // Smoothly adjust towards target values
+        waterfallMinDb = waterfallMinDb + (targetMin - waterfallMinDb) * WATERFALL_DB_SMOOTHING;
+        waterfallMaxDb = waterfallMaxDb + (targetMax - waterfallMaxDb) * WATERFALL_DB_SMOOTHING;
+        
+        // Ensure minimum range for visibility
+        if (waterfallMaxDb - waterfallMinDb < 10) {
+            const mid = (waterfallMaxDb + waterfallMinDb) / 2;
+            waterfallMinDb = mid - 5;
+            waterfallMaxDb = mid + 5;
+        }
+    }
 
     // Add new FFT row to history
     waterfallHistory.push(fftData.slice()); // Make a copy
