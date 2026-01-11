@@ -72,6 +72,98 @@ function formatTime(seconds) {
     return mins + ':' + secs.toString().padStart(2, '0');
 }
 
+// ============ OBD DYNAMIC GAUGES ============
+
+// Priority order for displaying metrics (most important first)
+const OBD_PRIORITY = [
+    'RPM', 'SPEED', 'COOLANT_TEMP', 'THROTTLE_POS',
+    'ENGINE_LOAD', 'INTAKE_TEMP', 'MAF', 'FUEL_LEVEL',
+    'INTAKE_PRESSURE', 'TIMING_ADVANCE', 'RUN_TIME',
+    'FUEL_PRESSURE', 'BAROMETRIC_PRESSURE', 'AMBIANT_AIR_TEMP',
+    'OIL_TEMP', 'FUEL_RATE'
+];
+
+// CSS class for different gauge types (for styling)
+const OBD_GAUGE_CLASS = {
+    'RPM': 'rpm',
+    'SPEED': 'speed',
+    'COOLANT_TEMP': 'temp',
+    'THROTTLE_POS': 'throttle',
+    'ENGINE_LOAD': 'load',
+    'FUEL_LEVEL': 'fuel',
+    'OIL_TEMP': 'temp'
+};
+
+// Update OBD display with dynamic metrics
+function updateOBDDisplay(obdData) {
+    const obdContent = document.getElementById('obd-content');
+    const obdDisconnected = document.getElementById('obd-disconnected');
+    const obdError = document.getElementById('obd-error');
+    const gaugesGrid = document.getElementById('gauges-grid');
+
+    if (!obdData) {
+        obdContent.style.display = 'none';
+        obdDisconnected.style.display = 'block';
+        obdError.style.display = 'none';
+        return;
+    }
+
+    if (obdData.error && !obdData.connected) {
+        obdContent.style.display = 'none';
+        obdDisconnected.style.display = 'none';
+        obdError.style.display = 'block';
+        document.getElementById('obd-error-text').textContent = obdData.error;
+        return;
+    }
+
+    if (!obdData.connected) {
+        obdContent.style.display = 'none';
+        obdDisconnected.style.display = 'block';
+        obdError.style.display = 'none';
+        return;
+    }
+
+    // Connected with data
+    obdContent.style.display = 'block';
+    obdDisconnected.style.display = 'none';
+    obdError.style.display = 'none';
+
+    // Get metrics and sort by priority
+    const metrics = obdData.metrics || {};
+    const metricKeys = Object.keys(metrics);
+
+    // Sort by priority order
+    metricKeys.sort((a, b) => {
+        const indexA = OBD_PRIORITY.indexOf(a);
+        const indexB = OBD_PRIORITY.indexOf(b);
+        // If not in priority list, put at end
+        const priorityA = indexA === -1 ? 999 : indexA;
+        const priorityB = indexB === -1 ? 999 : indexB;
+        return priorityA - priorityB;
+    });
+
+    // Build gauges HTML
+    let gaugesHTML = '';
+    for (const key of metricKeys) {
+        const metric = metrics[key];
+        const gaugeClass = OBD_GAUGE_CLASS[key] || '';
+        const value = typeof metric.value === 'number' ? metric.value : 0;
+
+        gaugesHTML += `
+            <div class="gauge ${gaugeClass}">
+                <div class="gauge-value">${Math.round(value)}</div>
+                <div class="gauge-unit">${metric.unit || ''}</div>
+                <div class="gauge-label">${metric.label || key}</div>
+            </div>
+        `;
+    }
+
+    // Only update if content changed (avoid flickering)
+    if (gaugesGrid.innerHTML !== gaugesHTML) {
+        gaugesGrid.innerHTML = gaugesHTML || '<div class="obd-waiting">Waiting for vehicle data...</div>';
+    }
+}
+
 // ============ UPDATE DATA ============
 let currentDuration = 0; // Store duration for seek
 
@@ -113,18 +205,8 @@ function updateData() {
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
             document.getElementById('btn-repeat').classList.toggle('active', data.music.repeat);
 
-            // OBD
-            if (data.obd.connected) {
-                document.getElementById('obd-content').style.display = 'block';
-                document.getElementById('obd-disconnected').style.display = 'none';
-                document.getElementById('obd-rpm').textContent = Math.round(data.obd.rpm);
-                document.getElementById('obd-speed').textContent = Math.round(data.obd.speed);
-                document.getElementById('obd-temp').textContent = Math.round(data.obd.coolant_temp);
-                document.getElementById('obd-throttle').textContent = Math.round(data.obd.throttle);
-            } else {
-                document.getElementById('obd-content').style.display = 'none';
-                document.getElementById('obd-disconnected').style.display = 'block';
-            }
+            // OBD - Dynamic metrics display
+            updateOBDDisplay(data.obd);
 
             // GPS
             if (data.gps.connected && data.gps.lat) {
@@ -1290,18 +1372,8 @@ updateData = function() {
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
             document.getElementById('btn-repeat').classList.toggle('active', data.music.repeat);
 
-            // OBD
-            if (data.obd.connected) {
-                document.getElementById('obd-content').style.display = 'block';
-                document.getElementById('obd-disconnected').style.display = 'none';
-                document.getElementById('obd-rpm').textContent = Math.round(data.obd.rpm);
-                document.getElementById('obd-speed').textContent = Math.round(data.obd.speed);
-                document.getElementById('obd-temp').textContent = Math.round(data.obd.coolant_temp);
-                document.getElementById('obd-throttle').textContent = Math.round(data.obd.throttle);
-            } else {
-                document.getElementById('obd-content').style.display = 'none';
-                document.getElementById('obd-disconnected').style.display = 'block';
-            }
+            // OBD - Dynamic metrics display
+            updateOBDDisplay(data.obd);
 
             // GPS
             if (data.gps.connected && data.gps.lat) {

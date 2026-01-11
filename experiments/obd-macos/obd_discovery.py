@@ -14,13 +14,55 @@ Configuração:
 """
 
 import obd
+import serial
+import time
 
 # Altere para a porta do seu ELM327
-PORT = "/dev/tty.OBDII-SPPDev"  # Ajuste conforme necessário
+PORT = "/dev/tty.OBDII"  # Ajuste conforme necessário
+
+# Baudrates comuns para ELM327 Bluetooth
+# 38400 é o mais comum, mas alguns usam 9600, 115200 ou 57600
+BAUDRATE = 38400
+
+def wake_up_adapter():
+    """Acorda o adaptador ELM327 antes de usar a biblioteca obd"""
+    print("Acordando o adaptador...")
+    try:
+        ser = serial.Serial(PORT, baudrate=BAUDRATE, timeout=2)
+        time.sleep(1)
+        ser.write(b'\r\r\r')
+        time.sleep(0.5)
+        ser.write(b'ATZ\r')
+        time.sleep(2)
+        response = ser.read(100)
+        ser.close()
+        if b'ELM' in response:
+            print("Adaptador acordado!")
+            return True
+        return False
+    except Exception as e:
+        print(f"Erro ao acordar: {e}")
+        return False
 
 def discover_commands():
     print("Conectando ao OBD...")
-    connection = obd.OBD(PORT)
+    print(f"Porta: {PORT}")
+    print(f"Baudrate: {BAUDRATE}")
+
+    # Acorda o adaptador primeiro
+    if not wake_up_adapter():
+        print("AVISO: Não foi possível acordar o adaptador")
+
+    time.sleep(1)
+
+    # fast=False para inicialização mais confiável via Bluetooth
+    # timeout maior para conexões Bluetooth
+    connection = obd.OBD(
+        portstr=PORT,
+        baudrate=BAUDRATE,
+        fast=False,
+        timeout=30
+    )
     
     if not connection.is_connected():
         print("ERRO: Não foi possível conectar ao OBD")

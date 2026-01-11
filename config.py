@@ -12,8 +12,8 @@ MPD_PORT = 6600
 GPS_HOST = 'localhost'
 GPS_PORT = 2947
 
-# OBD-II
-OBD_DEVICE = '/dev/rfcomm0'
+# OBD-II (USB adapter)
+OBD_DEVICE = '/dev/ttyACM0'
 
 # RTL-SDR (Software Defined Radio)
 RTL_DEVICE_INDEX = 0              # Device index (0 for first RTL-SDR)

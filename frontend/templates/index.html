@@ -109,33 +109,18 @@
         <!-- Panel: Vehicle (OBD) -->
         <section class="panel" id="panel-vehicle">
             <div id="obd-content">
-                <div class="gauges-grid">
-                    <div class="gauge rpm">
-                        <div class="gauge-value" id="obd-rpm">0</div>
-                        <div class="gauge-unit">RPM</div>
-                        <div class="gauge-label">Engine</div>
-                    </div>
-                    <div class="gauge speed">
-                        <div class="gauge-value" id="obd-speed">0</div>
-                        <div class="gauge-unit">km/h</div>
-                        <div class="gauge-label">Speed</div>
-                    </div>
-                    <div class="gauge temp">
-                        <div class="gauge-value" id="obd-temp">0</div>
-                        <div class="gauge-unit">°C</div>
-                        <div class="gauge-label">Temperature</div>
-                    </div>
-                    <div class="gauge throttle">
-                        <div class="gauge-value" id="obd-throttle">0</div>
-                        <div class="gauge-unit">%</div>
-                        <div class="gauge-label">Throttle</div>
-                    </div>
+                <div class="gauges-grid" id="gauges-grid">
+                    <!-- Gauges will be dynamically rendered based on available metrics -->
                 </div>
             </div>
             <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
                 <div class="icon">[OBD]</div>
                 <p>OBD-II not connected</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Connect the ELM327 adapter</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Check USB connection at /dev/ttyACM0</p>
+            </div>
+            <div id="obd-error" class="disconnected-msg" style="display: none;">
+                <div class="icon">[!]</div>
+                <p id="obd-error-text">Error</p>
             </div>
         </section>
 

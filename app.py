@@ -38,18 +38,20 @@ if __name__ == '__main__':
     # Iniciar servicos de monitoramento
     print("Iniciando Central Multimidia...")
 
-    # Importar e iniciar servicos
-    from backend.services import GPSService, OBDService, get_rtlsdr_service
+    # Import and start services
+    from backend.services import GPSService, get_obd_service, get_rtlsdr_service
 
     # Thread GPS
     gps_service = GPSService()
     gps_service.start()
-    print("Thread GPS iniciada")
+    print("GPS thread started")
 
-    # Thread OBD
-    obd_service = OBDService()
-    obd_service.start()
-    print("Thread OBD iniciada")
+    # Thread OBD (uses singleton for route sharing)
+    obd_service = get_obd_service()
+    if obd_service.start():
+        print("OBD thread started")
+    else:
+        print("OBD not available (check USB connection at /dev/ttyACM0)")
 
     # Thread RTL-SDR (usa singleton para compartilhar com as rotas)
     rtlsdr_service = get_rtlsdr_service()

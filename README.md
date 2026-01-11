@@ -5,7 +5,7 @@
 A vehicle infotainment system for older cars using Raspberry Pi 4 with a touchscreen web interface. Integrates music player, offline GPS navigation, OBD-II diagnostics, and SDR radio.
 
 ![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![Version](https://img.shields.io/badge/version-0.3.0-blue)
+![Version](https://img.shields.io/badge/version-0.4.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
@@ -16,7 +16,7 @@ A vehicle infotainment system for older cars using Raspberry Pi 4 with a touchsc
 |--------|-------------|--------|
 | **Music** | MPD player with library browsing, playlists, shuffle, repeat | Working |
 | **SDR Radio** | RTL-SDR receiver for FM/AM, aviation frequencies, waterfall spectrum | Working |
-| **OBD-II** | RPM, speed, temperature, throttle position | v0.4 |
+| **OBD-II** | Dynamic vehicle metrics display (RPM, speed, temps, throttle, etc.) | Working |
 | **GPS** | Speed, satellites, coordinates + Navit integration | v0.5 |
 
 ---
@@ -39,7 +39,7 @@ A vehicle infotainment system for older cars using Raspberry Pi 4 with a touchsc
 | Component | Suggested Model | Est. Price (USD) |
 |-----------|-----------------|------------------|
 | USB GPS | VK-162 (u-blox 7) | $15-30 |
-| OBD-II | ELM327 Bluetooth | $10-25 |
+| OBD-II | ELM327 USB adapter | $10-25 |
 | SDR Radio | RTL-SDR V3 | $25-40 |
 
 ### Vehicle Installation
@@ -80,7 +80,6 @@ The installation script will:
 - Install minimal GUI (X11 + Openbox)
 - Install MPD, GPSD, Navit, Chromium
 - Install RTL-SDR and radio tools
-- Configure Bluetooth for OBD-II
 - Install Python dependencies (Flask, python-mpd2, gps3, obd)
 - Configure autostart for Flask server and Chromium kiosk mode
 
@@ -251,9 +250,56 @@ pi-car/
                        │               │                │
                  ┌─────▼─────┐   ┌─────▼─────┐   ┌──────▼──────┐
                  │  GPS USB  │   │  ELM327   │   │  RTL-SDR    │
-                 │  VK-162   │   │ Bluetooth │   │  USB dongle │
+                 │  VK-162   │   │    USB    │   │  USB dongle │
                  └───────────┘   └───────────┘   └─────────────┘
 ```
+
+---
+
+## Testing OBD-II
+
+The OBD-II module uses a USB ELM327 adapter connected at `/dev/ttyACM0`.
+
+### Quick Test
+
+```bash
+# 1. Connect USB OBD-II adapter to vehicle and Raspberry Pi
+# 2. Turn vehicle ignition ON (engine can be off)
+
+# 3. Check if device is detected
+ls -la /dev/ttyACM0
+
+# 4. Run discovery script to see supported commands
+cd ~/pi-car
+python3 experiments/obd-macos/obd_discovery.py
+
+# 5. Start the dashboard
+python3 app.py
+
+# 6. Open browser to http://localhost:5000
+# 7. Click VEHICLE tab - gauges will display available metrics
+```
+
+### Supported Metrics
+
+The system automatically discovers which OBD-II PIDs your vehicle supports. Common metrics include:
+
+| Metric | Description | Unit |
+|--------|-------------|------|
+| RPM | Engine revolutions | rpm |
+| SPEED | Vehicle speed | km/h |
+| COOLANT_TEMP | Engine coolant temperature | °C |
+| THROTTLE_POS | Throttle position | % |
+| ENGINE_LOAD | Calculated engine load | % |
+| INTAKE_TEMP | Intake air temperature | °C |
+| FUEL_LEVEL | Fuel tank level | % |
+| OIL_TEMP | Engine oil temperature | °C |
+
+### Troubleshooting
+
+- **Device not found**: Check USB connection, try `dmesg | tail` to see device messages
+- **No data**: Ensure ignition is ON, some vehicles require engine running
+- **Permission denied**: Add user to dialout group: `sudo usermod -a -G dialout $USER`
 
 ---
 
@@ -274,7 +320,7 @@ pi-car/
 - [x] Search functionality
 - [x] Seek and restart
 
-### v0.3 - SDR Radio (Current)
+### v0.3 - SDR Radio
 - [x] RTL-SDR integration with rtl_fm/rtl_power
 - [x] FM/AM frequency tuning
 - [x] Radio control interface with presets
@@ -284,10 +330,12 @@ pi-car/
 - [x] Touch-friendly frequency adjustment buttons
 - [x] Configurable spectrum parameters
 
-### v0.4 - OBD-II
-- [ ] Vehicle data reading (RPM, speed, temperature)
-- [ ] Real-time gauge display
-- [ ] Bluetooth connection with ELM327
+### v0.4 - OBD-II (Current)
+- [x] USB OBD-II adapter support (/dev/ttyACM0)
+- [x] Automatic command discovery (queries vehicle for supported PIDs)
+- [x] Dynamic gauge display (shows all available metrics)
+- [x] Real-time vehicle data (RPM, speed, temperatures, throttle, etc.)
+- [x] Connection retry with error handling
 
 ### v0.5 - GPS
 - [ ] Position reading via gpsd

@@ -915,6 +915,33 @@ body::after {
     background-clip: text;
 }
 
+.gauge.throttle .gauge-value {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.gauge.load .gauge-value {
+    background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.gauge.fuel .gauge-value {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* Waiting message for OBD */
+.obd-waiting {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    grid-column: span 2;
+}
+
 /* ============ PAINEL GPS ============ */
 .gps-info {
     display: grid;
