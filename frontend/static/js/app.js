@@ -859,6 +859,7 @@ let waterfallMinDb = -80;  // Will be dynamically adjusted based on signal level
 let waterfallMaxDb = -30;  // Will be dynamically adjusted based on signal levels
 const WATERFALL_DB_SMOOTHING = 0.1;  // How fast to adapt to new signal levels (0-1, lower = slower)
 const WATERFALL_DB_MARGIN = 5;  // Extra margin in dB for dynamic range
+const WATERFALL_MIN_RANGE = 10;  // Minimum dB range for visibility
 
 // Waterfall history buffer - stores previous FFT rows for scrolling display
 let waterfallHistory = [];
@@ -1095,10 +1096,10 @@ function drawWaterfall(fftData) {
         waterfallMaxDb = waterfallMaxDb + (targetMax - waterfallMaxDb) * WATERFALL_DB_SMOOTHING;
         
         // Ensure minimum range for visibility
-        if (waterfallMaxDb - waterfallMinDb < 10) {
+        if (waterfallMaxDb - waterfallMinDb < WATERFALL_MIN_RANGE) {
             const mid = (waterfallMaxDb + waterfallMinDb) / 2;
-            waterfallMinDb = mid - 5;
-            waterfallMaxDb = mid + 5;
+            waterfallMinDb = mid - WATERFALL_MIN_RANGE / 2;
+            waterfallMaxDb = mid + WATERFALL_MIN_RANGE / 2;
         }
     }
 
