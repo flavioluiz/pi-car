@@ -144,12 +144,14 @@ def radio_fft():
     Query params:
         center: frequencia central em MHz (opcional)
         span: largura de banda em MHz (opcional, default: 2.0)
+        integration_time: tempo de integração em segundos (opcional, default: 0.1)
     """
     center = request.args.get('center', type=float)
     span = request.args.get('span', type=float, default=2.0)
+    integration_time = request.args.get('integration_time', type=float, default=0.1)
 
     service = get_rtlsdr_service()
-    result = service.get_fft(center_freq=center, span_mhz=span)
+    result = service.get_fft(center_freq=center, span_mhz=span, integration_time=integration_time)
 
     if 'error' in result:
         return jsonify(result), 500

@@ -1,3 +1,43 @@
+// ============================================================================
+// SPECTROGRAM CONFIGURATION PARAMETERS
+// ============================================================================
+// These parameters can be adjusted for testing and performance tuning
+
+// Update interval for spectrogram in milliseconds
+// Lower = more frequent updates but more CPU/network usage
+// Default: 100ms (10 updates per second)
+const SPECTROGRAM_UPDATE_INTERVAL_MS = 100;
+
+// Integration time for RTL-SDR recording in seconds
+// This is how long rtl_power collects data for each FFT sweep
+// Lower = faster updates but potentially noisier data
+// Higher = smoother data but slower updates
+// Default: 0.1 seconds
+const SPECTROGRAM_INTEGRATION_TIME_S = 0.1;
+
+// Maximum number of waterfall rows to keep in history
+// More rows = longer history visible in waterfall but more memory
+// Default: 100 rows
+const SPECTROGRAM_MAX_ROWS = 100;
+
+// Dynamic dB range smoothing factor (0-1)
+// Lower = slower adaptation to signal level changes, more stable contrast
+// Higher = faster adaptation, more responsive but may flicker
+// Default: 0.1
+const SPECTROGRAM_DB_SMOOTHING = 0.1;
+
+// Extra margin in dB for dynamic range
+// Adds headroom above/below detected signal levels for better visibility
+// Default: 5 dB
+const SPECTROGRAM_DB_MARGIN = 5;
+
+// Minimum dB range for visibility
+// Ensures at least this much range even if signals are very uniform
+// Default: 10 dB
+const SPECTROGRAM_MIN_RANGE = 10;
+
+// ============================================================================
+
 // ============ TABS ============
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -851,15 +891,9 @@ let spectrogramInterval = null;
 let spectrumModeActive = false;
 let spectrumSpan = 2.0; // MHz
 
-// Waterfall configuration constants
-const WATERFALL_MAX_ROWS = 100; // Maximum number of rows to keep in history
-
 // Dynamic dB range tracking for better contrast
 let waterfallMinDb = -80;  // Will be dynamically adjusted based on signal levels
 let waterfallMaxDb = -30;  // Will be dynamically adjusted based on signal levels
-const WATERFALL_DB_SMOOTHING = 0.1;  // How fast to adapt to new signal levels (0-1, lower = slower)
-const WATERFALL_DB_MARGIN = 5;  // Extra margin in dB for dynamic range
-const WATERFALL_MIN_RANGE = 10;  // Minimum dB range for visibility
 
 // Waterfall history buffer - stores previous FFT rows for scrolling display
 let waterfallHistory = [];
@@ -945,14 +979,14 @@ function startSpectrogram() {
         .then(result => {
             spectrumModeActive = result.spectrum_mode || false;
             updateSpectrumIndicator();
-            // Start fetching FFT data (100ms for faster updates)
-            spectrogramInterval = setInterval(updateSpectrogram, 100);
+            // Start fetching FFT data
+            spectrogramInterval = setInterval(updateSpectrogram, SPECTROGRAM_UPDATE_INTERVAL_MS);
         })
         .catch(() => {
             // If spectrum mode fails, still start the interval but show waiting message
             spectrumModeActive = false;
             updateSpectrumIndicator();
-            spectrogramInterval = setInterval(updateSpectrogram, 100);
+            spectrogramInterval = setInterval(updateSpectrogram, SPECTROGRAM_UPDATE_INTERVAL_MS);
         });
 }
 
@@ -998,7 +1032,7 @@ function updateSpectrogram() {
     if (!spectrogramCtx) return;
 
     const center = currentRadioFreq;
-    fetch(`/api/radio/fft?center=${center}&span=${spectrumSpan}`)
+    fetch(`/api/radio/fft?center=${center}&span=${spectrumSpan}&integration_time=${SPECTROGRAM_INTEGRATION_TIME_S}`)
         .then(r => r.json())
         .then(data => {
             // Update indicator based on real data availability
@@ -1088,18 +1122,17 @@ function drawWaterfall(fftData) {
     // Smoothly adapt the dynamic range to the actual signal levels
     if (isFinite(currentMin) && isFinite(currentMax)) {
         // Apply margin for better contrast
-        const targetMin = currentMin - WATERFALL_DB_MARGIN;
-        const targetMax = currentMax + WATERFALL_DB_MARGIN;
+        const targetMin = currentMin - SPECTROGRAM_DB_MARGIN;
+        const targetMax = currentMax + SPECTROGRAM_DB_MARGIN;
         
-        // Smoothly adjust towards target values
-        waterfallMinDb = waterfallMinDb + (targetMin - waterfallMinDb) * WATERFALL_DB_SMOOTHING;
-        waterfallMaxDb = waterfallMaxDb + (targetMax - waterfallMaxDb) * WATERFALL_DB_SMOOTHING;
+        waterfallMinDb = waterfallMinDb + (targetMin - waterfallMinDb) * SPECTROGRAM_DB_SMOOTHING;
+        waterfallMaxDb = waterfallMaxDb + (targetMax - waterfallMaxDb) * SPECTROGRAM_DB_SMOOTHING;
         
         // Ensure minimum range for visibility
-        if (waterfallMaxDb - waterfallMinDb < WATERFALL_MIN_RANGE) {
+        if (waterfallMaxDb - waterfallMinDb < SPECTROGRAM_MIN_RANGE) {
             const mid = (waterfallMaxDb + waterfallMinDb) / 2;
-            waterfallMinDb = mid - WATERFALL_MIN_RANGE / 2;
-            waterfallMaxDb = mid + WATERFALL_MIN_RANGE / 2;
+            waterfallMinDb = mid - SPECTROGRAM_MIN_RANGE / 2;
+            waterfallMaxDb = mid + SPECTROGRAM_MIN_RANGE / 2;
         }
     }
 
@@ -1107,7 +1140,7 @@ function drawWaterfall(fftData) {
     waterfallHistory.push(fftData.slice()); // Make a copy
     
     // Limit history size
-    if (waterfallHistory.length > WATERFALL_MAX_ROWS) {
+    if (waterfallHistory.length > SPECTROGRAM_MAX_ROWS) {
         waterfallHistory.shift(); // Remove oldest row
     }
 
@@ -1116,7 +1149,7 @@ function drawWaterfall(fftData) {
     spectrogramCtx.fillRect(0, 0, width, height);
 
     // Calculate row height based on available height and history
-    const rowHeight = Math.max(2, height / WATERFALL_MAX_ROWS);
+    const rowHeight = Math.max(2, height / SPECTROGRAM_MAX_ROWS);
     const pixelWidth = width / bins;
 
     // Draw waterfall - newest data at bottom, oldest at top

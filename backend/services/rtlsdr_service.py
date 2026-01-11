@@ -472,13 +472,14 @@ class RTLSDRService:
         logger.info("Spectrum mode stopped, audio resumed")
         return {'success': True, 'spectrum_mode': False}
 
-    def get_fft(self, center_freq: float = None, span_mhz: float = 2.0) -> Dict[str, Any]:
+    def get_fft(self, center_freq: float = None, span_mhz: float = 2.0, integration_time: float = 0.1) -> Dict[str, Any]:
         """
         Get FFT data for spectrogram using rtl_power.
 
         Args:
             center_freq: Center frequency in MHz (default: current frequency)
             span_mhz: Frequency span in MHz (default: 2.0)
+            integration_time: Integration time in seconds for rtl_power (default: 0.1)
 
         Returns:
             Dict with FFT data and metadata, or error if not available
@@ -509,11 +510,11 @@ class RTLSDRService:
 
         try:
             # Run rtl_power for a quick sweep
-            # Format: rtl_power -f start:end:bin_size -i 0.1 -1 -
+            # Format: rtl_power -f start:end:bin_size -i integration_time -1 -
             cmd = [
                 'rtl_power',
                 '-f', f'{start_hz}:{end_hz}:{bin_size}',
-                '-i', '0.1',  # Integration time
+                '-i', str(integration_time),  # Integration time (configurable)
                 '-1',  # Single sweep
                 '-'  # Output to stdout
             ]
