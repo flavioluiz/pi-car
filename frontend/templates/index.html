@@ -243,13 +243,21 @@
                             <span class="spectrum-center-label">Center: <span id="spectrum-center">99.5</span> MHz</span>
                             <span id="spectrum-end">100.5</span> MHz
                         </div>
-                        <div class="spectrum-config-grid">
-                            <div class="spectrum-config-item">
-                                <label for="spectrum-center-input">Center Freq (MHz):</label>
-                                <input type="number" id="spectrum-center-input" step="0.1" min="24" max="1800" value="99.5">
-                                <button class="config-btn" onclick="applySpectrumCenterFreq()">Set</button>
-                                <span class="config-error" id="spectrum-freq-error"></span>
+                        <!-- Frequency adjustment buttons -->
+                        <div class="freq-adjust-panel">
+                            <div class="freq-adjust-row">
+                                <button class="freq-btn large" onclick="adjustSpectrumFreq(-10)">-10</button>
+                                <button class="freq-btn medium" onclick="adjustSpectrumFreq(-1)">-1</button>
+                                <button class="freq-btn small" onclick="adjustSpectrumFreq(-0.1)">-0.1</button>
+                                <span class="freq-display" id="spectrum-freq-display">99.5</span>
+                                <button class="freq-btn small" onclick="adjustSpectrumFreq(0.1)">+0.1</button>
+                                <button class="freq-btn medium" onclick="adjustSpectrumFreq(1)">+1</button>
+                                <button class="freq-btn large" onclick="adjustSpectrumFreq(10)">+10</button>
                             </div>
+                            <div class="freq-adjust-label">MHz</div>
+                        </div>
+
+                        <div class="spectrum-config-grid">
                             <div class="spectrum-config-item">
                                 <label for="spectrum-update-interval">Update Interval (ms):</label>
                                 <select id="spectrum-update-interval" onchange="applySpectrumUpdateInterval()">

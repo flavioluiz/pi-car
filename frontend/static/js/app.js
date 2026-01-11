@@ -966,13 +966,8 @@ function startSpectrogram() {
         waterfallMaxDb = -30;
     }
 
-    // Initialize center frequency input with current frequency
-    const centerInput = document.getElementById('spectrum-center-input');
-    if (centerInput) {
-        centerInput.value = currentRadioFreq.toFixed(1);
-    }
-
-    // Update frequency labels to match current tuner frequency
+    // Update frequency display and labels to match current tuner frequency
+    updateSpectrumFreqDisplay();
     updateSpectrumFrequencyLabels();
 
     // Clear canvas with dark background only if no history
@@ -1084,35 +1079,30 @@ function updateTunerFrequencyDisplay(freq) {
     document.getElementById('freq-input').value = freq.toFixed(1);
 }
 
-// Apply new center frequency for spectrum
-function applySpectrumCenterFreq() {
-    const input = document.getElementById('spectrum-center-input');
-    const errorEl = document.getElementById('spectrum-freq-error');
-    const freq = parseFloat(input.value);
-    
-    // Clear previous error
-    if (errorEl) errorEl.textContent = '';
-    
-    if (!isNaN(freq) && freq >= FREQ_MIN_MHZ && freq <= FREQ_MAX_MHZ) {
-        // Update current radio frequency
-        currentRadioFreq = freq;
-        
-        // Update spectrum frequency labels
-        updateSpectrumFrequencyLabels();
-        
-        // Update the tuner display to stay in sync
-        updateTunerFrequencyDisplay(freq);
-        
-        // Note: During spectrum mode, radio audio is paused, so we only update
-        // the display and the spectrum will fetch FFT data at the new frequency.
-        // When user exits spectrum mode, the radio will resume at this frequency.
-        
-        // DO NOT clear history - continue with new frequency
-    } else {
-        // Show error message in UI
-        if (errorEl) {
-            errorEl.textContent = `Invalid: must be ${FREQ_MIN_MHZ}-${FREQ_MAX_MHZ} MHz`;
-        }
+// Adjust spectrum frequency by delta (in MHz)
+function adjustSpectrumFreq(deltaMHz) {
+    let newFreq = currentRadioFreq + deltaMHz;
+
+    // Clamp to valid range
+    newFreq = Math.max(FREQ_MIN_MHZ, Math.min(FREQ_MAX_MHZ, newFreq));
+
+    // Round to 1 decimal place to avoid floating point issues
+    newFreq = Math.round(newFreq * 10) / 10;
+
+    // Update current radio frequency
+    currentRadioFreq = newFreq;
+
+    // Update all displays
+    updateSpectrumFrequencyLabels();
+    updateSpectrumFreqDisplay();
+    updateTunerFrequencyDisplay(newFreq);
+}
+
+// Update the large frequency display in spectrum panel
+function updateSpectrumFreqDisplay() {
+    const display = document.getElementById('spectrum-freq-display');
+    if (display) {
+        display.textContent = currentRadioFreq.toFixed(1);
     }
 }
 

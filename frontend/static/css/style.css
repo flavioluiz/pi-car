@@ -1394,6 +1394,90 @@ body::after {
     color: var(--accent-cyan);
 }
 
+/* Frequency adjustment panel */
+.freq-adjust-panel {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.freq-adjust-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.freq-display {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    min-width: 120px;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+}
+
+.freq-adjust-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+.freq-btn {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    touch-action: manipulation;
+}
+
+.freq-btn:hover {
+    border-color: var(--accent-cyan);
+    background: var(--bg-card-hover);
+}
+
+.freq-btn:active {
+    transform: scale(0.95);
+    background: var(--accent-cyan);
+    color: var(--bg-dark);
+}
+
+.freq-btn.small {
+    width: 55px;
+    height: 50px;
+    font-size: 1rem;
+}
+
+.freq-btn.medium {
+    width: 50px;
+    height: 55px;
+    font-size: 1.1rem;
+    border-color: var(--accent-orange);
+}
+
+.freq-btn.medium:hover {
+    border-color: var(--accent-orange);
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+}
+
+.freq-btn.large {
+    width: 55px;
+    height: 60px;
+    font-size: 1.2rem;
+    border-color: var(--accent-green);
+}
+
+.freq-btn.large:hover {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
 .spectrum-config-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
