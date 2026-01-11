@@ -38,6 +38,10 @@ let SPECTROGRAM_MIN_RANGE = 10;
 
 // ============================================================================
 
+// Frequency range constants
+const FREQ_MIN_MHZ = 24;
+const FREQ_MAX_MHZ = 1800;
+
 // ============ TABS ============
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1085,20 +1089,25 @@ function updateSpectrogram() {
         });
 }
 
+// Update tuner frequency display
+function updateTunerFrequencyDisplay(freq) {
+    document.getElementById('radio-freq').textContent = freq.toFixed(1);
+    document.getElementById('freq-input').value = freq.toFixed(1);
+}
+
 // Apply new center frequency for spectrum
 function applySpectrumCenterFreq() {
     const input = document.getElementById('spectrum-center-input');
     const freq = parseFloat(input.value);
     
-    if (!isNaN(freq) && freq >= 24 && freq <= 1800) {
+    if (!isNaN(freq) && freq >= FREQ_MIN_MHZ && freq <= FREQ_MAX_MHZ) {
         currentRadioFreq = freq;
         updateSpectrumFrequencyLabels();
         // Update the tuner display as well
-        document.getElementById('radio-freq').textContent = freq.toFixed(1);
-        document.getElementById('freq-input').value = freq.toFixed(1);
+        updateTunerFrequencyDisplay(freq);
         // DO NOT clear history - continue with new frequency
     } else {
-        alert('Invalid frequency. Must be between 24 and 1800 MHz.');
+        alert(`Invalid frequency. Must be between ${FREQ_MIN_MHZ} and ${FREQ_MAX_MHZ} MHz.`);
     }
 }
 
