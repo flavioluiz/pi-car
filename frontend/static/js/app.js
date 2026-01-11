@@ -702,8 +702,7 @@ function radioTune(freq, mode) {
         .then(result => {
             if (result.success) {
                 currentRadioFreq = result.frequency;
-                document.getElementById('radio-freq').textContent = currentRadioFreq.toFixed(1);
-                document.getElementById('freq-input').value = currentRadioFreq.toFixed(1);
+                updateTunerFrequencyDisplay(currentRadioFreq);
             }
         })
         .catch(err => console.error('Radio tune error:', err));
@@ -1101,10 +1100,19 @@ function applySpectrumCenterFreq() {
     const freq = parseFloat(input.value);
     
     if (!isNaN(freq) && freq >= FREQ_MIN_MHZ && freq <= FREQ_MAX_MHZ) {
+        // Update current radio frequency
         currentRadioFreq = freq;
+        
+        // Update spectrum frequency labels
         updateSpectrumFrequencyLabels();
-        // Update the tuner display as well
+        
+        // Update the tuner display to stay in sync
         updateTunerFrequencyDisplay(freq);
+        
+        // Note: During spectrum mode, radio audio is paused, so we only update
+        // the display and the spectrum will fetch FFT data at the new frequency.
+        // When user exits spectrum mode, the radio will resume at this frequency.
+        
         // DO NOT clear history - continue with new frequency
     } else {
         alert(`Invalid frequency. Must be between ${FREQ_MIN_MHZ} and ${FREQ_MAX_MHZ} MHz.`);
