@@ -251,6 +251,16 @@
                                 <span class="config-error" id="spectrum-freq-error"></span>
                             </div>
                             <div class="spectrum-config-item">
+                                <label for="spectrum-span">Span (MHz):</label>
+                                <select id="spectrum-span" onchange="applySpectrumSpan()">
+                                    <option value="0.5">0.5</option>
+                                    <option value="1">1</option>
+                                    <option value="2" selected>2</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
+                            <div class="spectrum-config-item">
                                 <label for="spectrum-update-interval">Update Interval (ms):</label>
                                 <select id="spectrum-update-interval" onchange="applySpectrumUpdateInterval()">
                                     <option value="50">50</option>

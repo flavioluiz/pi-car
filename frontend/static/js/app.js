@@ -901,6 +901,9 @@ let waterfallMaxDb = -30;  // Will be dynamically adjusted based on signal level
 // Waterfall history buffer - stores previous FFT rows for scrolling display
 let waterfallHistory = [];
 
+// Request sequence number to detect stale responses
+let spectrumRequestSeq = 0;
+
 // Color map for waterfall (converts dB value to RGB color)
 // Based on typical SDR color schemes: dark blue (weak) -> cyan -> green -> yellow -> red (strong)
 function dbToColor(db) {
@@ -1045,12 +1048,20 @@ function updateSpectrogram() {
     if (!spectrogramCtx) return;
 
     const center = currentRadioFreq;
+    const requestSeq = ++spectrumRequestSeq;  // Increment and capture sequence number
+
     fetch(`/api/radio/fft?center=${center}&span=${spectrumSpan}&integration_time=${SPECTROGRAM_INTEGRATION_TIME_S}`)
         .then(r => r.json())
         .then(data => {
+            // Check if this response is stale (a newer request was made)
+            if (requestSeq !== spectrumRequestSeq) {
+                // Stale response - ignore it completely
+                return;
+            }
+
             // Update indicator based on real data availability
             const indicator = document.getElementById('spectrum-mode-indicator');
-            
+
             if (data.error || !data.fft) {
                 // No data available - show waiting state
                 if (indicator) {
@@ -1066,19 +1077,30 @@ function updateSpectrogram() {
                 indicator.classList.add('live');
             }
 
-            // Update frequency labels
-            if (data.start_freq !== undefined && data.end_freq !== undefined) {
+            // Only update frequency labels if response matches current expected frequency
+            // This prevents stale responses from overwriting user-set frequencies
+            const responseCenter = data.frequency;
+            const expectedCenter = currentRadioFreq;
+            const freqMatches = Math.abs(responseCenter - expectedCenter) < 0.05;  // 50 kHz tolerance
+
+            if (freqMatches && data.start_freq !== undefined && data.end_freq !== undefined) {
                 const startLabel = document.getElementById('spectrum-start');
                 const endLabel = document.getElementById('spectrum-end');
                 const centerLabel = document.getElementById('spectrum-center');
                 if (startLabel) startLabel.textContent = data.start_freq.toFixed(1);
                 if (endLabel) endLabel.textContent = data.end_freq.toFixed(1);
-                if (centerLabel) centerLabel.textContent = center.toFixed(1);
+                if (centerLabel) centerLabel.textContent = responseCenter.toFixed(1);
             }
 
-            drawWaterfall(data.fft);
+            // Only draw waterfall if frequency matches (don't mix data from different frequencies)
+            if (freqMatches) {
+                drawWaterfall(data.fft);
+            }
         })
         .catch(() => {
+            // Only update indicator if this is still the latest request
+            if (requestSeq !== spectrumRequestSeq) return;
+
             // On error, show waiting state
             const indicator = document.getElementById('spectrum-mode-indicator');
             if (indicator) {
@@ -1099,25 +1121,43 @@ function applySpectrumCenterFreq() {
     const input = document.getElementById('spectrum-center-input');
     const errorEl = document.getElementById('spectrum-freq-error');
     const freq = parseFloat(input.value);
-    
+
     // Clear previous error
     if (errorEl) errorEl.textContent = '';
-    
+
     if (!isNaN(freq) && freq >= FREQ_MIN_MHZ && freq <= FREQ_MAX_MHZ) {
+        // Check if frequency actually changed
+        const freqChanged = Math.abs(freq - currentRadioFreq) > 0.01;
+
         // Update current radio frequency
         currentRadioFreq = freq;
-        
+
         // Update spectrum frequency labels
         updateSpectrumFrequencyLabels();
-        
+
         // Update the tuner display to stay in sync
         updateTunerFrequencyDisplay(freq);
-        
+
+        // Invalidate stale in-flight requests by bumping the sequence
+        spectrumRequestSeq++;
+
+        // Clear waterfall history when changing frequency (data from old freq is not relevant)
+        if (freqChanged) {
+            waterfallHistory = [];
+            // Reset dynamic dB range for new frequency
+            waterfallMinDb = -80;
+            waterfallMaxDb = -30;
+
+            // Clear canvas immediately
+            if (spectrogramCtx && spectrogramCanvas) {
+                spectrogramCtx.fillStyle = '#0a0a0f';
+                spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+            }
+        }
+
         // Note: During spectrum mode, radio audio is paused, so we only update
         // the display and the spectrum will fetch FFT data at the new frequency.
         // When user exits spectrum mode, the radio will resume at this frequency.
-        
-        // DO NOT clear history - continue with new frequency
     } else {
         // Show error message in UI
         if (errorEl) {
@@ -1126,11 +1166,40 @@ function applySpectrumCenterFreq() {
     }
 }
 
+// Apply new span
+function applySpectrumSpan() {
+    const select = document.getElementById('spectrum-span');
+    const newSpan = parseFloat(select.value);
+
+    // Check if span actually changed
+    const spanChanged = Math.abs(newSpan - spectrumSpan) > 0.01;
+
+    spectrumSpan = newSpan;
+
+    // Update frequency labels
+    updateSpectrumFrequencyLabels();
+
+    // Invalidate stale in-flight requests
+    spectrumRequestSeq++;
+
+    // Clear waterfall history when changing span (data from old span is not comparable)
+    if (spanChanged) {
+        waterfallHistory = [];
+        waterfallMinDb = -80;
+        waterfallMaxDb = -30;
+
+        if (spectrogramCtx && spectrogramCanvas) {
+            spectrogramCtx.fillStyle = '#0a0a0f';
+            spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
+        }
+    }
+}
+
 // Apply new update interval
 function applySpectrumUpdateInterval() {
     const select = document.getElementById('spectrum-update-interval');
     SPECTROGRAM_UPDATE_INTERVAL_MS = parseInt(select.value);
-    
+
     // Restart spectrogram with new interval if active
     if (spectrogramInterval) {
         clearInterval(spectrogramInterval);
