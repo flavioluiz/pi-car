@@ -1085,27 +1085,6 @@ function updateSpectrogram() {
         });
 }
 
-function setSpectrumSpan(span) {
-    spectrumSpan = span;
-    
-    // Update span display if element exists
-    const spanDisplay = document.getElementById('spectrum-span');
-    if (spanDisplay) {
-        spanDisplay.textContent = span.toFixed(1);
-    }
-
-    // Update active button state
-    document.querySelectorAll('.span-btn').forEach(btn => {
-        btn.classList.toggle('active', parseFloat(btn.textContent) === span);
-    });
-
-    // Update frequency range labels using helper function
-    updateSpectrumFrequencyLabels();
-
-    // DO NOT clear waterfall history - let it continue accumulating
-    // This allows users to see the change over time
-}
-
 // Apply new center frequency for spectrum
 function applySpectrumCenterFreq() {
     const input = document.getElementById('spectrum-center-input');

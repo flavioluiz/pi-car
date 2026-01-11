@@ -1444,7 +1444,8 @@ body::after {
 }
 
 .config-btn:hover {
-    background: var(--accent-cyan-bright);
+    background: var(--accent-cyan);
+    opacity: 0.9;
     transform: translateY(-1px);
 }
 
