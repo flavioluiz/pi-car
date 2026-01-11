@@ -1066,14 +1066,12 @@ function updateSpectrogram() {
                 indicator.classList.add('live');
             }
 
-            // Update frequency labels
-            if (data.start_freq !== undefined && data.end_freq !== undefined) {
-                const startLabel = document.getElementById('spectrum-start');
-                const endLabel = document.getElementById('spectrum-end');
-                const centerLabel = document.getElementById('spectrum-center');
-                if (startLabel) startLabel.textContent = data.start_freq.toFixed(1);
-                if (endLabel) endLabel.textContent = data.end_freq.toFixed(1);
-                if (centerLabel) centerLabel.textContent = center.toFixed(1);
+            // Check if response is for the current expected frequency
+            // If not, it's a stale response from before a frequency change - ignore it
+            const responseFreq = data.frequency;
+            if (Math.abs(responseFreq - currentRadioFreq) > 0.05) {
+                // Stale response - don't draw or update anything
+                return;
             }
 
             drawWaterfall(data.fft);
