@@ -25,6 +25,10 @@ import config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# FFT/Spectrogram configuration constants
+FFT_TARGET_BINS = 256       # Target number of frequency bins for FFT
+FFT_MIN_BIN_SIZE_HZ = 1000  # Minimum bin size in Hz (1 kHz)
+
 # Global radio data - shared with routes
 radio_data: Dict[str, Any] = {
     'connected': False,
@@ -501,9 +505,7 @@ class RTLSDRService:
         end_hz = int(end_freq * 1e6)
         
         # Calculate bin size based on span to get reasonable resolution
-        # Aim for approximately 256 bins
-        target_bins = 256
-        bin_size = max(1000, int((end_hz - start_hz) / target_bins))  # Minimum 1 kHz bins
+        bin_size = max(FFT_MIN_BIN_SIZE_HZ, int((end_hz - start_hz) / FFT_TARGET_BINS))
 
         try:
             # Run rtl_power for a quick sweep

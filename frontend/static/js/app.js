@@ -851,17 +851,19 @@ let spectrogramInterval = null;
 let spectrumModeActive = false;
 let spectrumSpan = 2.0; // MHz
 
+// Waterfall configuration constants
+const WATERFALL_MAX_ROWS = 100; // Maximum number of rows to keep in history
+const WATERFALL_MIN_DB = -100;  // Minimum dB value for color mapping (weak signal)
+const WATERFALL_MAX_DB = -20;   // Maximum dB value for color mapping (strong signal)
+
 // Waterfall history buffer - stores previous FFT rows for scrolling display
 let waterfallHistory = [];
-const WATERFALL_MAX_ROWS = 100; // Maximum number of rows to keep in history
 
 // Color map for waterfall (converts dB value to RGB color)
 // Based on typical SDR color schemes: dark blue (weak) -> cyan -> green -> yellow -> red (strong)
 function dbToColor(db) {
-    // Normalize dB value to 0-1 range (typical range: -100 dB to -20 dB)
-    const minDb = -100;
-    const maxDb = -20;
-    const normalized = Math.max(0, Math.min(1, (db - minDb) / (maxDb - minDb)));
+    // Normalize dB value to 0-1 range
+    const normalized = Math.max(0, Math.min(1, (db - WATERFALL_MIN_DB) / (WATERFALL_MAX_DB - WATERFALL_MIN_DB)));
     
     // Color gradient: dark blue -> blue -> cyan -> green -> yellow -> red
     let r, g, b;
