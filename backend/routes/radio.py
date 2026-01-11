@@ -144,7 +144,7 @@ def radio_fft():
     Query params:
         center: frequencia central em MHz (opcional)
         span: largura de banda em MHz (opcional, default: 2.0)
-        integration_time: tempo de integracao em segundos (opcional, default: 0.1)
+        integration_time: tempo de integração em segundos (opcional, default: 0.1)
     """
     center = request.args.get('center', type=float)
     span = request.args.get('span', type=float, default=2.0)

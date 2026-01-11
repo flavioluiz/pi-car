@@ -1125,7 +1125,6 @@ function drawWaterfall(fftData) {
         const targetMin = currentMin - SPECTROGRAM_DB_MARGIN;
         const targetMax = currentMax + SPECTROGRAM_DB_MARGIN;
         
-        // Smoothly adapt the dynamic range to the actual signal levels
         waterfallMinDb = waterfallMinDb + (targetMin - waterfallMinDb) * SPECTROGRAM_DB_SMOOTHING;
         waterfallMaxDb = waterfallMaxDb + (targetMax - waterfallMaxDb) * SPECTROGRAM_DB_SMOOTHING;
         
