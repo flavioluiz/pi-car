@@ -1066,14 +1066,6 @@ function updateSpectrogram() {
                 indicator.classList.add('live');
             }
 
-            // Check if response is for the current expected frequency
-            // If not, it's a stale response from before a frequency change - ignore it
-            const responseFreq = data.frequency;
-            if (Math.abs(responseFreq - currentRadioFreq) > 0.05) {
-                // Stale response - don't draw or update anything
-                return;
-            }
-
             drawWaterfall(data.fft);
         })
         .catch(() => {
