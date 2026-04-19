@@ -146,6 +146,7 @@ install_python_packages() {
         python-mpd2 \
         gps3 \
         obd \
+        mutagen \
         pyrtlsdr \
         numpy \
         scipy

@@ -122,7 +122,7 @@ sudo apt install -y chromium
 
 ```bash
 sudo apt install -y python3-pip python3-dev
-pip3 install flask python-mpd2 gps3 obd --break-system-packages
+pip3 install flask python-mpd2 gps3 obd mutagen --break-system-packages
 ```
 
 ## Configure Autostart

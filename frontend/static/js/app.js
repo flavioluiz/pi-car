@@ -178,7 +178,7 @@ function updateData() {
 
             // Music
             document.getElementById('music-title').textContent = data.music.title || 'No music';
-            document.getElementById('music-artist').textContent = data.music.artist || '-';
+            document.getElementById('music-artist').textContent = data.music.artists_all || data.music.artist || '-';
             document.getElementById('volume-display').textContent = data.music.volume + '%';
             document.getElementById('time-elapsed').textContent = formatTime(data.music.elapsed);
             document.getElementById('time-duration').textContent = formatTime(data.music.duration);
@@ -356,7 +356,7 @@ function loadQueue() {
                     <div class="browser-item-icon">&#9835;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
-                        <div class="browser-item-subtitle">${song.artist || 'Unknown artist'}</div>
+                        <div class="browser-item-subtitle">${song.artists_all || song.artist || 'Unknown artist'}</div>
                     </div>
                     <button class="browser-item-remove" onclick="event.stopPropagation(); removeFromQueue(${song.pos || i})">&#10005;</button>
                 </div>
@@ -435,7 +435,7 @@ function loadArtistSongs(artist) {
                     <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
-                        <div class="browser-item-subtitle">${song.album || ''}</div>
+                        <div class="browser-item-subtitle">${song.artists_all || song.album || ''}</div>
                     </div>
                     <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
                     <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
@@ -520,7 +520,7 @@ function doSearch() {
                     <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
-                        <div class="browser-item-subtitle">${song.artist || 'Unknown artist'}</div>
+                        <div class="browser-item-subtitle">${song.artists_all || song.artist || 'Unknown artist'}</div>
                     </div>
                     <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
                     <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
@@ -540,7 +540,7 @@ function renderSongList(songs, listElement) {
                 <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                 <div class="browser-item-info">
                     <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
-                    <div class="browser-item-subtitle">${song.artist || song.album || 'Unknown artist'}</div>
+                    <div class="browser-item-subtitle">${song.artists_all || song.artist || song.album || 'Unknown artist'}</div>
                 </div>
                 <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
                 <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>

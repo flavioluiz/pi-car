@@ -6,11 +6,13 @@ Gerencia conexao e controle do MPD.
 
 from mpd import MPDClient
 import config
+from backend.services.music_library import MusicLibraryIndex
 
 # Dados globais de musica (atualizados por get_status)
 music_data = {
     'state': 'stop',
     'artist': '',
+    'artists_all': '',
     'title': '',
     'album': '',
     'elapsed': 0,
@@ -20,6 +22,8 @@ music_data = {
     'repeat': False,
     'connected': False
 }
+
+music_library = MusicLibraryIndex()
 
 
 class MPDService:
@@ -62,6 +66,11 @@ class MPDService:
                 music_data['artist'] = song.get('artist', 'Desconhecido')
                 music_data['title'] = song.get('title', song.get('file', 'Sem titulo'))
                 music_data['album'] = song.get('album', '')
+                current_file = song.get('file', '')
+                track = music_library.get_track_by_file(current_file) if current_file else None
+                music_data['artists_all'] = (
+                    track.get('artists_all', '') if track else song.get('artists_all', '')
+                )
 
                 client.close()
                 client.disconnect()
@@ -133,15 +142,8 @@ class MPDService:
 
     def get_library(self):
         """Retorna biblioteca de musicas"""
-        client = self._get_client()
-        if not client:
-            return {'error': 'MPD nao conectado'}
-
         try:
-            songs = client.listall()
-            client.close()
-            client.disconnect()
-            return songs
+            return music_library.refresh(force=True)
         except Exception as e:
             return {'error': str(e)}
 
@@ -162,55 +164,22 @@ class MPDService:
 
     def search(self, query):
         """Busca musicas por titulo, artista ou album"""
-        client = self._get_client()
-        if not client:
-            return {'error': 'MPD nao conectado'}
-
         try:
-            results = client.search('any', query)
-            client.close()
-            client.disconnect()
-            return results
+            return music_library.search(query)
         except Exception as e:
             return {'error': str(e)}
 
     def list_artists(self):
         """Retorna lista de artistas"""
-        client = self._get_client()
-        if not client:
-            return {'error': 'MPD nao conectado'}
-
         try:
-            result = client.list('artist')
-            client.close()
-            client.disconnect()
-
-            # Normaliza resultado (pode ser lista de strings ou dicts)
-            artists = []
-            for item in result:
-                if isinstance(item, str):
-                    if item:
-                        artists.append(item)
-                elif isinstance(item, dict):
-                    artist = item.get('artist', '')
-                    if artist:
-                        artists.append(artist)
-
-            return sorted(set(artists))
+            return music_library.list_artists()
         except Exception as e:
             return {'error': str(e)}
 
     def list_by_artist(self, artist):
         """Retorna musicas de um artista"""
-        client = self._get_client()
-        if not client:
-            return {'error': 'MPD nao conectado'}
-
         try:
-            songs = client.find('artist', artist)
-            client.close()
-            client.disconnect()
-            return songs
+            return music_library.list_by_artist(artist)
         except Exception as e:
             return {'error': str(e)}
 
@@ -390,16 +359,8 @@ class MPDService:
 
     def list_all_songs(self):
         """Lista todas as musicas da biblioteca"""
-        client = self._get_client()
-        if not client:
-            return {'error': 'MPD nao conectado'}
-
         try:
-            songs = client.listallinfo()
-            client.close()
-            client.disconnect()
-            # Filtra apenas arquivos (ignora diretorios)
-            return [s for s in songs if 'file' in s]
+            return music_library.refresh(force=True)
         except Exception as e:
             return {'error': str(e)}
 

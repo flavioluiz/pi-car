@@ -4,9 +4,12 @@ Pi-Car - Configuracoes centralizadas
 Todas as configuracoes do sistema ficam aqui.
 """
 
+from pathlib import Path
+
 # MPD (Music Player Daemon)
 MPD_HOST = 'localhost'
 MPD_PORT = 6600
+MUSIC_DIRECTORY = str(Path.home() / 'Music')
 
 # GPS (gpsd)
 GPS_HOST = 'localhost'
