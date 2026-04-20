@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Pi-Car
+Description=Pi-Car multimedia boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/pi-car
+ScriptFile=/usr/share/plymouth/themes/pi-car/pi-car.script

@@ -1,0 +1,23 @@
+// Pi-Car Plymouth splash
+// Renders a centered ASCII-art image on a black background and shows
+// boot status messages along the bottom in green phosphor style.
+
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+
+splash.image  = Image("splash.png");
+splash.sprite = Sprite(splash.image);
+splash.sprite.SetX(Window.GetWidth()  / 2 - splash.image.GetWidth()  / 2);
+splash.sprite.SetY(Window.GetHeight() / 2 - splash.image.GetHeight() / 2);
+
+status.sprite = Sprite();
+
+fun show_message(text) {
+    msg = Image.Text(text, 0.2, 1.0, 0.4, 1.0, "Mono 12");
+    status.sprite.SetImage(msg);
+    status.sprite.SetX(Window.GetWidth() / 2 - msg.GetWidth() / 2);
+    status.sprite.SetY(Window.GetHeight() - 40);
+}
+
+Plymouth.SetMessageFunction(show_message);
+Plymouth.SetUpdateStatusFunction(show_message);
