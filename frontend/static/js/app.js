@@ -413,7 +413,16 @@ function loadArtists() {
                 return;
             }
 
-            list.innerHTML = artists.map(artist => {
+            list.innerHTML = `
+                <div class="browser-item" onclick="loadAllSongs()">
+                    <div class="browser-item-icon">&#127925;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">All songs</div>
+                    </div>
+                    <button class="browser-item-action play" onclick="event.stopPropagation(); playAllSongs()">&#9654;</button>
+                    <button class="browser-item-action" onclick="event.stopPropagation(); addAllSongsToQueue()">+</button>
+                </div>
+            ` + artists.map(artist => {
                 const escaped = artist.replace(/'/g, "\\'");
                 return `
                 <div class="browser-item" onclick="loadArtistSongs('${escaped}')">
@@ -464,6 +473,63 @@ function loadArtistSongs(artist) {
             `}).join('');
         })
         .catch(err => console.error('Error loading songs:', err));
+}
+
+// Load all songs list
+function loadAllSongs() {
+    fetch('/api/music/all')
+        .then(r => r.json())
+        .then(songs => {
+            const list = document.getElementById('artists-list');
+            if (!songs || songs.length === 0 || songs.error) {
+                list.innerHTML = '<div class="browser-empty">No songs</div>';
+                return;
+            }
+
+            list.innerHTML = `
+                <div class="browser-item" onclick="loadArtists()">
+                    <div class="browser-item-icon">&#8592;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">Back</div>
+                    </div>
+                </div>
+            ` + songs.map(song => {
+                const file = (song.file || '').replace(/'/g, "\\'");
+                const inQueue = queueFiles.has(song.file);
+                return `
+                <div class="browser-item" data-file="${song.file || ''}">
+                    <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
+                    <div class="browser-item-info">
+                        <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
+                        <div class="browser-item-subtitle">${song.artists_all || song.artist || ''}</div>
+                    </div>
+                    <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
+                    <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
+                </div>
+            `}).join('');
+        })
+        .catch(err => console.error('Error loading all songs:', err));
+}
+
+// Play all songs (replaces queue)
+function playAllSongs() {
+    fetch('/api/music/all/play', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            document.querySelector('.music-tab[data-music="playing"]').click();
+            updateData();
+        })
+        .catch(err => console.error('Error:', err));
+}
+
+// Add all songs to queue
+function addAllSongsToQueue() {
+    fetch('/api/music/all/add', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            loadQueue();
+        })
+        .catch(err => console.error('Error:', err));
 }
 
 // Play all songs by artist (replaces queue)

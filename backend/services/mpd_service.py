@@ -426,6 +426,46 @@ class MPDService:
         except Exception as e:
             return {'error': str(e)}
 
+    def play_all_songs(self):
+        """Limpa fila, adiciona todas as musicas e toca"""
+        songs = music_library.refresh(force=True)
+        if not songs:
+            return {'error': 'Nenhuma musica encontrada'}
+
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            client.clear()
+            for song in songs:
+                client.add(song['file'])
+            client.play()
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def add_all_songs_to_queue(self):
+        """Adiciona todas as musicas a fila"""
+        songs = music_library.refresh(force=True)
+        if not songs:
+            return {'error': 'Nenhuma musica encontrada'}
+
+        client = self._get_client()
+        if not client:
+            return {'error': 'MPD nao conectado'}
+
+        try:
+            for song in songs:
+                client.add(song['file'])
+            client.close()
+            client.disconnect()
+            return {'success': True}
+        except Exception as e:
+            return {'error': str(e)}
+
     def seek(self, position):
         """Vai para posicao especifica da musica (em segundos)"""
         client = self._get_client()

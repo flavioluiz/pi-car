@@ -209,6 +209,24 @@ def music_all():
     return jsonify(result)
 
 
+@music_bp.route('/all/play', methods=['POST'])
+def music_play_all():
+    """Toca todas as musicas"""
+    result = mpd_service.play_all_songs()
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@music_bp.route('/all/add', methods=['POST'])
+def music_add_all():
+    """Adiciona todas as musicas a fila"""
+    result = mpd_service.add_all_songs_to_queue()
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
 @music_bp.route('/seek', methods=['POST'])
 def music_seek():
     """Vai para posicao especifica da musica"""
