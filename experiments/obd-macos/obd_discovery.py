@@ -16,50 +16,96 @@ Configuração:
 import obd
 import serial
 import time
+import sys
 
 # Altere para a porta do seu ELM327
-PORT = "/dev/tty.OBDII"  # Ajuste conforme necessário
+PORT = "/dev/tty.usbmodemA86BB3EB03051"  # Ajuste conforme necessário
 
-# Baudrates comuns para ELM327 Bluetooth
-# 38400 é o mais comum, mas alguns usam 9600, 115200 ou 57600
-BAUDRATE = 38400
+# Baudrates comuns para ELM327 USB (diferentes do Bluetooth!)
+# USB adapters geralmente usam 9600, 38400, 115200 ou 500000
+BAUDRATES_TO_TRY = [9600, 38400, 115200, 57600, 500000, 230400, 19200]
 
-def wake_up_adapter():
+def find_baudrate():
+    """Tenta encontrar o baudrate correto para o adaptador USB"""
+    print("Procurando baudrate correto...")
+    print(f"Porta: {PORT}\n")
+
+    for baud in BAUDRATES_TO_TRY:
+        print(f"Tentando {baud}...", end=" ")
+        try:
+            ser = serial.Serial(
+                PORT,
+                baudrate=baud,
+                timeout=2,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE
+            )
+            time.sleep(0.5)
+
+            # Limpa o buffer
+            ser.reset_input_buffer()
+            ser.reset_output_buffer()
+
+            # Envia comando ATZ (reset)
+            ser.write(b'ATZ\r')
+            time.sleep(1.5)
+
+            response = ser.read(ser.in_waiting or 100)
+            ser.close()
+
+            if b'ELM' in response or b'elm' in response.lower():
+                print(f"SUCESSO! Resposta: {response}")
+                return baud
+            elif response:
+                print(f"Resposta: {response[:50]}...")
+            else:
+                print("Sem resposta")
+
+        except serial.SerialException as e:
+            print(f"Erro: {e}")
+        except Exception as e:
+            print(f"Erro: {e}")
+
+    return None
+
+def wake_up_adapter(baudrate):
     """Acorda o adaptador ELM327 antes de usar a biblioteca obd"""
     print("Acordando o adaptador...")
     try:
-        ser = serial.Serial(PORT, baudrate=BAUDRATE, timeout=2)
-        time.sleep(1)
-        ser.write(b'\r\r\r')
+        ser = serial.Serial(PORT, baudrate=baudrate, timeout=2)
         time.sleep(0.5)
+        ser.reset_input_buffer()
+        ser.write(b'\r\r\r')
+        time.sleep(0.3)
         ser.write(b'ATZ\r')
-        time.sleep(2)
-        response = ser.read(100)
+        time.sleep(1.5)
+        response = ser.read(ser.in_waiting or 100)
         ser.close()
         if b'ELM' in response:
-            print("Adaptador acordado!")
+            print(f"Adaptador acordado! Resposta: {response}")
             return True
+        print(f"Resposta inesperada: {response}")
         return False
     except Exception as e:
         print(f"Erro ao acordar: {e}")
         return False
 
-def discover_commands():
-    print("Conectando ao OBD...")
+def discover_commands(baudrate):
+    print("\nConectando ao OBD...")
     print(f"Porta: {PORT}")
-    print(f"Baudrate: {BAUDRATE}")
+    print(f"Baudrate: {baudrate}")
 
     # Acorda o adaptador primeiro
-    if not wake_up_adapter():
+    if not wake_up_adapter(baudrate):
         print("AVISO: Não foi possível acordar o adaptador")
 
     time.sleep(1)
 
-    # fast=False para inicialização mais confiável via Bluetooth
-    # timeout maior para conexões Bluetooth
+    # fast=False para inicialização mais confiável
     connection = obd.OBD(
         portstr=PORT,
-        baudrate=BAUDRATE,
+        baudrate=baudrate,
         fast=False,
         timeout=30
     )
@@ -116,4 +162,20 @@ def discover_commands():
     return results
 
 if __name__ == "__main__":
-    discover_commands()
+    # Primeiro encontra o baudrate correto
+    baudrate = find_baudrate()
+
+    if baudrate:
+        print(f"\n{'='*60}")
+        print(f"Baudrate encontrado: {baudrate}")
+        print(f"{'='*60}\n")
+        discover_commands(baudrate)
+    else:
+        print("\n" + "="*60)
+        print("ERRO: Não foi possível encontrar o baudrate correto.")
+        print("Verifique:")
+        print("  1. O adaptador está conectado?")
+        print("  2. O veículo está ligado (ignição ON)?")
+        print(f"  3. A porta {PORT} está correta?")
+        print("="*60)
+        sys.exit(1)
