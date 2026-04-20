@@ -396,14 +396,18 @@ function loadArtists() {
                 return;
             }
 
-            list.innerHTML = artists.map(artist => `
-                <div class="browser-item" onclick="loadArtistSongs('${artist.replace(/'/g, "\\'")}')">
+            list.innerHTML = artists.map(artist => {
+                const escaped = artist.replace(/'/g, "\\'");
+                return `
+                <div class="browser-item" onclick="loadArtistSongs('${escaped}')">
                     <div class="browser-item-icon">&#128100;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${artist}</div>
                     </div>
+                    <button class="browser-item-action play" onclick="event.stopPropagation(); playArtist('${escaped}')">&#9654;</button>
+                    <button class="browser-item-action" onclick="event.stopPropagation(); addArtistToQueue('${escaped}')">+</button>
                 </div>
-            `).join('');
+            `}).join('');
         })
         .catch(err => console.error('Error loading artists:', err));
 }
@@ -443,6 +447,27 @@ function loadArtistSongs(artist) {
             `}).join('');
         })
         .catch(err => console.error('Error loading songs:', err));
+}
+
+// Play all songs by artist (replaces queue)
+function playArtist(artist) {
+    fetch('/api/music/artist/' + encodeURIComponent(artist) + '/play', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            document.querySelector('.music-tab[data-music="playing"]').click();
+            updateData();
+        })
+        .catch(err => console.error('Error:', err));
+}
+
+// Add all songs by artist to queue
+function addArtistToQueue(artist) {
+    fetch('/api/music/artist/' + encodeURIComponent(artist) + '/add', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            loadQueue();
+        })
+        .catch(err => console.error('Error:', err));
 }
 
 // Load saved playlists

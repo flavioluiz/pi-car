@@ -79,6 +79,24 @@ def music_by_artist(name):
     return jsonify(result)
 
 
+@music_bp.route('/artist/<path:name>/play', methods=['POST'])
+def music_play_artist(name):
+    """Toca todas as musicas de um artista"""
+    result = mpd_service.play_artist(name)
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
+@music_bp.route('/artist/<path:name>/add', methods=['POST'])
+def music_add_artist(name):
+    """Adiciona todas as musicas de um artista a fila"""
+    result = mpd_service.add_artist_to_queue(name)
+    if 'error' in result:
+        return jsonify(result), 500
+    return jsonify(result)
+
+
 @music_bp.route('/playlists')
 def music_playlists():
     """Lista playlists salvas"""
