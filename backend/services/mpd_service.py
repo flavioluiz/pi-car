@@ -136,6 +136,12 @@ class MPDService:
             playlist = client.playlistinfo()
             client.close()
             client.disconnect()
+            for song in playlist:
+                file_path = song.get('file', '')
+                if file_path:
+                    track = music_library.get_track_by_file(file_path)
+                    if track:
+                        song['artists_all'] = track.get('artists_all', '')
             return playlist
         except Exception as e:
             return {'error': str(e)}

@@ -10,6 +10,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
+from mutagen import File as MutagenFile
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3, ID3NoHeaderError
 
@@ -34,6 +35,7 @@ class MusicLibraryIndex:
     def __init__(self, library_dir: str | Path | None = None):
         self.library_dir = Path(library_dir or config.MUSIC_DIRECTORY).expanduser()
         self._cache: list[dict] = []
+        self._file_index: dict[str, dict] = {}
         self._cache_timestamp = 0.0
         self.cache_ttl_seconds = 10
 
@@ -45,6 +47,28 @@ class MusicLibraryIndex:
             for path in self.library_dir.rglob("*")
             if path.is_file() and path.suffix.lower() in AUDIO_EXTENSIONS
         )
+
+    def _read_artists_all_generic(self, file_path: Path) -> str:
+        """Lê artists_all de qualquer formato suportado pelo mutagen."""
+        try:
+            audio = MutagenFile(str(file_path))
+            if audio is None or audio.tags is None:
+                return ""
+
+            # FLAC / OGG (VorbisComment)
+            if hasattr(audio.tags, 'get'):
+                val = audio.tags.get(ARTISTS_ALL_DESC) or audio.tags.get(ARTISTS_ALL_DESC.upper())
+                if val:
+                    return _first(val)
+
+            # M4A / MP4
+            if hasattr(audio.tags, 'items'):
+                for key, val in audio.tags.items():
+                    if ARTISTS_ALL_DESC in str(key).lower():
+                        return _first(val)
+        except Exception:
+            pass
+        return ""
 
     def _read_track(self, file_path: Path) -> dict:
         metadata = {
@@ -63,6 +87,7 @@ class MusicLibraryIndex:
         except Exception:
             pass
 
+        # Tenta ler artists_all via ID3 (MP3)
         try:
             tags = ID3(str(file_path))
             custom_tags = tags.getall(f"TXXX:{ARTISTS_ALL_DESC}")
@@ -72,6 +97,10 @@ class MusicLibraryIndex:
             pass
         except Exception:
             pass
+
+        # Para formatos não-ID3 (FLAC, OGG, M4A), tenta leitura genérica
+        if not metadata["artists_all"] and file_path.suffix.lower() != ".mp3":
+            metadata["artists_all"] = self._read_artists_all_generic(file_path)
 
         if not metadata["artists_all"]:
             metadata["artists_all"] = metadata["artist"]
@@ -87,6 +116,10 @@ class MusicLibraryIndex:
             return self._cache
 
         self._cache = self._scan_library()
+        self._file_index = {}
+        for track in self._cache:
+            self._file_index[track["file"]] = track
+            self._file_index[Path(track["file"]).name] = track
         self._cache_timestamp = now
         return self._cache
 
@@ -94,11 +127,9 @@ class MusicLibraryIndex:
         if not file_name:
             return None
 
+        self.refresh()
         target = file_name.strip()
-        for track in self.refresh():
-            if track["file"] == target or Path(track["file"]).name == target:
-                return track
-        return None
+        return self._file_index.get(target)
 
     def search(self, query: str) -> list[dict]:
         query = (query or "").strip().casefold()
@@ -119,13 +150,17 @@ class MusicLibraryIndex:
         return results
 
     def list_artists(self) -> list[str]:
-        artists = []
+        artists = set()
         for track in self.refresh(force=True):
             artist = (track.get("artist") or "").strip()
             if artist:
-                artists.append(artist)
+                artists.add(artist)
+            for part in (track.get("artists_all") or "").split(","):
+                part = part.strip()
+                if part:
+                    artists.add(part)
 
-        return sorted(set(artists), key=str.casefold)
+        return sorted(artists, key=str.casefold)
 
     def list_by_artist(self, artist: str) -> list[dict]:
         needle = (artist or "").strip().casefold()

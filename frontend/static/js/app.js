@@ -435,7 +435,7 @@ function loadArtistSongs(artist) {
                     <div class="browser-item-icon ${inQueue ? 'in-queue' : ''}">&#9835;</div>
                     <div class="browser-item-info">
                         <div class="browser-item-title">${song.title || song.file || 'Untitled'}</div>
-                        <div class="browser-item-subtitle">${song.artists_all || song.album || ''}</div>
+                        <div class="browser-item-subtitle">${song.artists_all || song.artist || ''}</div>
                     </div>
                     <button class="browser-item-action play" onclick="event.stopPropagation(); playSong('${file}')">&#9654;</button>
                     <button class="browser-item-action ${inQueue ? 'added' : ''}" onclick="event.stopPropagation(); addToQueueAndMark(this, '${file}')">+</button>
