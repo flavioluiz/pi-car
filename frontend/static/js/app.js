@@ -203,7 +203,7 @@ function updateData() {
 
             // Shuffle and Repeat
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
-            document.getElementById('btn-repeat').classList.toggle('active', data.music.repeat);
+            updateRepeatButton(data.music.repeat_mode);
 
             // OBD - Dynamic metrics display
             updateOBDDisplay(data.obd);
@@ -288,6 +288,23 @@ function toggleRepeat() {
         .then(r => r.json())
         .then(() => updateData())
         .catch(err => console.error('Error:', err));
+}
+
+function updateRepeatButton(mode) {
+    const btn = document.getElementById('btn-repeat');
+    btn.classList.remove('active', 'repeat-song');
+    if (mode === 'playlist') {
+        btn.classList.add('active');
+        btn.innerHTML = '&#8634;';
+        btn.title = 'Repeat playlist';
+    } else if (mode === 'song') {
+        btn.classList.add('active', 'repeat-song');
+        btn.innerHTML = '&#8634;1';
+        btn.title = 'Repeat song';
+    } else {
+        btn.innerHTML = '&#8634;';
+        btn.title = 'Repeat off';
+    }
 }
 
 // ============ MUSIC SUBMENU ============
@@ -1395,7 +1412,7 @@ updateData = function() {
 
             // Shuffle and Repeat
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
-            document.getElementById('btn-repeat').classList.toggle('active', data.music.repeat);
+            updateRepeatButton(data.music.repeat_mode);
 
             // OBD - Dynamic metrics display
             updateOBDDisplay(data.obd);

@@ -19,7 +19,7 @@ music_data = {
     'duration': 0,
     'volume': 100,
     'random': False,
-    'repeat': False,
+    'repeat_mode': 'off',
     'connected': False
 }
 
@@ -60,9 +60,15 @@ class MPDService:
                 music_data['elapsed'] = float(status.get('elapsed', 0))
                 music_data['duration'] = float(status.get('duration', 0))
                 music_data['random'] = status.get('random', '0') == '1'
-                # Repeat ativo = repeat + single (repete musica atual)
-                music_data['repeat'] = (status.get('repeat', '0') == '1' and
-                                        status.get('single', '0') == '1')
+                # Repeat mode: off, playlist, song
+                mpd_repeat = status.get('repeat', '0') == '1'
+                mpd_single = status.get('single', '0') == '1'
+                if mpd_repeat and mpd_single:
+                    music_data['repeat_mode'] = 'song'
+                elif mpd_repeat:
+                    music_data['repeat_mode'] = 'playlist'
+                else:
+                    music_data['repeat_mode'] = 'off'
                 music_data['artist'] = song.get('artist', 'Desconhecido')
                 music_data['title'] = song.get('title', song.get('file', 'Sem titulo'))
                 music_data['album'] = song.get('album', '')
@@ -294,24 +300,34 @@ class MPDService:
             return {'error': str(e)}
 
     def toggle_repeat(self):
-        """Alterna modo repeat (repete musica atual)"""
+        """Cicla modo repeat: off -> playlist -> song -> off"""
         client = self._get_client()
         if not client:
             return {'error': 'MPD nao conectado'}
 
         try:
             status = client.status()
-            # Para repetir uma musica, precisamos de repeat + single
             current_repeat = status.get('repeat', '0') == '1'
             current_single = status.get('single', '0') == '1'
-            # Considera ativo se ambos estao ligados
-            is_active = current_repeat and current_single
-            new_state = 0 if is_active else 1
-            client.repeat(new_state)
-            client.single(new_state)
+
+            if current_repeat and current_single:
+                # song -> off
+                client.repeat(0)
+                client.single(0)
+                new_mode = 'off'
+            elif current_repeat:
+                # playlist -> song
+                client.single(1)
+                new_mode = 'song'
+            else:
+                # off -> playlist
+                client.repeat(1)
+                client.single(0)
+                new_mode = 'playlist'
+
             client.close()
             client.disconnect()
-            return {'success': True, 'repeat': not is_active}
+            return {'success': True, 'repeat_mode': new_mode}
         except Exception as e:
             return {'error': str(e)}
 

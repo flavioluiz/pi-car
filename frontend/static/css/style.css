@@ -425,6 +425,12 @@ body::after {
     box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
 }
 
+.mode-btn.repeat-song {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
+}
+
 /* ============ SUBMENU DE MUSICA ============ */
 .music-tabs {
     display: flex;
