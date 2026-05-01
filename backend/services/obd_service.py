@@ -23,6 +23,7 @@ STABLE_PORT = getattr(config, 'OBD_DEVICE', '/dev/serial/by-id/usb-FTDI_FT232R_U
 FALLBACK_PORT = getattr(config, 'OBD_FALLBACK_DEVICE', '/dev/ttyUSB0')
 BAUDRATE = getattr(config, 'OBD_BAUDRATE', 38400)
 POLL_INTERVAL = getattr(config, 'OBD_POLL_INTERVAL', 0.8)
+STALE_TIMEOUT = getattr(config, 'OBD_STALE_TIMEOUT', 6.0)
 
 PID_INFO = {
     'RPM': {'label': 'RPM', 'unit': 'rpm'},
@@ -91,6 +92,10 @@ INITIAL_DATA: Dict[str, Any] = {
         'vehicle': getattr(config, 'OBD_VEHICLE_NAME', 'Citroen C3 Picasso 2013 1.5 Flex'),
         'vin': None,
         'sample_time': None,
+        'last_dynamic_sample_time': None,
+        'dynamic_stale': False,
+        'dynamic_stale_age_s': None,
+        'last_successful_command': None,
     },
     'error': None,
 }
@@ -162,6 +167,9 @@ class OBDService:
         self._trip_distance_km = 0.0
         self._last_medium_poll_at = 0.0
         self._last_slow_poll_at = 0.0
+        self._last_dynamic_pid_at = 0.0
+        self._last_dynamic_sample_time: Optional[str] = None
+        self._last_successful_command: Optional[str] = None
 
     def _resolve_device(self) -> Optional[str]:
         if os.path.exists(self.device):
@@ -212,6 +220,11 @@ class OBDService:
             obd_data['connected'] = False
             obd_data['connection']['connected'] = False
             obd_data['error'] = message
+
+    def _remember_successful_command(self, command: str) -> None:
+        self._last_dynamic_pid_at = time.monotonic()
+        self._last_dynamic_sample_time = datetime.now(timezone.utc).isoformat()
+        self._last_successful_command = command
 
     def _open_serial(self, port: str):
         import serial
@@ -336,39 +349,39 @@ class OBDService:
     def _read_direct_data(self, now: float) -> Dict[str, Any]:
         direct = copy.deepcopy(obd_data['direct'])
         fast_values = {
-            'rpm': self._parse_two_byte('010C', '410C', lambda a, b: ((a * 256) + b) / 4),
-            'speed_kmh': self._parse_one_byte('010D', '410D', lambda a: a),
-            'map_kpa': self._parse_one_byte('010B', '410B', lambda a: a),
-            'engine_load_pct': self._parse_one_byte('0104', '4104', lambda a: a * 100 / 255),
-            'throttle_pct': self._parse_one_byte('0111', '4111', lambda a: a * 100 / 255),
+            'rpm': self._parse_two_byte('010C', '410C', lambda a, b: ((a * 256) + b) / 4, timeout=0.55),
+            'speed_kmh': self._parse_one_byte('010D', '410D', lambda a: a, timeout=0.45),
+            'map_kpa': self._parse_one_byte('010B', '410B', lambda a: a, timeout=0.55),
+            'engine_load_pct': self._parse_one_byte('0104', '4104', lambda a: a * 100 / 255, timeout=0.55),
+            'throttle_pct': self._parse_one_byte('0111', '4111', lambda a: a * 100 / 255, timeout=0.55),
         }
         for key, value in fast_values.items():
             _set_valid(direct, key, value)
 
         if now - self._last_medium_poll_at >= 1:
             medium_values = {
-                'coolant_temp_c': self._parse_one_byte('0105', '4105', lambda a: a - 40),
-                'intake_temp_c': self._parse_one_byte('010F', '410F', lambda a: a - 40),
-                'short_fuel_trim_b1_pct': self._parse_one_byte('0106', '4106', lambda a: (a - 128) * 100 / 128),
-                'long_fuel_trim_b1_pct': self._parse_one_byte('0107', '4107', lambda a: (a - 128) * 100 / 128),
-                'timing_advance_deg': self._parse_one_byte('010E', '410E', lambda a: (a / 2) - 64),
+                'coolant_temp_c': self._parse_one_byte('0105', '4105', lambda a: a - 40, timeout=0.65),
+                'intake_temp_c': self._parse_one_byte('010F', '410F', lambda a: a - 40, timeout=0.65),
+                'short_fuel_trim_b1_pct': self._parse_one_byte('0106', '4106', lambda a: (a - 128) * 100 / 128, timeout=0.65),
+                'long_fuel_trim_b1_pct': self._parse_one_byte('0107', '4107', lambda a: (a - 128) * 100 / 128, timeout=0.65),
+                'timing_advance_deg': self._parse_one_byte('010E', '410E', lambda a: (a / 2) - 64, timeout=0.65),
             }
             for key, value in medium_values.items():
                 _set_valid(direct, key, value)
 
-            voltage_response = self._command('ATRV')
+            voltage_response = self._command('ATRV', timeout=0.6)
             voltage_match = re.search(r'(\d+(?:\.\d+)?)\s*V', voltage_response, re.IGNORECASE)
             if voltage_match:
                 direct['adapter_voltage_v'] = float(voltage_match.group(1))
             self._last_medium_poll_at = now
 
         if now - self._last_slow_poll_at >= 30:
-            status = _bytes_from_hex(self._command('0101'), '4101', 4)
+            status = _bytes_from_hex(self._command('0101', timeout=0.8), '4101', 4)
             if status:
                 direct['mil_on'] = bool(status[0] & 0x80)
 
-            active_response = self._command('03', timeout=1.5)
-            pending_response = self._command('07', timeout=1.5)
+            active_response = self._command('03', timeout=0.9)
+            pending_response = self._command('07', timeout=0.9)
             if _find_hex_frame(active_response, '43'):
                 direct['active_dtcs'] = _decode_dtcs(active_response, '43')
             if _find_hex_frame(pending_response, '47'):
@@ -377,13 +390,19 @@ class OBDService:
 
         return direct
 
-    def _parse_one_byte(self, command: str, prefix: str, convert) -> Optional[float]:
-        data = _bytes_from_hex(self._command(command), prefix, 1)
-        return convert(data[0]) if data else None
+    def _parse_one_byte(self, command: str, prefix: str, convert, timeout: float = 1.2) -> Optional[float]:
+        data = _bytes_from_hex(self._command(command, timeout=timeout), prefix, 1)
+        if not data:
+            return None
+        self._remember_successful_command(command)
+        return convert(data[0])
 
-    def _parse_two_byte(self, command: str, prefix: str, convert) -> Optional[float]:
-        data = _bytes_from_hex(self._command(command), prefix, 2)
-        return convert(data[0], data[1]) if data else None
+    def _parse_two_byte(self, command: str, prefix: str, convert, timeout: float = 1.2) -> Optional[float]:
+        data = _bytes_from_hex(self._command(command, timeout=timeout), prefix, 2)
+        if not data:
+            return None
+        self._remember_successful_command(command)
+        return convert(data[0], data[1])
 
     def _calculate_inferred(self, direct: Dict[str, Any], now: float) -> Dict[str, Any]:
         rpm = direct.get('rpm') or 0
@@ -491,6 +510,9 @@ class OBDService:
                 init = self._initialize_elm()
                 self._last_medium_poll_at = 0.0
                 self._last_slow_poll_at = 0.0
+                self._last_dynamic_pid_at = time.monotonic()
+                self._last_dynamic_sample_time = None
+                self._last_successful_command = None
                 with self._lock:
                     obd_data['connected'] = True
                     obd_data['error'] = None
@@ -510,6 +532,10 @@ class OBDService:
                 while self._running:
                     now = time.time()
                     direct = self._read_direct_data(now)
+                    stale_age = time.monotonic() - self._last_dynamic_pid_at
+                    if stale_age > STALE_TIMEOUT:
+                        raise TimeoutError(f'OBD dynamic data stale for {stale_age:.1f}s')
+
                     inferred = self._calculate_inferred(direct, now)
                     metrics = self._metrics_from_snapshot(direct, inferred)
 
@@ -520,6 +546,10 @@ class OBDService:
                         obd_data['inferred'].update(inferred)
                         obd_data['metrics'] = metrics
                         obd_data['metadata']['sample_time'] = datetime.now(timezone.utc).isoformat()
+                        obd_data['metadata']['last_dynamic_sample_time'] = self._last_dynamic_sample_time
+                        obd_data['metadata']['dynamic_stale_age_s'] = round(stale_age, 1)
+                        obd_data['metadata']['dynamic_stale'] = stale_age > (POLL_INTERVAL * 3)
+                        obd_data['metadata']['last_successful_command'] = self._last_successful_command
                         obd_data['error'] = None
 
                     time.sleep(POLL_INTERVAL)

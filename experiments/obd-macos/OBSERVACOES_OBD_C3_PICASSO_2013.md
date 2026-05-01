@@ -907,6 +907,13 @@ Comportamento implementado apos testes:
 
 - `NO DATA` em um PID isolado nao apaga o ultimo valor valido;
 - timeouts ou respostas incompletas em um PID isolado nao derrubam a conexao;
+- cada tipo de leitura usa timeout curto conforme criticidade, evitando que um
+  PID sem resposta trave o ciclo completo por varios segundos;
+- o backend registra `last_dynamic_sample_time`, `dynamic_stale_age_s`,
+  `dynamic_stale` e `last_successful_command` no snapshot;
+- se nenhum PID dinamico como RPM/MAP/velocidade/carga responder por mais de
+  aproximadamente `OBD_STALE_TIMEOUT = 6.0 s`, o backend considera a leitura
+  congelada, fecha a serial e refaz a inicializacao completa do ELM327;
 - o snapshot continua `connected=true` quando o adaptador e a ECU seguem
   respondendo, mesmo que alguns PIDs falhem momentaneamente;
 - se todos os PIDs dinamicos ainda estiverem sem leitura valida, a interface

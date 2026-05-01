@@ -157,7 +157,7 @@ function updateOBDDisplay(obdData) {
     setText('obd-vehicle-name', metadata.vehicle || 'Veiculo');
     setText(
         'obd-connection-line',
-        `${connection.protocol || 'protocolo OBD'} · ${connection.port || 'porta serial'} · ${connection.adapter || 'ELM327'}`
+        `${connection.protocol || 'protocolo OBD'} · ${connection.port || 'porta serial'} · ${connection.adapter || 'ELM327'}${metadata.dynamic_stale ? ' · dados atrasados' : ''}`
     );
 
     const fuelSelect = document.getElementById('obd-fuel-select');
@@ -184,6 +184,7 @@ function updateOBDDisplay(obdData) {
 
     const alerts = [];
     if (direct.mil_on) alerts.push('Check engine aceso');
+    if (metadata.dynamic_stale) alerts.push(`Dados OBD atrasados: ${metadata.dynamic_stale_age_s || '?'}s`);
     if (inferred.coolant_alert) alerts.push('Temperatura alta');
     if (inferred.battery_alert) alerts.push('Tensao baixa com motor ligado');
     if ((direct.active_dtcs || []).length > 0) alerts.push(`DTC ativo: ${direct.active_dtcs.join(', ')}`);
