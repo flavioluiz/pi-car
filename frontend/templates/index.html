@@ -109,14 +109,69 @@
         <!-- Panel: Vehicle (OBD) -->
         <section class="panel" id="panel-vehicle">
             <div id="obd-content">
+                <div class="vehicle-toolbar">
+                    <div class="vehicle-identity">
+                        <div class="vehicle-title" id="obd-vehicle-name">Citroen C3 Picasso 2013</div>
+                        <div class="vehicle-subtitle" id="obd-connection-line">OBD-II aguardando dados</div>
+                    </div>
+                    <div class="vehicle-actions">
+                        <select id="obd-fuel-select" onchange="setOBDFuel(this.value)">
+                            <option value="gasoline_e27">Gasolina E27</option>
+                            <option value="ethanol">Etanol</option>
+                        </select>
+                        <button class="trip-reset-btn" onclick="resetOBDTrip()">Reset Trip</button>
+                    </div>
+                </div>
+                <div class="vehicle-alerts" id="obd-alerts"></div>
+                <div class="vehicle-main-grid">
+                    <div class="gauge primary speed">
+                        <div class="gauge-value" id="obd-speed">--</div>
+                        <div class="gauge-unit">km/h</div>
+                        <div class="gauge-label">Velocidade</div>
+                    </div>
+                    <div class="gauge primary rpm">
+                        <div class="gauge-value" id="obd-rpm">--</div>
+                        <div class="gauge-unit">rpm</div>
+                        <div class="gauge-label">Motor</div>
+                    </div>
+                    <div class="gauge primary temp">
+                        <div class="gauge-value" id="obd-coolant">--</div>
+                        <div class="gauge-unit">C</div>
+                        <div class="gauge-label">Arrefecimento</div>
+                    </div>
+                    <div class="gauge primary fuel">
+                        <div class="gauge-value" id="obd-consumption">--</div>
+                        <div class="gauge-unit" id="obd-consumption-unit">L/h</div>
+                        <div class="gauge-label">Consumo atual</div>
+                    </div>
+                </div>
+                <div class="trip-grid">
+                    <div class="trip-stat">
+                        <div class="trip-value" id="obd-trip-distance">--</div>
+                        <div class="trip-label">km viagem</div>
+                    </div>
+                    <div class="trip-stat">
+                        <div class="trip-value" id="obd-trip-fuel">--</div>
+                        <div class="trip-label">L consumidos</div>
+                    </div>
+                    <div class="trip-stat">
+                        <div class="trip-value" id="obd-trip-average">--</div>
+                        <div class="trip-label">km/L medio</div>
+                    </div>
+                    <div class="trip-stat">
+                        <div class="trip-value" id="obd-voltage">--</div>
+                        <div class="trip-label">V bateria</div>
+                    </div>
+                </div>
+                <div class="vehicle-section-title">Tecnico</div>
                 <div class="gauges-grid" id="gauges-grid">
-                    <!-- Gauges will be dynamically rendered based on available metrics -->
+                    <!-- Technical gauges will be dynamically rendered based on available metrics -->
                 </div>
             </div>
             <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
                 <div class="icon">[OBD]</div>
                 <p>OBD-II not connected</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Check USB connection at /dev/ttyACM0</p>
+                <p style="font-size: 0.9rem; margin-top: 10px;">Check USB connection at /dev/serial/by-id/... or /dev/ttyUSB0</p>
             </div>
             <div id="obd-error" class="disconnected-msg" style="display: none;">
                 <div class="icon">[!]</div>

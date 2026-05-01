@@ -51,7 +51,7 @@ if __name__ == '__main__':
     if obd_service.start():
         print("OBD thread started")
     else:
-        print("OBD not available (check USB connection at /dev/ttyACM0)")
+        print(f"OBD not available (check USB connection at {config.OBD_DEVICE} or {config.OBD_FALLBACK_DEVICE})")
 
     # Thread RTL-SDR (usa singleton para compartilhar com as rotas)
     rtlsdr_service = get_rtlsdr_service()

@@ -77,10 +77,10 @@ function formatTime(seconds) {
 // Priority order for displaying metrics (most important first)
 const OBD_PRIORITY = [
     'RPM', 'SPEED', 'COOLANT_TEMP', 'THROTTLE_POS',
-    'ENGINE_LOAD', 'INTAKE_TEMP', 'MAF', 'FUEL_LEVEL',
-    'INTAKE_PRESSURE', 'TIMING_ADVANCE', 'RUN_TIME',
-    'FUEL_PRESSURE', 'BAROMETRIC_PRESSURE', 'AMBIANT_AIR_TEMP',
-    'OIL_TEMP', 'FUEL_RATE'
+    'ENGINE_LOAD', 'INTAKE_PRESSURE', 'INTAKE_TEMP',
+    'TIMING_ADVANCE', 'SHORT_FUEL_TRIM_1', 'LONG_FUEL_TRIM_1',
+    'ELM_VOLTAGE', 'FUEL_RATE_GASOLINE_E27', 'FUEL_RATE_ETHANOL',
+    'INSTANT_KM_L', 'TRIP_AVERAGE_KM_L'
 ];
 
 // CSS class for different gauge types (for styling)
@@ -91,8 +91,29 @@ const OBD_GAUGE_CLASS = {
     'THROTTLE_POS': 'throttle',
     'ENGINE_LOAD': 'load',
     'FUEL_LEVEL': 'fuel',
-    'OIL_TEMP': 'temp'
+    'OIL_TEMP': 'temp',
+    'ELM_VOLTAGE': 'voltage',
+    'FUEL_RATE_GASOLINE_E27': 'fuel',
+    'FUEL_RATE_ETHANOL': 'fuel',
+    'INSTANT_KM_L': 'fuel',
+    'TRIP_AVERAGE_KM_L': 'fuel'
 };
+
+const OBD_TECHNICAL_KEYS = [
+    'INTAKE_PRESSURE', 'INTAKE_TEMP', 'ENGINE_LOAD', 'THROTTLE_POS',
+    'TIMING_ADVANCE', 'SHORT_FUEL_TRIM_1', 'LONG_FUEL_TRIM_1',
+    'FUEL_RATE_GASOLINE_E27', 'FUEL_RATE_ETHANOL'
+];
+
+function formatOBDValue(value, digits = 0) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return '--';
+    return Number(value).toFixed(digits);
+}
+
+function setText(id, text) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = text;
+}
 
 // Update OBD display with dynamic metrics
 function updateOBDDisplay(obdData) {
@@ -128,9 +149,54 @@ function updateOBDDisplay(obdData) {
     obdDisconnected.style.display = 'none';
     obdError.style.display = 'none';
 
+    const direct = obdData.direct || {};
+    const inferred = obdData.inferred || {};
+    const connection = obdData.connection || {};
+    const metadata = obdData.metadata || {};
+
+    setText('obd-vehicle-name', metadata.vehicle || 'Veiculo');
+    setText(
+        'obd-connection-line',
+        `${connection.protocol || 'protocolo OBD'} · ${connection.port || 'porta serial'} · ${connection.adapter || 'ELM327'}`
+    );
+
+    const fuelSelect = document.getElementById('obd-fuel-select');
+    if (fuelSelect && inferred.fuel && fuelSelect.value !== inferred.fuel) {
+        fuelSelect.value = inferred.fuel;
+    }
+
+    setText('obd-speed', formatOBDValue(direct.speed_kmh));
+    setText('obd-rpm', formatOBDValue(direct.rpm));
+    setText('obd-coolant', formatOBDValue(direct.coolant_temp_c));
+
+    if (direct.speed_kmh > 0 && inferred.instant_km_l !== null && inferred.instant_km_l !== undefined) {
+        setText('obd-consumption', formatOBDValue(inferred.instant_km_l, 1));
+        setText('obd-consumption-unit', 'km/L');
+    } else {
+        setText('obd-consumption', formatOBDValue(inferred.selected_fuel_rate_l_h, 2));
+        setText('obd-consumption-unit', 'L/h');
+    }
+
+    setText('obd-trip-distance', formatOBDValue(inferred.trip_distance_km, 1));
+    setText('obd-trip-fuel', formatOBDValue(inferred.trip_consumed_l, 2));
+    setText('obd-trip-average', formatOBDValue(inferred.trip_average_km_l, 1));
+    setText('obd-voltage', formatOBDValue(direct.adapter_voltage_v, 1));
+
+    const alerts = [];
+    if (direct.mil_on) alerts.push('Check engine aceso');
+    if (inferred.coolant_alert) alerts.push('Temperatura alta');
+    if (inferred.battery_alert) alerts.push('Tensao baixa com motor ligado');
+    if ((direct.active_dtcs || []).length > 0) alerts.push(`DTC ativo: ${direct.active_dtcs.join(', ')}`);
+    if ((direct.pending_dtcs || []).length > 0) alerts.push(`DTC pendente: ${direct.pending_dtcs.join(', ')}`);
+    const alertsElement = document.getElementById('obd-alerts');
+    if (alertsElement) {
+        alertsElement.innerHTML = alerts.map(alert => `<span>${alert}</span>`).join('');
+        alertsElement.style.display = alerts.length ? 'flex' : 'none';
+    }
+
     // Get metrics and sort by priority
     const metrics = obdData.metrics || {};
-    const metricKeys = Object.keys(metrics);
+    const metricKeys = Object.keys(metrics).filter(key => OBD_TECHNICAL_KEYS.includes(key));
 
     // Sort by priority order
     metricKeys.sort((a, b) => {
@@ -147,11 +213,12 @@ function updateOBDDisplay(obdData) {
     for (const key of metricKeys) {
         const metric = metrics[key];
         const gaugeClass = OBD_GAUGE_CLASS[key] || '';
-        const value = typeof metric.value === 'number' ? metric.value : 0;
+        const value = metric.value;
+        const displayValue = typeof value === 'number' ? Number(value).toFixed(Math.abs(value) < 10 ? 1 : 0) : '--';
 
         gaugesHTML += `
             <div class="gauge ${gaugeClass}">
-                <div class="gauge-value">${Math.round(value)}</div>
+                <div class="gauge-value">${displayValue}</div>
                 <div class="gauge-unit">${metric.unit || ''}</div>
                 <div class="gauge-label">${metric.label || key}</div>
             </div>
@@ -162,6 +229,24 @@ function updateOBDDisplay(obdData) {
     if (gaugesGrid.innerHTML !== gaugesHTML) {
         gaugesGrid.innerHTML = gaugesHTML || '<div class="obd-waiting">Waiting for vehicle data...</div>';
     }
+}
+
+function setOBDFuel(fuel) {
+    fetch('/api/vehicle/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fuel })
+    })
+        .then(r => r.json())
+        .then(updateOBDDisplay)
+        .catch(err => console.error('Error updating OBD settings:', err));
+}
+
+function resetOBDTrip() {
+    fetch('/api/vehicle/trip/reset', { method: 'POST' })
+        .then(r => r.json())
+        .then(updateOBDDisplay)
+        .catch(err => console.error('Error resetting OBD trip:', err));
 }
 
 // ============ UPDATE DATA ============

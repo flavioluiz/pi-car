@@ -5,6 +5,7 @@ Gerencia conexao e leitura de dados GPS.
 """
 
 import threading
+import time
 import config
 
 # Dados globais de GPS (atualizados pela thread)
@@ -54,20 +55,23 @@ class GPSService:
                 if not self._running:
                     break
 
-                if new_data:
-                    data_stream.unpack(new_data)
+                if not new_data:
+                    time.sleep(0.1)
+                    continue
 
-                    if data_stream.TPV['lat'] != 'n/a':
-                        gps_data['connected'] = True
-                        gps_data['lat'] = data_stream.TPV['lat']
-                        gps_data['lon'] = data_stream.TPV['lon']
-                        gps_data['speed'] = float(data_stream.TPV['speed'] or 0) * 3.6  # m/s -> km/h
-                        gps_data['altitude'] = data_stream.TPV['alt']
+                data_stream.unpack(new_data)
 
-                    if data_stream.SKY['satellites'] != 'n/a':
-                        sats = data_stream.SKY['satellites']
-                        if isinstance(sats, list):
-                            gps_data['satellites'] = len([s for s in sats if s.get('used')])
+                if data_stream.TPV['lat'] != 'n/a':
+                    gps_data['connected'] = True
+                    gps_data['lat'] = data_stream.TPV['lat']
+                    gps_data['lon'] = data_stream.TPV['lon']
+                    gps_data['speed'] = float(data_stream.TPV['speed'] or 0) * 3.6  # m/s -> km/h
+                    gps_data['altitude'] = data_stream.TPV['alt']
+
+                if data_stream.SKY['satellites'] != 'n/a':
+                    sats = data_stream.SKY['satellites']
+                    if isinstance(sats, list):
+                        gps_data['satellites'] = len([s for s in sats if s.get('used')])
 
         except Exception as e:
             gps_data['connected'] = False

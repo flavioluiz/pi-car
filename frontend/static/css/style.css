@@ -867,24 +867,130 @@ body::after {
 }
 
 /* ============ PAINEL DE VEICULO (OBD) ============ */
+.vehicle-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.vehicle-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.vehicle-subtitle {
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.vehicle-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.vehicle-actions select,
+.trip-reset-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.trip-reset-btn {
+    color: var(--accent-orange);
+}
+
+.vehicle-alerts {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.vehicle-alerts span {
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: rgba(255, 51, 85, 0.08);
+}
+
+.vehicle-main-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.trip-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.trip-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.trip-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent-green);
+}
+
+.trip-label {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.vehicle-section-title {
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
 .gauges-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
 }
 
 .gauge {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 15px;
-    padding: 20px;
+    border-radius: 8px;
+    padding: 14px;
     text-align: center;
     position: relative;
+    min-width: 0;
 }
 
 .gauge-value {
     font-family: 'Orbitron', monospace;
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     font-weight: 900;
     background: linear-gradient(135deg, var(--accent-cyan), var(--text-primary));
     -webkit-background-clip: text;
@@ -894,8 +1000,16 @@ body::after {
     margin-bottom: 5px;
 }
 
+.gauge.primary {
+    padding: 18px 12px;
+}
+
+.gauge.primary .gauge-value {
+    font-size: 2.6rem;
+}
+
 .gauge-unit {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -935,6 +1049,12 @@ body::after {
 
 .gauge.fuel .gauge-value {
     background: linear-gradient(135deg, var(--accent-green), var(--accent-orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.gauge.voltage .gauge-value {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
     -webkit-background-clip: text;
     background-clip: text;
 }
@@ -1770,11 +1890,34 @@ body::after {
         font-size: 1.1rem;
     }
 
+    .vehicle-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .vehicle-actions {
+        width: 100%;
+    }
+
+    .vehicle-actions select,
+    .trip-reset-btn {
+        flex: 1;
+    }
+
+    .vehicle-main-grid,
+    .trip-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .gauges-grid {
         grid-template-columns: 1fr;
     }
 
     .gauge-value {
         font-size: 2rem;
+    }
+
+    .gauge.primary .gauge-value {
+        font-size: 2.3rem;
     }
 }
