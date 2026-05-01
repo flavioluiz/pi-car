@@ -1,15 +1,12 @@
 #!/bin/bash
 #===============================================================================
 #
-#   Pi-Car Boot Splash Installer
+#   Pi-Car Boot Splash Quick Updater
 #
-#   Installs a custom Plymouth theme (picasso.jpg when present, otherwise
-#   ASCII-art classic car) and silences
-#   boot-time kernel/console output so nothing but the splash shows until X
-#   starts the dashboard.
+#   Updates only the already-installed Plymouth theme files, hold service and
+#   boot parameters. It does not run apt or reinstall packages.
 #
-#   Usage: sudo ./bootsplash/install.sh
-#   Revert: sudo ./bootsplash/uninstall.sh
+#   Usage: sudo ./bootsplash/update.sh
 #
 #===============================================================================
 
@@ -35,42 +32,34 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-#-------------------------------------------------------------------------------
-# 1. Dependencies
-#-------------------------------------------------------------------------------
-info "Installing dependencies (plymouth, pillow, fonts)..."
-apt-get update -qq
-apt-get install -y \
-    plymouth plymouth-themes plymouth-label \
-    initramfs-tools \
-    python3-pil \
-    fonts-dejavu-core
+if ! command -v plymouth-set-default-theme >/dev/null 2>&1; then
+    echo "Plymouth is not installed. Run sudo ./bootsplash/install.sh once first." >&2
+    exit 1
+fi
 
-#-------------------------------------------------------------------------------
-# 2. Render the splash source into a PNG and install the theme
-#-------------------------------------------------------------------------------
+if ! python3 - <<'PY' >/dev/null 2>&1
+from PIL import Image
+PY
+then
+    echo "python3-pil is not installed. Run sudo ./bootsplash/install.sh once first." >&2
+    exit 1
+fi
+
 if [ -f "$SCRIPT_DIR/../picasso.jpg" ]; then
     SPLASH_SOURCE="$SCRIPT_DIR/../picasso.jpg"
 else
     SPLASH_SOURCE="$SCRIPT_DIR/splash.txt"
 fi
 
-info "Rendering splash PNG from $SPLASH_SOURCE ..."
+info "Updating Plymouth theme image from $SPLASH_SOURCE ..."
 mkdir -p "$THEME_DIR"
-python3 "$SCRIPT_DIR/render_splash.py" \
-    "$SPLASH_SOURCE" \
-    "$THEME_DIR/splash.png"
-
-info "Installing Plymouth theme files..."
+python3 "$SCRIPT_DIR/render_splash.py" "$SPLASH_SOURCE" "$THEME_DIR/splash.png"
 install -m 0644 "$SCRIPT_DIR/pi-car.plymouth" "$THEME_DIR/pi-car.plymouth"
-install -m 0644 "$SCRIPT_DIR/pi-car.script"   "$THEME_DIR/pi-car.script"
+install -m 0644 "$SCRIPT_DIR/pi-car.script" "$THEME_DIR/pi-car.script"
 
 info "Setting '${THEME_NAME}' as default Plymouth theme..."
 plymouth-set-default-theme -R "$THEME_NAME"
 
-#-------------------------------------------------------------------------------
-# 3. Patch /boot/firmware/cmdline.txt (kernel args: quiet splash + no cursor)
-#-------------------------------------------------------------------------------
 if [ -f /boot/firmware/cmdline.txt ]; then
     CMDLINE=/boot/firmware/cmdline.txt
 elif [ -f /boot/cmdline.txt ]; then
@@ -91,7 +80,6 @@ if [ -n "$CMDLINE" ]; then
         fi
     done
     if [ -n "$MISSING" ]; then
-        # cmdline.txt must stay on a single line — append options in-place
         CONTENT="$(tr -d '\n' < "$CMDLINE")"
         printf '%s%s\n' "$CONTENT" "$MISSING" > "$CMDLINE"
         ok "Added:$MISSING"
@@ -100,9 +88,6 @@ if [ -n "$CMDLINE" ]; then
     fi
 fi
 
-#-------------------------------------------------------------------------------
-# 4. Patch config.txt (disable rainbow splash)
-#-------------------------------------------------------------------------------
 if [ -f /boot/firmware/config.txt ]; then
     CONFIG=/boot/firmware/config.txt
 elif [ -f /boot/config.txt ]; then
@@ -123,16 +108,11 @@ if [ -n "$CONFIG" ]; then
     fi
 fi
 
-#-------------------------------------------------------------------------------
-# 5. Keep Plymouth visible until X takes over
-#-------------------------------------------------------------------------------
-info "Keeping Plymouth visible until the dashboard graphics are ready..."
+info "Updating Plymouth hold service..."
 install -m 0755 /dev/stdin "$HOLD_SCRIPT" <<'HOLDSCRIPT'
 #!/bin/sh
 set -eu
 
-# Keep Plymouth covering boot text until the graphical dashboard is likely
-# visible. The timeout prevents a permanent splash if X/Chromium fails.
 deadline=$(( $(date +%s) + 45 ))
 while [ "$(date +%s)" -lt "$deadline" ]; do
     if pgrep -x chromium >/dev/null 2>&1 ||
@@ -169,15 +149,6 @@ systemctl mask plymouth-quit.service        >/dev/null 2>&1 || true
 systemctl mask plymouth-quit-wait.service   >/dev/null 2>&1 || true
 systemctl enable pi-car-plymouth-hold.service >/dev/null 2>&1 || true
 
-#-------------------------------------------------------------------------------
-# Done
-#-------------------------------------------------------------------------------
 echo ""
-ok "Boot splash installed."
-echo ""
-echo "   Backups:"
-[ -n "$CMDLINE" ] && echo "     ${CMDLINE}.pi-car.bak"
-[ -n "$CONFIG"  ] && echo "     ${CONFIG}.pi-car.bak"
-echo ""
-echo "   Reboot to see the new splash:   sudo reboot"
-echo "   Revert:                         sudo $SCRIPT_DIR/uninstall.sh"
+ok "Boot splash updated without reinstalling packages."
+echo "   Reboot to test: sudo reboot"

@@ -25,6 +25,8 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 THEME_DIR="/usr/share/plymouth/themes/pi-car"
+HOLD_SERVICE="/etc/systemd/system/pi-car-plymouth-hold.service"
+HOLD_SCRIPT="/usr/local/bin/pi-car-plymouth-hold"
 
 info "Restoring default Plymouth theme..."
 if plymouth-set-default-theme -R spinner >/dev/null 2>&1; then
@@ -47,8 +49,13 @@ for f in /boot/firmware/cmdline.txt /boot/cmdline.txt /boot/firmware/config.txt 
 done
 
 info "Restoring plymouth-quit service..."
-systemctl enable  plymouth-quit.service       >/dev/null 2>&1 || true
-systemctl disable plymouth-quit-wait.service  >/dev/null 2>&1 || true
+systemctl disable pi-car-plymouth-hold.service >/dev/null 2>&1 || true
+rm -f "$HOLD_SERVICE" "$HOLD_SCRIPT"
+systemctl daemon-reload
+systemctl unmask plymouth-quit.service       >/dev/null 2>&1 || true
+systemctl unmask plymouth-quit-wait.service  >/dev/null 2>&1 || true
+systemctl enable  plymouth-quit.service      >/dev/null 2>&1 || true
+systemctl disable plymouth-quit-wait.service >/dev/null 2>&1 || true
 
 echo ""
 ok "Uninstall complete. Reboot to apply: sudo reboot"

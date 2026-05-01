@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Render splash.txt into splash.png for Plymouth.
+"""Render a text or image source into splash.png for Plymouth.
 
 Uses Pillow (python3-pil) so it doesn't depend on ImageMagick policy quirks.
-Monospace font + green-on-black to get the classic terminal look.
+Text sources are rendered as green-on-black terminal art. Image sources are
+converted directly to PNG; Plymouth scales them to the active display while
+preserving aspect ratio.
 """
 
+from pathlib import Path
 import sys
 from PIL import Image, ImageDraw, ImageFont
 
@@ -19,6 +22,7 @@ BG = "#000000"
 FONT_SIZE = 16
 PADDING = 48
 LINE_SPACING = 1.25
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
 
 def load_font(size):
@@ -30,7 +34,7 @@ def load_font(size):
     return ImageFont.load_default()
 
 
-def render(input_txt, output_png):
+def render_text(input_txt, output_png):
     with open(input_txt, encoding="utf-8") as f:
         lines = f.read().splitlines() or [""]
 
@@ -58,8 +62,22 @@ def render(input_txt, output_png):
     print(f"Wrote {output_png} ({w}x{h})")
 
 
+def render_image(input_image, output_png):
+    source = Image.open(input_image).convert("RGB")
+    source.save(output_png)
+    print(f"Wrote {output_png} ({source.width}x{source.height})")
+
+
+def render(input_source, output_png):
+    suffix = Path(input_source).suffix.lower()
+    if suffix in IMAGE_EXTENSIONS:
+        render_image(input_source, output_png)
+    else:
+        render_text(input_source, output_png)
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("usage: render_splash.py INPUT.txt OUTPUT.png", file=sys.stderr)
+        print("usage: render_splash.py INPUT.{txt,jpg,png} OUTPUT.png", file=sys.stderr)
         sys.exit(1)
     render(sys.argv[1], sys.argv[2])
