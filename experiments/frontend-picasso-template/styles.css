@@ -1,0 +1,1959 @@
+:root {
+    --bg: #050507;
+    --bg-soft: #0a0a0e;
+    --panel: #0d0e12;
+    --panel-2: #13151b;
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.16);
+    --text: #f4f5f7;
+    --muted: #a7abb4;
+    --red: #d80d23;
+    --red-dark: #79040e;
+    --green: #47db4e;
+    --blue: #3d7bff;
+    --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: "Barlow", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at top right, rgba(216, 13, 35, 0.08), transparent 18%),
+        linear-gradient(180deg, #040405, #090a0d 40%, #06070a);
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 64px 64px;
+    pointer-events: none;
+    mask-image: radial-gradient(circle at center, black, transparent 86%);
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.app-shell {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, #08080a, #050507);
+    border-right: 1px solid var(--line);
+    padding: 16px 14px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 18px;
+}
+
+.brand-panel {
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.brand-logo,
+.brand-wordmark {
+    width: 100%;
+    display: block;
+}
+
+.main-nav {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+}
+
+.nav-item {
+    border: 1px solid transparent;
+    background: transparent;
+    color: #d5d6db;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 1.05rem;
+    cursor: pointer;
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, var(--red), var(--red-dark));
+    color: white;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.08);
+}
+
+.nav-icon {
+    width: 24px;
+    text-align: center;
+    font-size: 1.25rem;
+}
+
+.nav-icon svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.main-stage {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: 12px;
+    gap: 10px;
+    min-height: 0;
+}
+
+.topbar,
+.status-strip,
+.topbar-right,
+.card-header,
+.progress-row,
+.player-controls,
+.volume-row,
+.route-footer,
+.subtabs,
+.setting-row,
+.list-row,
+.tuner-actions,
+.preset-strip,
+.spectrum-controls-template {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.topbar {
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    align-items: center;
+    padding: 2px 6px 6px;
+}
+
+.topbar-wordmark {
+    display: block;
+    width: 220px;
+    max-width: 28vw;
+    height: auto;
+    visibility: hidden;
+}
+
+.app-shell:not(.page-home-active) .topbar-wordmark {
+    visibility: visible;
+}
+
+.app-shell:not(.page-home-active) .brand-panel {
+    display: none;
+}
+
+.status-strip {
+    justify-self: end;
+}
+
+.topbar-right {
+    justify-self: end;
+}
+
+.status-strip span,
+.topbar-right span,
+.topbar-right strong {
+    color: var(--text);
+}
+
+.dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-left: 8px;
+    border-radius: 50%;
+    background: #666;
+}
+
+.dot.on {
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(71, 219, 78, 0.55);
+}
+
+.topbar-right strong {
+    font-family: "Michroma", sans-serif;
+    font-size: 1.2rem;
+    margin-left: 10px;
+}
+
+.content {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+    height: 100%;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+h1,
+h2 {
+    margin: 0;
+    font-family: "Michroma", sans-serif;
+    line-height: 1.08;
+}
+
+h1 {
+    font-size: clamp(1.6rem, 2.2vw, 2.4rem);
+}
+
+h2 {
+    font-size: clamp(1.3rem, 1.8vw, 1.9rem);
+}
+
+.page-lead {
+    margin: 6px 0 0;
+    color: var(--muted);
+    max-width: 72ch;
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.card {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(17, 18, 23, 0.96), rgba(10, 11, 14, 0.96));
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.card-header {
+    justify-content: space-between;
+    padding: 14px 16px 0;
+}
+
+.card-header strong,
+.list-title,
+.setting-group .list-title {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+}
+
+.card-header span,
+.track-copy span,
+.route-footer span,
+.stack-stats span,
+.metric-box span,
+.trip-strip span,
+.setting-row span,
+.list-row span {
+    color: var(--muted);
+}
+
+.home-grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 12px;
+    height: calc(100% - 86px);
+}
+
+.card-obd-hero {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.obd-hero-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: stretch;
+    padding: 8px 14px 14px;
+}
+
+.obd-gauge-card {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+}
+
+.obd-gauge-card.center {
+    padding-top: 14px;
+}
+
+.metric-dial {
+    min-height: 212px;
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background:
+        radial-gradient(circle at top center, rgba(255, 255, 255, 0.05), transparent 55%),
+        linear-gradient(180deg, rgba(21, 23, 29, 0.98), rgba(8, 9, 12, 0.98));
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 10px;
+    padding: 18px 16px 16px;
+}
+
+.metric-dial.speed-hero {
+    min-height: 312px;
+    padding-top: 26px;
+}
+
+.metric-dial.speed-hero.full {
+    min-height: 392px;
+    gap: 16px;
+    padding: 24px;
+    align-content: center;
+}
+
+.metric-label,
+.metric-unit {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.metric-label {
+    font-size: 0.92rem;
+}
+
+.metric-unit {
+    font-size: 1.05rem;
+}
+
+.metric-dial strong {
+    font-family: "Michroma", sans-serif;
+    font-size: 3.4rem;
+    line-height: 1;
+    color: var(--text);
+}
+
+.metric-dial.speed-hero strong {
+    font-size: 6.8rem;
+}
+
+.metric-dial.speed-hero .metric-unit {
+    font-size: 1.25rem;
+}
+
+.rpm-inline-card {
+    margin-top: 12px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    gap: 8px;
+}
+
+.rpm-inline-card strong {
+    font-family: "Michroma", sans-serif;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.metric-scale {
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-top: auto;
+}
+
+.metric-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.metric-fill.rpm {
+    width: 36%;
+    background: linear-gradient(90deg, #ffffff, #ff4060);
+}
+
+.metric-fill.speed {
+    width: 62%;
+    background: linear-gradient(90deg, #ffffff, #4a95ff);
+}
+
+.metric-fill.temp {
+    width: 78%;
+    background: linear-gradient(90deg, #ffffff, #ff512f);
+}
+
+.map-scene {
+    position: relative;
+    min-height: 400px;
+    margin: 16px 18px 0;
+    border-radius: 20px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at center, rgba(25, 29, 37, 0.35), transparent 44%),
+        linear-gradient(180deg, #14161b, #090b0f);
+}
+
+.map-scene.large {
+    min-height: 520px;
+}
+
+.map-grid,
+.map-route,
+.map-car {
+    position: absolute;
+}
+
+.map-grid {
+    inset: 0;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 86px 86px;
+    transform: perspective(900px) rotateX(68deg) scale(1.28);
+    transform-origin: center top;
+    opacity: 0.32;
+}
+
+.map-route {
+    left: 50%;
+    top: 10%;
+    width: 16px;
+    height: 70%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #3557ff, #4aa2ff 40%, #2f6dff);
+    transform: translateX(-50%);
+    box-shadow: 0 0 18px rgba(74, 162, 255, 0.6);
+}
+
+.map-route::before,
+.map-route::after,
+.map-route.wide::before,
+.map-route.wide::after {
+    content: "";
+    position: absolute;
+    height: 16px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #3356ff, #55aaff);
+}
+
+.map-route::before,
+.map-route.wide::before {
+    width: 170px;
+    top: 0;
+    left: 0;
+}
+
+.map-route::after,
+.map-route.wide::after {
+    width: 150px;
+    top: 104px;
+    right: 0;
+    transform: translateX(100%);
+}
+
+.map-route.wide {
+    left: 46%;
+    height: 78%;
+}
+
+.map-route.wide::before {
+    width: 220px;
+}
+
+.map-route.wide::after {
+    width: 210px;
+    top: 146px;
+}
+
+.map-car {
+    left: 50%;
+    bottom: 88px;
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f2f2f6, #9aa0ab);
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.map-car::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    clip-path: polygon(50% 0, 100% 100%, 50% 72%, 0 100%);
+    background: linear-gradient(135deg, #ff4861, #9a0d1d);
+}
+
+.route-footer strong,
+.track-copy strong,
+.hero-track-copy p:first-of-type,
+.metric-box strong,
+.trip-strip strong,
+.stack-stats strong,
+.list-row strong {
+    color: var(--text);
+}
+
+.route-footer strong,
+.summary-chip strong,
+.track-copy strong,
+.metric-box strong,
+.trip-strip strong,
+.setting-row button,
+.list-row button {
+    font-family: "Michroma", sans-serif;
+}
+
+.route-footer button,
+.action-grid button,
+.setting-row button,
+.list-row button,
+.subtab,
+.tile-grid button,
+.preset-strip button,
+.tuner-actions button,
+.spectrum-controls-template button,
+.route-footer button {
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    border-radius: 14px;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
+.card-player {
+    padding-bottom: 14px;
+}
+
+.now-playing,
+.music-layout,
+.two-column,
+.home-lower,
+.settings-grid,
+.vehicle-gauges,
+.trip-strip,
+.stack-stats,
+.tile-grid,
+.action-grid,
+.summary-row-card,
+.triple-gauges {
+    display: grid;
+    gap: 12px;
+}
+
+.now-playing {
+    grid-template-columns: 128px 1fr;
+    padding: 16px;
+}
+
+.now-playing.compact {
+    grid-template-columns: 1fr;
+    padding-bottom: 10px;
+}
+
+.album-cover,
+.hero-album {
+    border-radius: 10px;
+    background:
+        radial-gradient(circle at center, #141419 0 28%, transparent 28%),
+        radial-gradient(circle at center, transparent 0 47%, rgba(212, 8, 31, 0.95) 47% 52%, transparent 52%),
+        radial-gradient(circle at center, transparent 0 58%, rgba(126, 0, 13, 0.95) 58% 63%, transparent 63%),
+        linear-gradient(135deg, #320008, #09090c 60%);
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5);
+}
+
+.album-cover {
+    height: 128px;
+}
+
+.hero-album {
+    min-height: 220px;
+}
+
+.track-copy,
+.hero-track-copy {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+}
+
+.track-copy strong {
+    font-size: 1.5rem;
+}
+
+.progress-row,
+.volume-row {
+    padding: 0 16px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+
+.progress-bar div {
+    position: relative;
+    width: 38%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), #ff3550);
+}
+
+.progress-bar div::after {
+    content: "";
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff3550;
+    transform: translateY(-50%);
+}
+
+.progress-bar.quiet div {
+    width: 58%;
+}
+
+.player-controls {
+    justify-content: center;
+    padding: 10px 16px 0;
+}
+
+.player-controls.compact-home {
+    justify-content: stretch;
+    gap: 10px;
+}
+
+.player-controls.compact-home button {
+    flex: 1;
+}
+
+.player-controls.left {
+    justify-content: flex-start;
+    padding: 10px 0 0;
+}
+
+.player-controls button,
+.tuner-actions button,
+.action-grid button,
+.tile-grid button {
+    min-height: 50px;
+}
+
+.player-controls .primary,
+.tuner-actions .primary {
+    background: linear-gradient(180deg, var(--red), var(--red-dark));
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.home-trip-card {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.home-music-card {
+    grid-column: 1 / -1;
+    grid-row: 2;
+}
+
+.mini-panel {
+    padding: 14px;
+}
+
+.trip-summary-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.trip-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.trip-summary-grid div {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    gap: 4px;
+}
+
+.trip-summary-grid strong {
+    font-family: "Michroma", sans-serif;
+    font-size: 1.45rem;
+}
+
+.home-music-layout {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px 6px;
+}
+
+.home-music-controls {
+    display: grid;
+    gap: 8px;
+}
+
+.home-track-meta {
+    padding: 6px 8px;
+}
+
+.home-progress {
+    padding: 0 20px 14px;
+}
+
+.music-utility-row,
+.mini-volume {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.music-utility-row {
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.mini-control,
+.mini-volume button {
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 8px 12px;
+    min-height: 40px;
+    cursor: pointer;
+}
+
+.mini-control {
+    min-width: 92px;
+}
+
+.mini-volume {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.mini-volume span {
+    min-width: 44px;
+    text-align: center;
+    font-family: "Michroma", sans-serif;
+    font-size: 0.85rem;
+}
+
+.action-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.action-grid.single {
+    grid-template-columns: 1fr;
+}
+
+.subtabs {
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.subtab.active {
+    background: linear-gradient(180deg, var(--red), var(--red-dark));
+}
+
+.subpage {
+    display: none;
+}
+
+.subpage.active {
+    display: block;
+}
+
+.music-layout {
+    grid-template-columns: 1.35fr 0.65fr;
+}
+
+.hero-track {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    padding: 16px;
+}
+
+.hero-track-copy p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.side-stats {
+    padding: 14px;
+}
+
+.list-title {
+    margin-bottom: 14px;
+}
+
+.stack-stats div {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    gap: 6px;
+}
+
+.playback-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stack-stats.compact {
+    gap: 10px;
+}
+
+.list-card,
+.tile-card,
+.search-card,
+.spectrum-card,
+.setting-group {
+    padding: 14px;
+}
+
+.list-table {
+    display: grid;
+    gap: 12px;
+}
+
+.list-row {
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.tile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.tile-grid.controls {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.search-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.search-row input {
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    border-radius: 14px;
+    padding: 14px 16px;
+}
+
+.two-column {
+    grid-template-columns: 1.35fr 0.65fr;
+}
+
+.vehicle-hero,
+.tuner-card {
+    padding: 14px;
+}
+
+.vehicle-gauges {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 14px;
+}
+
+.metric-box {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    gap: 6px;
+}
+
+.metric-box.major strong {
+    font-family: "Michroma", sans-serif;
+    font-size: 1.7rem;
+}
+
+.trip-strip {
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 16px;
+}
+
+.trip-strip div {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: grid;
+    gap: 6px;
+}
+
+.radio-mode-line {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 10px;
+}
+
+.radio-frequency-large {
+    font-family: "Michroma", sans-serif;
+    font-size: clamp(2rem, 3.8vw, 3.4rem);
+    margin-bottom: 14px;
+}
+
+.radio-frequency-large small {
+    font-family: "Barlow", sans-serif;
+    font-size: 1.2rem;
+}
+
+.signal-meter {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    min-height: 64px;
+    margin-bottom: 14px;
+}
+
+.signal-bar {
+    width: 18px;
+    border-radius: 999px 999px 4px 4px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.signal-bar.tall {
+    height: 74px;
+}
+
+.signal-bar.medium {
+    height: 56px;
+}
+
+.signal-bar.short {
+    height: 38px;
+}
+
+.signal-bar.active {
+    background: linear-gradient(180deg, #ff3952, var(--red-dark));
+}
+
+.tuner-actions,
+.preset-strip,
+.spectrum-controls-template {
+    flex-wrap: wrap;
+}
+
+.fake-spectrum {
+    margin-top: 12px;
+    min-height: 220px;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 16px),
+        linear-gradient(180deg, #0e1724, #0b0d12 32%, #2e0622 68%, #4a0b1b 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.fake-spectrum::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0 38%, rgba(255, 80, 80, 0.14) 38% 42%, transparent 42%);
+}
+
+.settings-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.setting-group {
+    display: grid;
+    gap: 12px;
+}
+
+.setting-row {
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.setting-row button {
+    padding: 10px 14px;
+}
+
+.spaced {
+    margin-top: 20px;
+}
+
+@media (max-width: 1180px) {
+    .app-shell {
+        grid-template-columns: 96px 1fr;
+    }
+
+    .sidebar {
+        padding: 10px 8px;
+        gap: 10px;
+    }
+
+    .main-nav {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .brand-panel {
+        padding: 8px;
+        border-radius: 16px;
+    }
+
+    .nav-item {
+        justify-content: center;
+        padding: 12px 8px;
+    }
+
+    .nav-item span:last-child {
+        display: none;
+    }
+
+    .nav-icon {
+        width: auto;
+        font-size: 1.15rem;
+    }
+
+    .home-grid,
+    .music-layout,
+    .two-column,
+    .home-lower,
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .topbar {
+        grid-template-columns: 180px 1fr 180px;
+        padding: 0 2px 6px;
+    }
+
+    .topbar-wordmark {
+        width: 180px;
+    }
+
+    .status-strip,
+    .topbar-right {
+        gap: 10px;
+        font-size: 0.92rem;
+    }
+
+    .topbar-right strong {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .app-shell {
+        grid-template-columns: 82px 1fr;
+    }
+
+    .main-stage {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    .card-header {
+        padding: 10px 12px 0;
+    }
+
+    .card-header strong,
+    .list-title,
+    .setting-group .list-title {
+        font-size: 0.95rem;
+    }
+
+    .card-header span,
+    .track-copy span,
+    .route-footer span,
+    .stack-stats span,
+    .metric-box span,
+    .trip-strip span,
+    .setting-row span,
+    .list-row span,
+    .metric-label,
+    .metric-unit {
+        font-size: 0.82rem;
+    }
+
+    .page-header {
+        margin-bottom: 8px;
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+    }
+
+    .page-lead {
+        font-size: 0.82rem;
+    }
+
+    .status-strip span:nth-child(4),
+    .topbar-right span:nth-child(2) {
+        display: none;
+    }
+
+    .topbar-wordmark {
+        width: 150px;
+    }
+
+    .topbar {
+        grid-template-columns: 150px 1fr 150px;
+    }
+
+    .home-grid {
+        gap: 8px;
+        height: calc(100% - 64px);
+    }
+
+    .obd-hero-layout {
+        gap: 8px;
+        padding: 6px 10px 10px;
+    }
+
+    .metric-dial.speed-hero {
+        min-height: 210px;
+    }
+
+    .metric-dial.speed-hero.full {
+        min-height: 250px;
+        padding: 16px;
+        align-content: center;
+    }
+
+    .obd-gauge-card {
+        padding: 8px;
+        border-radius: 16px;
+    }
+
+    .metric-dial {
+        min-height: 150px;
+        padding: 14px 10px 12px;
+        gap: 8px;
+    }
+
+    .metric-dial strong {
+        font-size: 2.3rem;
+    }
+
+    .metric-dial.speed-hero strong {
+        font-size: 4.4rem;
+    }
+
+    .rpm-inline-card strong {
+        font-size: 1.5rem;
+    }
+
+    .route-footer strong,
+    .trip-summary-grid strong,
+    .metric-box.major strong,
+    .topbar-right strong {
+        font-size: 0.95rem;
+    }
+
+    .now-playing.compact {
+        padding: 12px;
+    }
+
+    .track-copy strong {
+        font-size: 1.15rem;
+    }
+
+    .progress-row,
+    .volume-row {
+        padding: 0 12px;
+        gap: 8px;
+        font-size: 0.82rem;
+    }
+
+    .player-controls {
+        padding: 8px 12px 0;
+        gap: 8px;
+    }
+
+    .player-controls button,
+    .tuner-actions button,
+    .action-grid button,
+    .tile-grid button {
+        min-height: 40px;
+        padding: 8px 10px;
+    }
+
+    .mini-panel,
+    .vehicle-hero,
+    .tuner-card,
+    .side-stats,
+    .list-card,
+    .tile-card,
+    .search-card,
+    .spectrum-card,
+    .setting-group {
+        padding: 12px;
+    }
+
+    .trip-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .home-music-layout {
+        grid-template-columns: 0.85fr 1.15fr;
+    }
+
+    .trip-summary-grid div,
+    .stack-stats div,
+    .metric-box,
+    .trip-strip div,
+    .setting-row,
+    .list-row {
+        padding: 10px;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 760px) {
+    .main-stage {
+        padding: 14px;
+    }
+
+    .trip-strip,
+    .vehicle-gauges,
+    .action-grid,
+    .tile-grid.controls,
+    .obd-hero-layout,
+    .obd-footer,
+    .trip-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-track,
+    .now-playing {
+        grid-template-columns: 1fr;
+    }
+
+    .route-overlay,
+    .topbar,
+    .status-strip,
+    .topbar-right,
+    .route-footer,
+    .list-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .turn-card {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 800px) and (max-height: 480px) {
+    .app-shell {
+        grid-template-columns: 72px 1fr;
+        height: 100vh;
+    }
+
+    .app-shell.page-home-active {
+        grid-template-columns: 180px 1fr;
+    }
+
+    .sidebar {
+        padding: 6px;
+        gap: 6px;
+    }
+
+    .app-shell.page-home-active .sidebar {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .brand-panel {
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .app-shell.page-home-active .brand-panel {
+        padding: 8px;
+        border-radius: 14px;
+    }
+
+    .nav-item {
+        min-height: 44px;
+        padding: 8px 4px;
+        border-radius: 12px;
+    }
+
+    .app-shell.page-home-active .nav-item {
+        justify-content: flex-start;
+        min-height: 38px;
+        padding: 8px 10px;
+    }
+
+    .nav-icon {
+        font-size: 1rem;
+    }
+
+    .app-shell.page-home-active .nav-icon {
+        width: 18px;
+        font-size: 0.95rem;
+    }
+
+    .app-shell.page-home-active .nav-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .app-shell:not(.page-home-active) .nav-item span:last-child {
+        display: none;
+    }
+
+    .app-shell.page-home-active .nav-item span:last-child {
+        display: inline;
+        font-size: 0.78rem;
+    }
+
+    .main-stage {
+        padding: 6px;
+        gap: 6px;
+    }
+
+    .topbar {
+        grid-template-columns: 128px 1fr 110px;
+        padding: 0 2px 2px;
+    }
+
+    .topbar-wordmark {
+        width: 128px;
+        max-width: none;
+    }
+
+    .status-strip,
+    .topbar-right {
+        gap: 8px;
+        font-size: 0.76rem;
+    }
+
+    .topbar-right strong {
+        font-size: 0.86rem;
+        margin-left: 4px;
+    }
+
+    .content,
+    .page.active {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #panel-music.active,
+    #panel-radio.active {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 6px;
+    }
+
+    #panel-gps.active,
+    #panel-vehicle.active,
+    #panel-settings.active {
+        display: grid;
+    }
+
+    .page-header,
+    .page-lead,
+    .eyebrow {
+        display: none;
+    }
+
+    .home-grid {
+        grid-template-columns: 1.55fr 1fr;
+        grid-template-rows: 1fr auto;
+        gap: 6px;
+        height: calc(100% - 30px);
+    }
+
+    .card {
+        border-radius: 14px;
+    }
+
+    .card-header {
+        padding: 8px 10px 0;
+    }
+
+    .card-header strong,
+    .list-title,
+    .setting-group .list-title {
+        font-size: 0.8rem;
+    }
+
+    .card-header span,
+    .track-copy span,
+    .route-footer span,
+    .stack-stats span,
+    .metric-box span,
+    .trip-strip span,
+    .setting-row span,
+    .list-row span,
+    .metric-label,
+    .metric-unit {
+        font-size: 0.68rem;
+    }
+
+    .card-obd-hero {
+        min-height: 0;
+    }
+
+    .obd-hero-layout {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 4px 8px 8px;
+    }
+
+    .obd-gauge-card {
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .metric-dial {
+        min-height: 108px;
+        border-radius: 12px;
+        padding: 10px 6px 6px;
+        gap: 4px;
+    }
+
+    .metric-dial.speed-hero {
+        min-height: 108px;
+        padding-top: 10px;
+    }
+
+    .metric-dial.speed-hero.full {
+        min-height: 176px;
+        padding: 14px 12px 10px;
+        gap: 6px;
+        align-content: center;
+    }
+
+    .metric-dial strong {
+        font-size: 1.42rem;
+    }
+
+    .metric-dial.speed-hero strong {
+        font-size: 2.8rem;
+    }
+
+    .rpm-inline-card {
+        margin-top: 8px;
+        padding: 8px;
+        border-radius: 10px;
+        gap: 4px;
+    }
+
+    .rpm-inline-card strong {
+        font-size: 1rem;
+    }
+
+    .metric-scale {
+        height: 6px;
+    }
+
+    .card-player {
+        min-height: 0;
+    }
+
+    .now-playing.compact {
+        padding: 8px 10px;
+    }
+
+    .track-copy {
+        gap: 4px;
+    }
+
+    .track-copy strong {
+        font-size: 0.98rem;
+        line-height: 1.15;
+    }
+
+    .track-copy span:last-child {
+        display: none;
+    }
+
+    .progress-row,
+    .volume-row {
+        padding: 0 10px;
+        gap: 6px;
+        font-size: 0.68rem;
+    }
+
+    .player-controls {
+        padding: 6px 10px 0;
+        gap: 6px;
+    }
+
+    .player-controls button {
+        min-height: 34px;
+        padding: 6px 8px;
+        font-size: 0.82rem;
+    }
+
+    .player-controls.compact-home {
+        gap: 6px;
+    }
+
+    .mini-panel {
+        padding: 8px;
+    }
+
+    .trip-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    .trip-summary-grid div {
+        padding: 8px;
+        border-radius: 10px;
+        gap: 2px;
+    }
+
+    .trip-summary-grid strong {
+        font-size: 0.78rem;
+    }
+
+    .home-music-layout {
+        grid-template-columns: 0.82fr 1.18fr;
+        gap: 4px;
+        padding: 4px 8px 8px;
+    }
+
+    .home-music-controls {
+        gap: 6px;
+    }
+
+    .home-progress {
+        padding: 0 10px 10px;
+    }
+
+    .subtabs {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        margin-bottom: 6px;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    #panel-radio .subtabs {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .subtab {
+        min-height: 36px;
+        padding: 8px 4px;
+        border-radius: 10px;
+        font-size: 0.79rem;
+        text-align: center;
+    }
+
+    .music-layout,
+    .two-column {
+        grid-template-columns: 1.18fr 0.82fr;
+        gap: 6px;
+        height: 100%;
+        min-height: 0;
+        align-items: stretch;
+    }
+
+    .settings-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        height: 100%;
+        min-height: 0;
+        align-content: stretch;
+    }
+
+    .subpage.active,
+    .nav-map-large,
+    .vehicle-hero,
+    .tuner-card,
+    .setting-group,
+    .list-card,
+    .tile-card,
+    .search-card,
+    .spectrum-card,
+    .side-stats {
+        min-height: 0;
+    }
+
+    .hero-track {
+        grid-template-columns: 90px 1fr;
+        padding: 10px;
+        gap: 10px;
+        min-height: 0;
+        align-items: center;
+    }
+
+    .hero-album {
+        min-height: 0;
+        height: 170px;
+    }
+
+    .hero-track-copy {
+        gap: 6px;
+        align-content: center;
+    }
+
+    .hero-track-copy h2 {
+        font-size: 1.32rem;
+        line-height: 1.02;
+    }
+
+    .hero-track-copy p {
+        font-size: 0.92rem;
+        line-height: 1.2;
+    }
+
+    .hero-track-copy p:last-of-type {
+        display: none;
+    }
+
+    .hero-track .progress-row {
+        padding: 0;
+    }
+
+    .hero-track .player-controls.left {
+        padding: 4px 0 0;
+    }
+
+    .hero-track .eyebrow {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 0.6rem;
+    }
+
+    #panel-music #music-playing .music-layout {
+        align-items: center;
+        padding-top: 2px;
+    }
+
+    #panel-music #music-playing .hero-track,
+    #panel-music #music-playing .side-stats {
+        height: auto;
+        align-self: center;
+    }
+
+    #panel-music #music-playing .hero-track {
+        min-height: 274px;
+    }
+
+    #panel-music #music-playing .side-stats {
+        min-height: 274px;
+    }
+
+    .music-utility-row {
+        justify-content: flex-start;
+        gap: 6px;
+    }
+
+    .mini-control,
+    .mini-volume button {
+        min-height: 32px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        font-size: 0.72rem;
+    }
+
+    .mini-control {
+        min-width: 70px;
+    }
+
+    .mini-volume {
+        gap: 6px;
+        padding: 3px 5px;
+        border-radius: 10px;
+    }
+
+    .mini-volume span {
+        min-width: 34px;
+        font-size: 0.7rem;
+    }
+
+    .side-stats,
+    .list-card,
+    .tile-card,
+    .search-card,
+    .spectrum-card,
+    .setting-group,
+    .vehicle-hero,
+    .tuner-card,
+    .nav-map-large {
+        padding: 10px;
+    }
+
+    .list-title {
+        margin-bottom: 8px;
+    }
+
+    #panel-music .side-stats {
+        display: grid;
+        grid-template-rows: auto 1fr;
+    }
+
+    .stack-stats,
+    .tile-grid,
+    .vehicle-gauges,
+    .trip-strip,
+    .list-table {
+        gap: 6px;
+    }
+
+    .stack-stats div,
+    .metric-box,
+    .trip-strip div,
+    .setting-row,
+    .list-row {
+        padding: 8px;
+        border-radius: 10px;
+    }
+
+    .stack-stats div {
+        gap: 4px;
+    }
+
+    #panel-music .stack-stats {
+        align-content: start;
+    }
+
+    #panel-music .playback-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #panel-music .stack-stats div {
+        min-height: 0;
+        padding: 12px 12px 10px;
+    }
+
+    #panel-music .stack-stats strong {
+        font-size: 1rem;
+    }
+
+    #panel-music .stack-stats span {
+        font-size: 0.76rem;
+    }
+
+    .list-row {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr) auto auto;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .list-row strong {
+        font-size: 0.86rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .list-row button {
+        padding: 7px 10px;
+        min-height: 0;
+        font-size: 0.72rem;
+    }
+
+    .tile-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tile-grid button,
+    .action-grid button,
+    .tuner-actions button {
+        min-height: 34px;
+        padding: 7px 8px;
+        font-size: 0.78rem;
+    }
+
+    .search-row {
+        grid-template-columns: 1fr 88px;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .search-row input {
+        padding: 10px 12px;
+        font-size: 0.76rem;
+    }
+
+    .nav-map-large {
+        display: grid;
+        grid-template-rows: auto 1fr;
+    }
+
+    .map-scene.large {
+        min-height: 0;
+        margin: 8px 0 0;
+    }
+
+    .vehicle-gauges,
+    .trip-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .metric-box.major strong {
+        font-size: 1.12rem;
+    }
+
+    .trip-strip {
+        margin-top: 10px;
+    }
+
+    .radio-mode-line {
+        margin-bottom: 6px;
+        font-size: 0.72rem;
+    }
+
+    .radio-frequency-large {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+    }
+
+    .radio-frequency-large small {
+        font-size: 0.82rem;
+    }
+
+    .signal-meter {
+        min-height: 42px;
+        gap: 5px;
+        margin-bottom: 8px;
+    }
+
+    .signal-bar {
+        width: 12px;
+    }
+
+    .signal-bar.tall {
+        height: 44px;
+    }
+
+    .signal-bar.medium {
+        height: 32px;
+    }
+
+    .signal-bar.short {
+        height: 22px;
+    }
+
+    .tuner-actions,
+    .preset-strip,
+    .spectrum-controls-template {
+        display: grid;
+        gap: 6px;
+    }
+
+    .tuner-actions {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .preset-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 8px;
+    }
+
+    .spectrum-controls-template {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: center;
+    }
+
+    .spectrum-controls-template strong {
+        grid-column: 1 / -1;
+        text-align: center;
+        font-size: 0.96rem;
+    }
+
+    .fake-spectrum {
+        min-height: 104px;
+        margin-top: 8px;
+    }
+
+    .setting-group {
+        gap: 8px;
+    }
+
+    .setting-row {
+        padding: 8px 10px;
+    }
+
+    .setting-row button {
+        padding: 7px 10px;
+        font-size: 0.72rem;
+    }
+
+    .spaced {
+        margin-top: 10px;
+    }
+}

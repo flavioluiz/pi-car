@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiCASSO Product Template</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="picasso-red">
+    <div class="app-shell page-home-active">
+        <aside class="sidebar">
+            <div class="brand-panel">
+                <img class="brand-logo" src="../../logos/picasso_logo.png" alt="PiCASSO logo">
+            </div>
+
+            <nav class="main-nav tabs">
+                <button class="nav-item tab active" data-page="home" data-panel="home">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M4 11.5 12 5l8 6.5"></path>
+                            <path d="M7 10.5V19h10v-8.5"></path>
+                        </svg>
+                    </span>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item tab" data-page="music" data-panel="music">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M9 18.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"></path>
+                            <path d="M18 16.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"></path>
+                            <path d="M9 18.5V6l9-2v12.5"></path>
+                            <path d="M9 9.5 18 7"></path>
+                        </svg>
+                    </span>
+                    <span>Music</span>
+                </button>
+                <button class="nav-item tab" data-page="navigation" data-panel="gps">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="m12 4 6 14-6-3-6 3 6-14Z"></path>
+                            <path d="m12 4 0 11"></path>
+                        </svg>
+                    </span>
+                    <span>Navigation</span>
+                </button>
+                <button class="nav-item tab" data-page="vehicle" data-panel="vehicle">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M5 15.5 6.8 10a2 2 0 0 1 1.9-1.4h6.6a2 2 0 0 1 1.9 1.4l1.8 5.5"></path>
+                            <path d="M4.5 15.5h15a1.5 1.5 0 0 1 1.5 1.5V19h-2v-1.5h-2V19H7v-1.5H5V19H3v-2a1.5 1.5 0 0 1 1.5-1.5Z"></path>
+                            <path d="M7.5 13h1"></path>
+                            <path d="M15.5 13h1"></path>
+                        </svg>
+                    </span>
+                    <span>Vehicle</span>
+                </button>
+                <button class="nav-item tab" data-page="radio" data-panel="radio">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M12 12v7"></path>
+                            <path d="m9 19 3-7 3 7"></path>
+                            <path d="M12 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+                            <path d="M7.5 6.5a6.5 6.5 0 0 0 0 9"></path>
+                            <path d="M16.5 6.5a6.5 6.5 0 0 1 0 9"></path>
+                            <path d="M4.5 3.5a10.5 10.5 0 0 0 0 15"></path>
+                            <path d="M19.5 3.5a10.5 10.5 0 0 1 0 15"></path>
+                        </svg>
+                    </span>
+                    <span>SDR Radio</span>
+                </button>
+                <button class="nav-item tab" data-page="settings" data-panel="settings">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="m12 3 1.1 2.2 2.5.4.8 2.4 2.1 1.4-.6 2.4.6 2.4-2.1 1.4-.8 2.4-2.5.4L12 21l-1.1-2.2-2.5-.4-.8-2.4-2.1-1.4.6-2.4-.6-2.4 2.1-1.4.8-2.4 2.5-.4Z"></path>
+                            <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path>
+                        </svg>
+                    </span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </aside>
+
+        <section class="main-stage">
+            <header class="topbar">
+                <img class="topbar-wordmark" src="../../logos/picasso_name_only.png" alt="PiCASSO">
+                <div class="status-strip">
+                    <span>GPS <i class="dot indicator on connected" id="ind-gps"></i></span>
+                    <span>OBD-II <i class="dot indicator on connected" id="ind-obd"></i></span>
+                    <span>SDR <i class="dot indicator on connected" id="ind-radio"></i></span>
+                    <span>MPD <i class="dot indicator on connected" id="ind-music"></i></span>
+                </div>
+                <div class="topbar-right">
+                    <span>Wi-Fi</span>
+                    <strong id="clock">17:27</strong>
+                </div>
+            </header>
+
+            <main class="content panels">
+                <section class="page panel active" id="panel-home">
+                    <div class="home-grid">
+                        <section class="card card-obd-hero">
+                            <div class="card-header">
+                                <strong>OBD-II Live Metrics</strong>
+                            </div>
+                            <div class="obd-hero-layout">
+                                <div class="metric-dial speed-hero full">
+                                    <span class="metric-label">Vehicle Speed</span>
+                                    <strong>68</strong>
+                                    <span class="metric-unit">km/h</span>
+                                    <div class="metric-scale">
+                                        <div class="metric-fill speed"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card home-trip-card">
+                            <div class="mini-panel">
+                                <div class="card-header">
+                                    <strong>Trip Summary</strong>
+                                </div>
+                                <div class="trip-summary-grid">
+                                    <div><span>Fuel Used</span><strong>26.8 L</strong></div>
+                                    <div><span>Average Speed</span><strong>54 km/h</strong></div>
+                                    <div><span>Efficiency</span><strong>11.8 km/L</strong></div>
+                                    <div><span>Trip</span><strong>327.4 km</strong></div>
+                                </div>
+                                <div class="rpm-inline-card">
+                                    <span class="metric-label">Engine RPM</span>
+                                    <strong>2.5</strong>
+                                    <span class="metric-unit">x1000 rpm</span>
+                                    <div class="metric-scale">
+                                        <div class="metric-fill rpm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card card-player home-music-card">
+                            <div class="card-header">
+                                <strong>Music</strong>
+                                <span>MPD</span>
+                            </div>
+                            <div class="home-music-layout">
+                                <div class="home-track-meta">
+                                    <div class="track-copy">
+                                        <strong>Instant Crush</strong>
+                                        <span>Daft Punk</span>
+                                    </div>
+                                </div>
+                                <div class="home-music-controls">
+                                    <div class="player-controls compact-home">
+                                        <button>Prev</button>
+                                        <button class="primary">Pause</button>
+                                        <button>Next</button>
+                                    </div>
+                                    <div class="volume-row">
+                                        <span>Vol</span>
+                                        <div class="progress-bar quiet"><div></div></div>
+                                        <span>72%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress-row home-progress">
+                                <span>1:24</span>
+                                <div class="progress-bar"><div></div></div>
+                                <span>5:37</span>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-music">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Media</span>
+                            <h1>Music</h1>
+                            <p class="page-lead">Template aligned with the current MPD structure: now playing, queue, artists, playlists and search.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtabs music-tabs">
+                        <button class="subtab music-tab active" data-subtab="music-playing" data-music="playing">Now Playing</button>
+                        <button class="subtab music-tab" data-subtab="music-queue" data-music="queue">Queue</button>
+                        <button class="subtab music-tab" data-subtab="music-artists" data-music="artists">Artists</button>
+                        <button class="subtab music-tab" data-subtab="music-playlists" data-music="playlists">Playlists</button>
+                        <button class="subtab music-tab" data-subtab="music-search" data-music="search">Search</button>
+                    </div>
+
+                    <div class="subpage music-panel active" id="music-playing">
+                        <div class="music-layout">
+                            <section class="card hero-track">
+                                <div class="hero-album music-artwork" id="music-artwork"></div>
+                                <div class="hero-track-copy">
+                                    <span class="eyebrow">Now Playing</span>
+                                    <h2 id="music-title">Instant Crush</h2>
+                                    <p id="music-artist">Daft Punk</p>
+                                    <p>Random Access Memories</p>
+                                    <div class="progress-row">
+                                        <span id="time-elapsed">1:24</span>
+                                        <div class="progress-bar" id="progress-bar"><div id="progress-fill"></div></div>
+                                        <span id="time-duration">5:37</span>
+                                    </div>
+                                    <div class="player-controls left">
+                                        <button>Start</button>
+                                        <button>Prev</button>
+                                        <button class="primary" id="btn-play">Pause</button>
+                                        <button>Next</button>
+                                    </div>
+                                    <div class="music-utility-row">
+                                        <button class="mini-control mode-btn active" id="btn-shuffle">Shuffle</button>
+                                        <button class="mini-control mode-btn" id="btn-repeat">Repeat</button>
+                                        <div class="mini-volume">
+                                            <button>-</button>
+                                            <span class="volume-display" id="volume-display">72%</span>
+                                            <button>+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Playback</div>
+                                <div class="stack-stats playback-grid">
+                                    <div><strong>Shuffle</strong><span>Enabled</span></div>
+                                    <div><strong>Repeat</strong><span>Playlist</span></div>
+                                    <div><strong>Volume</strong><span>72%</span></div>
+                                    <div><strong>Queue Length</strong><span>42 tracks</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-queue">
+                        <section class="card list-card">
+                            <div class="browser-list" id="queue-list">
+                                <div class="browser-header">
+                                    <span>4 songs</span>
+                                    <button class="browser-header-btn">Clear</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#9835;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Instant Crush</div>
+                                        <div class="browser-item-subtitle">Daft Punk</div>
+                                    </div>
+                                    <button class="browser-item-remove">&#10005;</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#9835;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Midnight City</div>
+                                        <div class="browser-item-subtitle">M83</div>
+                                    </div>
+                                    <button class="browser-item-remove">&#10005;</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#9835;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Nightcall</div>
+                                        <div class="browser-item-subtitle">Kavinsky</div>
+                                    </div>
+                                    <button class="browser-item-remove">&#10005;</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-artists">
+                        <section class="card tile-card">
+                            <div class="browser-list" id="artists-list">
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#127925;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">All songs</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#128100;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Daft Punk</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#128100;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">M83</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#128100;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Kavinsky</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-playlists">
+                        <section class="card tile-card">
+                            <div class="browser-list" id="playlists-list">
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#128195;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Night Drive</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#128195;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Focus Mode</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#128195;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Road Trip</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-search">
+                        <section class="card search-card">
+                            <div class="search-input-container">
+                                <input type="text" id="search-input" value="electronic" readonly>
+                            </div>
+                            <div id="virtual-keyboard">
+                                <div class="keyboard-row">
+                                    <button class="keyboard-key">Q</button>
+                                    <button class="keyboard-key">W</button>
+                                    <button class="keyboard-key">E</button>
+                                    <button class="keyboard-key">R</button>
+                                    <button class="keyboard-key">T</button>
+                                    <button class="keyboard-key">Y</button>
+                                </div>
+                                <div class="keyboard-row">
+                                    <button class="keyboard-key special">Space</button>
+                                    <button class="keyboard-key special search">Search</button>
+                                </div>
+                            </div>
+                            <div class="browser-list" id="search-results">
+                                <div class="browser-item">
+                                    <div class="browser-item-icon in-queue">&#9835;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Instant Crush</div>
+                                        <div class="browser-item-subtitle">Daft Punk</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action added">+</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#9835;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Digital Love</div>
+                                        <div class="browser-item-subtitle">Daft Punk</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                                <div class="browser-item">
+                                    <div class="browser-item-icon">&#9835;</div>
+                                    <div class="browser-item-info">
+                                        <div class="browser-item-title">Oblivion</div>
+                                        <div class="browser-item-subtitle">Grimes</div>
+                                    </div>
+                                    <button class="browser-item-action play">&#9654;</button>
+                                    <button class="browser-item-action">+</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-gps">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Location</span>
+                            <h1>Navigation</h1>
+                            <p class="page-lead">This section can host Navit launch, route summary, live coordinates and GPS diagnostics.</p>
+                        </div>
+                    </div>
+                    <div class="two-column" id="gps-content">
+                        <section class="card nav-map-large">
+                            <div class="card-header">
+                                <strong>Route Preview</strong>
+                                <span>Primary map view</span>
+                            </div>
+                            <div class="map-scene large">
+                                <div class="map-grid"></div>
+                                <div class="map-route wide"></div>
+                                <div class="map-car"></div>
+                            </div>
+                        </section>
+                        <section class="card side-stats">
+                            <div class="list-title">GPS Details</div>
+                            <div class="stack-stats">
+                                <div><strong>Speed</strong><span><span id="gps-speed">64</span> km/h</span></div>
+                                <div><strong>Satellites</strong><span><span id="gps-sats">12</span> locked</span></div>
+                                <div><strong>Coordinates</strong><span id="gps-coords">-23.2123, -45.8931</span></div>
+                                <div><strong>ETA</strong><span>17:45</span></div>
+                            </div>
+                            <div class="action-grid single">
+                                <button>Open Navit</button>
+                            </div>
+                        </section>
+                    </div>
+                    <div id="gps-disconnected" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[GPS]</div>
+                        <p>GPS not connected</p>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-vehicle">
+                    <div id="obd-content">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Diagnostics</span>
+                            <h1>Vehicle</h1>
+                            <p class="page-lead">Structured around current OBD-II metrics, trip data, alerts and fuel profile controls.</p>
+                        </div>
+                    </div>
+                    <div class="subtabs vehicle-tabs">
+                        <button class="subtab active" data-subtab="vehicle-drive">Drive</button>
+                        <button class="subtab" data-subtab="vehicle-engine">Engine</button>
+                        <button class="subtab" data-subtab="vehicle-fuel-o2">Fuel &amp; O2</button>
+                        <button class="subtab" data-subtab="vehicle-diagnostics">Diagnostics</button>
+                        <button class="subtab" data-subtab="vehicle-id">Vehicle ID</button>
+                        <button class="subtab" data-subtab="vehicle-advanced">Advanced</button>
+                    </div>
+                    <div class="subpage active" id="vehicle-drive">
+                        <div class="two-column">
+                            <section class="card vehicle-hero">
+                                <div class="card-header">
+                                    <strong id="obd-vehicle-name">Citroen C3 Picasso 2013</strong>
+                                    <span id="obd-connection-line">OBD-II connected via ELM327</span>
+                                </div>
+                                <div class="vehicle-alerts" id="obd-alerts"></div>
+                                <div class="vehicle-gauges">
+                                    <div class="metric-box major"><strong id="obd-speed">68</strong><span>Speed km/h</span></div>
+                                    <div class="metric-box major"><strong id="obd-rpm">2950</strong><span>Engine rpm</span></div>
+                                    <div class="metric-box major"><strong id="obd-coolant">90</strong><span>Coolant C</span></div>
+                                    <div class="metric-box major"><strong id="obd-consumption">11.8</strong><span>Instant <span id="obd-consumption-unit">km/L</span></span></div>
+                                </div>
+                                <div class="trip-strip">
+                                    <div><strong id="obd-trip-distance">327.4</strong><span>Trip km</span></div>
+                                    <div><strong id="obd-trip-fuel">26.8</strong><span>Fuel used L</span></div>
+                                    <div><strong id="obd-trip-average">12.2</strong><span>Average km/L</span></div>
+                                    <div><strong id="obd-voltage">13.8</strong><span>Battery V</span></div>
+                                </div>
+                                <div class="vehicle-section-title">Technical</div>
+                                <div class="list-table" id="gauges-grid">
+                                    <div class="list-row"><span>LOAD</span><strong>34%</strong><span>Engine load</span><button>OK</button></div>
+                                    <div class="list-row"><span>INTK</span><strong>29 C</strong><span>Intake air</span><button>OK</button></div>
+                                </div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Vehicle Controls</div>
+                                <div class="tile-grid controls">
+                                    <select id="obd-fuel-select">
+                                        <option value="gasoline_e27">Gasoline E27</option>
+                                        <option value="ethanol">Ethanol</option>
+                                    </select>
+                                    <button>Fuel Mode</button>
+                                    <button>Reset Trip</button>
+                                    <button>Refresh</button>
+                                </div>
+                                <div class="list-title spaced">Technical Alerts</div>
+                                <div class="stack-stats">
+                                    <div><strong>MIL</strong><span>Off</span></div>
+                                    <div><strong>Battery</strong><span>Stable</span></div>
+                                    <div><strong>Connection</strong><span>USB serial healthy</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="subpage" id="vehicle-engine">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Engine Data</div>
+                            <div class="vehicle-data-grid">
+                                <div class="metric-box"><strong>54.9%</strong><span>Calculated Load 0104</span></div>
+                                <div class="metric-box"><strong>56 kPa</strong><span>MAP 010B</span></div>
+                                <div class="metric-box"><strong>2.5 deg</strong><span>Timing Advance 010E</span></div>
+                                <div class="metric-box"><strong>53 C</strong><span>Intake Air Temp 010F</span></div>
+                                <div class="metric-box"><strong>15.3%</strong><span>Throttle Position 0111</span></div>
+                                <div class="metric-box"><strong>Closed Loop</strong><span>Fuel System 0103</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="subpage" id="vehicle-fuel-o2">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Fuel Trims &amp; O2</div>
+                            <div class="vehicle-data-grid">
+                                <div class="metric-box"><strong>1.6%</strong><span>STFT B1 0106</span></div>
+                                <div class="metric-box"><strong>1.6%</strong><span>LTFT B1 0107</span></div>
+                                <div class="metric-box"><strong>0.080 V</strong><span>O2 B1S1 0114</span></div>
+                                <div class="metric-box"><strong>0.100 V</strong><span>O2 B1S2 0115</span></div>
+                                <div class="metric-box"><strong>B1S1 B1S2</strong><span>O2 Sensors 0113</span></div>
+                                <div class="metric-box"><strong>Estimated</strong><span>Consumption, no MAF / 015E</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="subpage" id="vehicle-diagnostics">
+                        <div class="two-column">
+                            <section class="card list-card vehicle-data-card">
+                                <div class="list-title">OBD Status</div>
+                                <div class="stack-stats">
+                                    <div><strong>MIL / Monitors</strong><span>0101, MIL off</span></div>
+                                    <div><strong>DTC Active</strong><span>03 -> none</span></div>
+                                    <div><strong>DTC Pending</strong><span>07 -> none</span></div>
+                                    <div><strong>Distance with MIL</strong><span>0121 -> 0 km</span></div>
+                                    <div><strong>OBD Standard</strong><span>011C -> EOBD/OBD compatible</span></div>
+                                </div>
+                            </section>
+                            <section class="card list-card vehicle-data-card">
+                                <div class="list-title">Connection</div>
+                                <div class="stack-stats">
+                                    <div><strong>Adapter</strong><span>ELM327 v2.1 FTDI</span></div>
+                                    <div><strong>Port</strong><span>/dev/ttyUSB0</span></div>
+                                    <div><strong>Baudrate</strong><span>38400</span></div>
+                                    <div><strong>Protocol</strong><span>ISO 15765-4 CAN 11/500</span></div>
+                                    <div><strong>Adapter Voltage</strong><span>ATRV 13.9 V</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="subpage" id="vehicle-id">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Vehicle Identification</div>
+                            <div class="stack-stats">
+                                <div><strong>VIN</strong><span>935SDMFYYDB536411</span></div>
+                                <div><strong>Calibration ID</strong><span>96673415991</span></div>
+                                <div><strong>CVN</strong><span>0C4C0000</span></div>
+                                <div><strong>Vehicle</strong><span>Citroen C3 Picasso 2013 1.5 Flex</span></div>
+                                <div><strong>Engine</strong><span>1.449 cc, 4 cylinders, NA</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="subpage" id="vehicle-advanced">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Advanced / Mode 06</div>
+                            <div class="stack-stats">
+                                <div><strong>Supported Blocks</strong><span>0600, 0620, 0640, 0660, 0680</span></div>
+                                <div><strong>Use</strong><span>Onboard monitor diagnostics only</span></div>
+                                <div><strong>Recommendation</strong><span>Keep out of realtime loop</span></div>
+                                <div><strong>Example TIDs</strong><span>0601, 0602, 0621, 0641, 0642, 0681</span></div>
+                                <div><strong>Raw Decoding</strong><span>Needs TID/CID-specific parser</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    </div>
+                    <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[OBD]</div>
+                        <p>OBD-II not connected</p>
+                    </div>
+                    <div id="obd-error" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[!]</div>
+                        <p id="obd-error-text">Error</p>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-radio">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Receiver</span>
+                            <h1>SDR Radio</h1>
+                            <p class="page-lead">Matches the current tuner, spectrum, presets and favorites structure from the existing frontend.</p>
+                        </div>
+                    </div>
+
+                    <div id="radio-content">
+                    <div class="subtabs music-tabs">
+                        <button class="subtab radio-tab active" data-subtab="radio-tuner" data-radio="tuner">Tuner</button>
+                        <button class="subtab radio-tab" data-subtab="radio-spectrum" data-radio="spectrum">Spectrum</button>
+                        <button class="subtab radio-tab" data-subtab="radio-presets" data-radio="presets">Presets</button>
+                        <button class="subtab radio-tab" data-subtab="radio-favorites" data-radio="favorites">Favorites</button>
+                    </div>
+
+                    <div class="subpage radio-panel active" id="radio-tuner">
+                        <div class="two-column">
+                            <section class="card tuner-card">
+                                <div class="radio-mode-line" id="radio-mode">FM</div>
+                                <div class="radio-frequency-large"><span id="radio-freq">88.50</span> <small>MHz</small></div>
+                                <div class="signal-meter radio-signal">
+                                    <div class="signal-bars" id="signal-bars">
+                                        <div class="signal-bar tall"></div>
+                                        <div class="signal-bar tall"></div>
+                                        <div class="signal-bar medium active"></div>
+                                        <div class="signal-bar short"></div>
+                                        <div class="signal-bar short"></div>
+                                    </div>
+                                    <span id="signal-dbm">-67 dBm</span>
+                                </div>
+                                <div class="tuner-actions radio-tuning">
+                                    <button>-1.0</button>
+                                    <button>-0.1</button>
+                                    <div class="search-row tune-display">
+                                        <input type="number" id="freq-input" value="88.5" step="0.1">
+                                        <button>Go</button>
+                                    </div>
+                                    <button>+0.1</button>
+                                    <button>+1.0</button>
+                                </div>
+                                <div class="tuner-actions radio-controls">
+                                    <button class="mini-control mode-select active" id="mode-fm">FM</button>
+                                    <button class="mini-control mode-select" id="mode-am">AM</button>
+                                    <button class="primary mini-control radio-play-btn" id="radio-play-btn"><span id="radio-play-icon">Play</span></button>
+                                    <div class="mini-volume radio-volume">
+                                        <button>-</button>
+                                        <span class="vol-display" id="radio-vol">80%</span>
+                                        <button>+</button>
+                                    </div>
+                                </div>
+                                <div class="preset-strip">
+                                    <button>97.5 FM</button>
+                                    <button>95.7 FM</button>
+                                    <button>SBSJ TWR</button>
+                                    <button>+ Favorite</button>
+                                </div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Session</div>
+                                <div class="stack-stats">
+                                    <div><strong>Signal</strong><span>-67 dBm</span></div>
+                                    <div><strong>Mode</strong><span>FM</span></div>
+                                    <div><strong>Volume</strong><span>80%</span></div>
+                                    <div><strong>Status</strong><span>Streaming</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-spectrum">
+                        <section class="card spectrum-card">
+                            <div class="card-header">
+                                <strong>Live Spectrum</strong>
+                                <span>Audio pauses in live mode</span>
+                            </div>
+                            <div class="radio-mode-line"><span id="spectrum-mode-indicator">LIVE</span> <span class="muted">Center <span id="spectrum-center">99.5</span> MHz</span></div>
+                            <div class="fake-spectrum" id="spectrogram"></div>
+                            <div class="spectrum-controls-template">
+                                <button>-10</button>
+                                <button>-1</button>
+                                <button>-0.1</button>
+                                <strong><span id="spectrum-start">98.5</span> - <span id="spectrum-end">100.5</span> MHz</strong>
+                                <button>+0.1</button>
+                                <button>+1</button>
+                                <button>+10</button>
+                            </div>
+                            <div class="tile-grid">
+                                <button id="spectrum-freq-display">99.5</button>
+                                <button id="spectrum-span">2.4</button>
+                                <select id="spectrum-update-interval"><option selected>100</option></select>
+                                <select id="spectrum-integration-time"><option selected>0.1</option></select>
+                                <select id="spectrum-max-rows"><option selected>100</option></select>
+                                <select id="spectrum-db-smoothing"><option selected>0.1</option></select>
+                                <select id="spectrum-db-margin"><option selected>5</option></select>
+                                <select id="spectrum-min-range"><option selected>10</option></select>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-presets">
+                        <section class="card tile-card">
+                            <div class="list-title">FM Stations</div>
+                            <div class="tile-grid" id="fm-presets">
+                                <button>89.1 FM</button>
+                                <button>92.5 FM</button>
+                            </div>
+                            <div class="list-title spaced">Aviation - SBSJ</div>
+                            <div class="tile-grid" id="airport-presets-sbsj">
+                                <button>SBSJ TWR</button>
+                                <button>SBSJ ATIS</button>
+                            </div>
+                            <div class="list-title spaced">Aviation - SBGR</div>
+                            <div class="tile-grid" id="airport-presets-sbgr">
+                                <button>SBGR Tower</button>
+                                <button>SBGR Ground</button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-favorites">
+                        <section class="card list-card">
+                            <div class="card-header">
+                                <strong>Favorites</strong>
+                                <button>Clear All</button>
+                            </div>
+                            <div class="list-table preset-list" id="favorites-list">
+                                <div class="list-row"><span>FM</span><strong>88.50</strong><span>Daily station</span><button>Tune</button></div>
+                                <div class="list-row"><span>AM</span><strong>118.50</strong><span>SBSJ Tower</span><button>Tune</button></div>
+                            </div>
+                        </section>
+                    </div>
+                    </div>
+                    <div id="radio-disconnected" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[SDR]</div>
+                        <p>RTL-SDR not connected</p>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-settings">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">System</span>
+                            <h1>Settings</h1>
+                            <p class="page-lead">Theme selector only. The current system does not expose other user settings yet.</p>
+                        </div>
+                    </div>
+                    <div class="theme-settings-grid">
+                        <section class="card theme-group">
+                            <div class="list-title">Themes</div>
+                            <div class="theme-grid">
+                                <button class="theme-card active" data-theme="picasso-red" data-theme-label="PiCASSO Red">
+                                    <span class="theme-swatch swatch-red"></span>
+                                    <strong>PiCASSO Red</strong>
+                                    <span>Default cockpit</span>
+                                </button>
+                                <button class="theme-card" data-theme="signal-cyan" data-theme-label="Signal Cyan">
+                                    <span class="theme-swatch swatch-cyan"></span>
+                                    <strong>Signal Cyan</strong>
+                                    <span>Cooler telemetry look</span>
+                                </button>
+                                <button class="theme-card" data-theme="amber-dusk" data-theme-label="Amber Dusk">
+                                    <span class="theme-swatch swatch-amber"></span>
+                                    <strong>Amber Dusk</strong>
+                                    <span>Warmer night panel</span>
+                                </button>
+                            </div>
+                        </section>
+                        <section class="card theme-preview-card">
+                            <div class="list-title">Current Theme</div>
+                            <div class="theme-preview">
+                                <strong id="theme-preview-name">PiCASSO Red</strong>
+                                <span id="theme-preview-copy">Default cockpit</span>
+                                <div class="theme-preview-bars">
+                                    <i></i>
+                                    <i></i>
+                                    <i></i>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </main>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

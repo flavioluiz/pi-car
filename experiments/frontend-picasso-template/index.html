@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiCASSO Product Template</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-shell page-home-active">
+        <aside class="sidebar">
+            <div class="brand-panel">
+                <img class="brand-logo" src="../../logos/picasso_logo.png" alt="PiCASSO logo">
+            </div>
+
+            <nav class="main-nav">
+                <button class="nav-item active" data-page="home">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M4 11.5 12 5l8 6.5"></path>
+                            <path d="M7 10.5V19h10v-8.5"></path>
+                        </svg>
+                    </span>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" data-page="music">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M9 18.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"></path>
+                            <path d="M18 16.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"></path>
+                            <path d="M9 18.5V6l9-2v12.5"></path>
+                            <path d="M9 9.5 18 7"></path>
+                        </svg>
+                    </span>
+                    <span>Music</span>
+                </button>
+                <button class="nav-item" data-page="navigation">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="m12 4 6 14-6-3-6 3 6-14Z"></path>
+                            <path d="m12 4 0 11"></path>
+                        </svg>
+                    </span>
+                    <span>Navigation</span>
+                </button>
+                <button class="nav-item" data-page="vehicle">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M5 15.5 6.8 10a2 2 0 0 1 1.9-1.4h6.6a2 2 0 0 1 1.9 1.4l1.8 5.5"></path>
+                            <path d="M4.5 15.5h15a1.5 1.5 0 0 1 1.5 1.5V19h-2v-1.5h-2V19H7v-1.5H5V19H3v-2a1.5 1.5 0 0 1 1.5-1.5Z"></path>
+                            <path d="M7.5 13h1"></path>
+                            <path d="M15.5 13h1"></path>
+                        </svg>
+                    </span>
+                    <span>Vehicle</span>
+                </button>
+                <button class="nav-item" data-page="radio">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M12 12v7"></path>
+                            <path d="m9 19 3-7 3 7"></path>
+                            <path d="M12 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+                            <path d="M7.5 6.5a6.5 6.5 0 0 0 0 9"></path>
+                            <path d="M16.5 6.5a6.5 6.5 0 0 1 0 9"></path>
+                            <path d="M4.5 3.5a10.5 10.5 0 0 0 0 15"></path>
+                            <path d="M19.5 3.5a10.5 10.5 0 0 1 0 15"></path>
+                        </svg>
+                    </span>
+                    <span>SDR Radio</span>
+                </button>
+                <button class="nav-item" data-page="settings">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="m12 3 1.1 2.2 2.5.4.8 2.4 2.1 1.4-.6 2.4.6 2.4-2.1 1.4-.8 2.4-2.5.4L12 21l-1.1-2.2-2.5-.4-.8-2.4-2.1-1.4.6-2.4-.6-2.4 2.1-1.4.8-2.4 2.5-.4Z"></path>
+                            <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path>
+                        </svg>
+                    </span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </aside>
+
+        <section class="main-stage">
+            <header class="topbar">
+                <img class="topbar-wordmark" src="../../logos/picasso_name_only.png" alt="PiCASSO">
+                <div class="status-strip">
+                    <span>GPS <i class="dot on"></i></span>
+                    <span>OBD-II <i class="dot on"></i></span>
+                    <span>SDR <i class="dot on"></i></span>
+                    <span>MPD <i class="dot on"></i></span>
+                </div>
+                <div class="topbar-right">
+                    <span>Wi-Fi</span>
+                    <span>Bluetooth</span>
+                    <strong id="clock">17:27</strong>
+                </div>
+            </header>
+
+            <main class="content">
+                <section class="page panel active" id="panel-home">
+                    <div class="home-grid">
+                        <section class="card card-obd-hero">
+                            <div class="card-header">
+                                <strong>OBD-II Live Metrics</strong>
+                            </div>
+                            <div class="obd-hero-layout">
+                                <div class="metric-dial speed-hero full">
+                                    <span class="metric-label">Vehicle Speed</span>
+                                    <strong>68</strong>
+                                    <span class="metric-unit">km/h</span>
+                                    <div class="metric-scale">
+                                        <div class="metric-fill speed"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card home-trip-card">
+                            <div class="mini-panel">
+                                <div class="card-header">
+                                    <strong>Trip Summary</strong>
+                                </div>
+                                <div class="trip-summary-grid">
+                                    <div><span>Fuel Used</span><strong>26.8 L</strong></div>
+                                    <div><span>Average Speed</span><strong>54 km/h</strong></div>
+                                    <div><span>Efficiency</span><strong>11.8 km/L</strong></div>
+                                    <div><span>Trip</span><strong>327.4 km</strong></div>
+                                </div>
+                                <div class="rpm-inline-card">
+                                    <span class="metric-label">Engine RPM</span>
+                                    <strong>2.5</strong>
+                                    <span class="metric-unit">x1000 rpm</span>
+                                    <div class="metric-scale">
+                                        <div class="metric-fill rpm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card card-player home-music-card">
+                            <div class="card-header">
+                                <strong>Music</strong>
+                                <span>MPD</span>
+                            </div>
+                            <div class="home-music-layout">
+                                <div class="home-track-meta">
+                                    <div class="track-copy">
+                                        <strong>Instant Crush</strong>
+                                        <span>Daft Punk</span>
+                                    </div>
+                                </div>
+                                <div class="home-music-controls">
+                                    <div class="player-controls compact-home">
+                                        <button>Prev</button>
+                                        <button class="primary">Pause</button>
+                                        <button>Next</button>
+                                    </div>
+                                    <div class="volume-row">
+                                        <span>Vol</span>
+                                        <div class="progress-bar quiet"><div></div></div>
+                                        <span>72%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress-row home-progress">
+                                <span>1:24</span>
+                                <div class="progress-bar"><div></div></div>
+                                <span>5:37</span>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-music">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Media</span>
+                            <h1>Music</h1>
+                            <p class="page-lead">Template aligned with the current MPD structure: now playing, queue, artists, playlists and search.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtabs music-tabs">
+                        <button class="subtab music-tab active" data-subtab="music-playing" data-music="playing">Now Playing</button>
+                        <button class="subtab music-tab" data-subtab="music-queue" data-music="queue">Queue</button>
+                        <button class="subtab music-tab" data-subtab="music-artists" data-music="artists">Artists</button>
+                        <button class="subtab music-tab" data-subtab="music-playlists" data-music="playlists">Playlists</button>
+                        <button class="subtab music-tab" data-subtab="music-search" data-music="search">Search</button>
+                    </div>
+
+                    <div class="subpage music-panel active" id="music-playing">
+                        <div class="music-layout">
+                            <section class="card hero-track">
+                                <div class="hero-album"></div>
+                                <div class="hero-track-copy">
+                                    <span class="eyebrow">Now Playing</span>
+                                    <h2>Instant Crush</h2>
+                                    <p>Daft Punk</p>
+                                    <p>Random Access Memories</p>
+                                    <div class="progress-row">
+                                        <span>1:24</span>
+                                        <div class="progress-bar"><div></div></div>
+                                        <span>5:37</span>
+                                    </div>
+                                    <div class="player-controls left">
+                                        <button>Start</button>
+                                        <button>Prev</button>
+                                        <button class="primary">Pause</button>
+                                        <button>Next</button>
+                                    </div>
+                                    <div class="music-utility-row">
+                                        <button class="mini-control">Shuffle</button>
+                                        <button class="mini-control">Repeat</button>
+                                        <div class="mini-volume">
+                                            <button>-</button>
+                                            <span>72%</span>
+                                            <button>+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Playback</div>
+                                <div class="stack-stats playback-grid">
+                                    <div><strong>Shuffle</strong><span>Enabled</span></div>
+                                    <div><strong>Repeat</strong><span>Playlist</span></div>
+                                    <div><strong>Volume</strong><span>72%</span></div>
+                                    <div><strong>Queue Length</strong><span>42 tracks</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-queue">
+                        <section class="card list-card">
+                            <div class="list-title">Current Queue</div>
+                            <div class="list-table">
+                                <div class="list-row"><span>01</span><strong>Instant Crush</strong><span>Daft Punk</span><button>Play</button></div>
+                                <div class="list-row"><span>02</span><strong>Midnight City</strong><span>M83</span><button>Play</button></div>
+                                <div class="list-row"><span>03</span><strong>Nightcall</strong><span>Kavinsky</span><button>Play</button></div>
+                                <div class="list-row"><span>04</span><strong>Odessa</strong><span>Caribou</span><button>Play</button></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-artists">
+                        <section class="card tile-card">
+                            <div class="list-title">Artists</div>
+                            <div class="tile-grid">
+                                <button>Daft Punk</button>
+                                <button>M83</button>
+                                <button>Kavinsky</button>
+                                <button>Tycho</button>
+                                <button>Massive Attack</button>
+                                <button>Boards of Canada</button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-playlists">
+                        <section class="card tile-card">
+                            <div class="list-title">Playlists</div>
+                            <div class="tile-grid">
+                                <button>Night Drive</button>
+                                <button>Focus Mode</button>
+                                <button>Road Trip</button>
+                                <button>Radio Favorites</button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-search">
+                        <section class="card search-card">
+                            <div class="list-title">Search Library</div>
+                            <div class="search-row">
+                                <input type="text" value="electronic" readonly>
+                                <button>Open KB</button>
+                            </div>
+                            <div class="list-table">
+                                <div class="list-row"><span>Track</span><strong>Instant Crush</strong><span>Daft Punk</span><button>Add</button></div>
+                                <div class="list-row"><span>Track</span><strong>Digital Love</strong><span>Daft Punk</span><button>Add</button></div>
+                                <div class="list-row"><span>Track</span><strong>Oblivion</strong><span>Grimes</span><button>Add</button></div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-gps">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Location</span>
+                            <h1>Navigation</h1>
+                            <p class="page-lead">This section can host Navit launch, route summary, live coordinates and GPS diagnostics.</p>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <section class="card nav-map-large">
+                            <div class="card-header">
+                                <strong>Route Preview</strong>
+                                <span>Primary map view</span>
+                            </div>
+                            <div class="map-scene large">
+                                <div class="map-grid"></div>
+                                <div class="map-route wide"></div>
+                                <div class="map-car"></div>
+                            </div>
+                        </section>
+                        <section class="card side-stats">
+                            <div class="list-title">GPS Details</div>
+                            <div class="stack-stats">
+                                <div><strong>Speed</strong><span>64 km/h</span></div>
+                                <div><strong>Satellites</strong><span>12 locked</span></div>
+                                <div><strong>Coordinates</strong><span>-23.2123, -45.8931</span></div>
+                                <div><strong>ETA</strong><span>17:45</span></div>
+                            </div>
+                            <div class="action-grid single">
+                                <button>Open Navit</button>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-vehicle">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Diagnostics</span>
+                            <h1>Vehicle</h1>
+                            <p class="page-lead">Structured around current OBD-II metrics, trip data, alerts and fuel profile controls.</p>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <section class="card vehicle-hero">
+                            <div class="card-header">
+                                <strong>Citroen C3 Picasso 2013</strong>
+                                <span>OBD-II connected via ELM327</span>
+                            </div>
+                            <div class="vehicle-gauges">
+                                <div class="metric-box major"><strong>68</strong><span>Speed km/h</span></div>
+                                <div class="metric-box major"><strong>2950</strong><span>Engine rpm</span></div>
+                                <div class="metric-box major"><strong>90</strong><span>Coolant C</span></div>
+                                <div class="metric-box major"><strong>11.8</strong><span>Instant km/L</span></div>
+                            </div>
+                            <div class="trip-strip">
+                                <div><strong>327.4</strong><span>Trip km</span></div>
+                                <div><strong>26.8</strong><span>Fuel used L</span></div>
+                                <div><strong>12.2</strong><span>Average km/L</span></div>
+                                <div><strong>13.8</strong><span>Battery V</span></div>
+                            </div>
+                        </section>
+                        <section class="card side-stats">
+                            <div class="list-title">Vehicle Controls</div>
+                            <div class="tile-grid controls">
+                                <button>Gasoline</button>
+                                <button>Ethanol</button>
+                                <button>Reset Trip</button>
+                                <button>Refresh</button>
+                            </div>
+                            <div class="list-title spaced">Technical Alerts</div>
+                            <div class="stack-stats">
+                                <div><strong>MIL</strong><span>Off</span></div>
+                                <div><strong>Battery</strong><span>Stable</span></div>
+                                <div><strong>Connection</strong><span>USB serial healthy</span></div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-radio">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Receiver</span>
+                            <h1>SDR Radio</h1>
+                            <p class="page-lead">Matches the current tuner, spectrum, presets and favorites structure from the existing frontend.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtabs music-tabs">
+                        <button class="subtab radio-tab active" data-subtab="radio-tuner" data-radio="tuner">Tuner</button>
+                        <button class="subtab radio-tab" data-subtab="radio-spectrum" data-radio="spectrum">Spectrum</button>
+                        <button class="subtab radio-tab" data-subtab="radio-presets" data-radio="presets">Presets</button>
+                        <button class="subtab radio-tab" data-subtab="radio-favorites" data-radio="favorites">Favorites</button>
+                    </div>
+
+                    <div class="subpage radio-panel active" id="radio-tuner">
+                        <div class="two-column">
+                            <section class="card tuner-card">
+                                <div class="radio-mode-line">FM</div>
+                                <div class="radio-frequency-large">88.50 <small>MHz</small></div>
+                                <div class="signal-meter">
+                                    <div class="signal-bar tall"></div>
+                                    <div class="signal-bar tall"></div>
+                                    <div class="signal-bar medium active"></div>
+                                    <div class="signal-bar short"></div>
+                                    <div class="signal-bar short"></div>
+                                </div>
+                                <div class="tuner-actions">
+                                    <button>-1.0</button>
+                                    <button>-0.1</button>
+                                    <button class="primary">Play</button>
+                                    <button>+0.1</button>
+                                    <button>+1.0</button>
+                                </div>
+                                <div class="preset-strip">
+                                    <button>97.5 FM</button>
+                                    <button>95.7 FM</button>
+                                    <button>SBSJ TWR</button>
+                                    <button>+ Favorite</button>
+                                </div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Session</div>
+                                <div class="stack-stats">
+                                    <div><strong>Signal</strong><span>-67 dBm</span></div>
+                                    <div><strong>Mode</strong><span>FM</span></div>
+                                    <div><strong>Volume</strong><span>80%</span></div>
+                                    <div><strong>Status</strong><span>Streaming</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-spectrum">
+                        <section class="card spectrum-card">
+                            <div class="card-header">
+                                <strong>Live Spectrum</strong>
+                                <span>Audio pauses in live mode</span>
+                            </div>
+                            <div class="fake-spectrum"></div>
+                            <div class="spectrum-controls-template">
+                                <button>-10</button>
+                                <button>-1</button>
+                                <button>-0.1</button>
+                                <strong>99.5 MHz</strong>
+                                <button>+0.1</button>
+                                <button>+1</button>
+                                <button>+10</button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-presets">
+                        <section class="card tile-card">
+                            <div class="list-title">Presets</div>
+                            <div class="tile-grid">
+                                <button>89.1 FM</button>
+                                <button>92.5 FM</button>
+                                <button>95.7 FM</button>
+                                <button>99.9 FM</button>
+                                <button>SBSJ ATIS</button>
+                                <button>SBGR Tower</button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-favorites">
+                        <section class="card list-card">
+                            <div class="list-title">Favorites</div>
+                            <div class="list-table">
+                                <div class="list-row"><span>FM</span><strong>88.50</strong><span>Daily station</span><button>Tune</button></div>
+                                <div class="list-row"><span>AM</span><strong>118.50</strong><span>SBSJ Tower</span><button>Tune</button></div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-settings">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">System</span>
+                            <h1>Settings</h1>
+                            <p class="page-lead">Initial structure for connectivity, audio, vehicle preferences and display behavior.</p>
+                        </div>
+                    </div>
+                    <div class="settings-grid">
+                        <section class="card setting-group">
+                            <div class="list-title">Connectivity</div>
+                            <div class="setting-row"><span>Wi-Fi</span><button>Connected</button></div>
+                            <div class="setting-row"><span>Bluetooth</span><button>Enabled</button></div>
+                            <div class="setting-row"><span>GPS Device</span><button>Detected</button></div>
+                            <div class="setting-row"><span>RTL-SDR</span><button>Detected</button></div>
+                        </section>
+                        <section class="card setting-group">
+                            <div class="list-title">Audio</div>
+                            <div class="setting-row"><span>Default Volume</span><button>72%</button></div>
+                            <div class="setting-row"><span>Startup</span><button>Resume</button></div>
+                            <div class="setting-row"><span>Radio Output</span><button>Speaker</button></div>
+                        </section>
+                        <section class="card setting-group">
+                            <div class="list-title">Vehicle</div>
+                            <div class="setting-row"><span>Fuel Profile</span><button>Gasoline E27</button></div>
+                            <div class="setting-row"><span>Trip Reset</span><button>Disabled</button></div>
+                            <div class="setting-row"><span>Thresholds</span><button>Standard</button></div>
+                        </section>
+                        <section class="card setting-group">
+                            <div class="list-title">Display</div>
+                            <div class="setting-row"><span>Theme</span><button>PiCASSO Red</button></div>
+                            <div class="setting-row"><span>Brightness</span><button>Auto</button></div>
+                            <div class="setting-row"><span>Language</span><button>English</button></div>
+                        </section>
+                    </div>
+                </section>
+            </main>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
