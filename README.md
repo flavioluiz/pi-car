@@ -278,6 +278,9 @@ python3 app.py
 
 # 6. Open browser to http://localhost:5000
 # 7. Click VEHICLE tab - gauges will display available metrics
+
+# Optional: run the UI without hardware using simulated data
+python3 app.py --teste
 ```
 
 ### Supported Metrics

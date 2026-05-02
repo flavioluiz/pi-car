@@ -140,5 +140,44 @@ class FrontendMigrationSmokeTest(unittest.TestCase):
             self.assertTrue(response.get_data(), path)
 
 
+class AppTestModeSmokeTest(unittest.TestCase):
+    def test_app_test_mode_exposes_fake_live_data(self):
+        original_argv = sys.argv[:]
+        try:
+            sys.argv = ["app.py", "--teste"]
+            for module_name in [
+                "backend.routes",
+                "backend.routes.music",
+                "backend.routes.gps",
+                "backend.routes.vehicle",
+                "backend.routes.system",
+                "backend.routes.radio",
+                "backend.services",
+                "backend.services.mpd_service",
+                "backend.services.music_library",
+                "backend.services.gps_service",
+                "backend.services.obd_service",
+                "backend.services.rtlsdr_service",
+                "app",
+            ]:
+                sys.modules.pop(module_name, None)
+
+            app_module = importlib.import_module("app")
+            client = app_module.app.test_client()
+
+            response = client.get("/api/status")
+            self.assertEqual(response.status_code, 200)
+            payload = response.get_json()
+
+            self.assertTrue(payload["gps"]["connected"])
+            self.assertTrue(payload["obd"]["connected"])
+            self.assertTrue(payload["radio"]["connected"])
+            self.assertTrue(payload["music"]["connected"])
+            self.assertGreaterEqual(payload["music"]["elapsed"], 0)
+            self.assertGreater(payload["obd"]["direct"]["speed_kmh"], -1)
+        finally:
+            sys.argv = original_argv
+
+
 if __name__ == "__main__":
     unittest.main()
