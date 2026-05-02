@@ -159,6 +159,31 @@ class MPDService:
         except Exception as e:
             return {'error': str(e)}
 
+    def refresh_database(self, wait: bool = True) -> str:
+        """Atualiza o banco do MPD e aguarda a conclusao quando solicitado."""
+        client = self._get_client()
+        if not client:
+            raise RuntimeError('MPD nao conectado')
+
+        try:
+            update_job = client.update()
+            if wait and update_job is not None:
+                target_job = str(update_job)
+                while True:
+                    status = client.status()
+                    if status.get('updating_db') != target_job:
+                        break
+            client.close()
+            client.disconnect()
+            return 'MPD database refreshed.'
+        except Exception:
+            try:
+                client.close()
+                client.disconnect()
+            except Exception:
+                pass
+            raise
+
     def add_to_playlist(self, uri):
         """Adiciona musica a playlist"""
         client = self._get_client()

@@ -110,6 +110,84 @@ Exit: `Alt+F4` or `Ctrl+W`
 
 ---
 
+## Media Sync via SSH
+
+The Settings page can sync the remote media repository into the Raspberry Pi:
+
+- `root@picasso-repo:/repository/Musics/` -> `~/Music/`
+- `root@picasso-repo:/repository/Playlists/` -> `~/.mpd/playlists/`
+
+The backend expects the SSH key at `~/.ssh/id_ed25519`.
+
+### 1. Generate the SSH key on the Raspberry Pi
+
+Run on the Raspberry Pi:
+
+```bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "pi-car-media-sync"
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
+```
+
+If the file already exists and you want to keep using it, do not overwrite it.
+
+### 2. Install the public key on `picasso-repo`
+
+Show the public key:
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+Copy that output and append it to the server's `authorized_keys`:
+
+```bash
+mkdir -p /root/.ssh
+chmod 700 /root/.ssh
+echo "PASTE_THE_PUBLIC_KEY_HERE" >> /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+```
+
+If you have password SSH access to `picasso-repo`, you can also use:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub root@picasso-repo
+```
+
+### 3. Test SSH access
+
+From the Raspberry Pi:
+
+```bash
+ssh -i ~/.ssh/id_ed25519 root@picasso-repo 'echo ok'
+```
+
+Expected output:
+
+```text
+ok
+```
+
+### 4. Test rsync manually
+
+Music:
+
+```bash
+rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" root@picasso-repo:/repository/Musics/ ~/Music/
+```
+
+Playlists:
+
+```bash
+rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" root@picasso-repo:/repository/Playlists/ ~/.mpd/playlists/
+```
+
+If both commands work, the `Sync now` button in Settings should work too.
+
+---
+
 ## Autostart
 
 The installation script configures autostart automatically. For manual configuration:

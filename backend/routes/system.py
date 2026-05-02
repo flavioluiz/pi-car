@@ -5,11 +5,12 @@ Endpoints da API para status geral e lancamento de apps.
 """
 
 import subprocess
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from backend.services.mpd_service import MPDService, music_data
 from backend.services.gps_service import gps_data
 from backend.services.obd_service import obd_data
 from backend.services.rtlsdr_service import radio_data
+from backend.services.media_sync import media_sync_service
 
 system_bp = Blueprint('system', __name__)
 mpd_service = MPDService()  # Usado para status e rotas de compatibilidade
@@ -68,3 +69,18 @@ def api_library():
     if isinstance(result, dict) and 'error' in result:
         return jsonify(result), 500
     return jsonify(result)
+
+
+@system_bp.route('/media/sync', methods=['GET', 'POST'])
+def api_media_sync():
+    """Consulta status ou dispara sincronizacao de musicas/playlists."""
+    if request.method == 'GET':
+        return jsonify(media_sync_service.get_status())
+
+    payload = request.get_json(silent=True) or {}
+    result = media_sync_service.start_sync(
+        force=bool(payload.get('force')),
+        reason=(payload.get('reason') or 'manual').strip() or 'manual',
+    )
+    status_code = 202 if result.get('accepted') else 200
+    return jsonify(result), status_code

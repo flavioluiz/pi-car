@@ -10,6 +10,16 @@ from pathlib import Path
 MPD_HOST = 'localhost'
 MPD_PORT = 6600
 MUSIC_DIRECTORY = str(Path.home() / 'Music')
+MPD_PLAYLIST_DIRECTORY = str(Path.home() / '.mpd' / 'playlists')
+
+# Media synchronization
+MEDIA_SYNC_REMOTE = 'root@picasso-repo'
+MEDIA_SYNC_SSH_KEY = str(Path.home() / '.ssh' / 'id_ed25519')
+MEDIA_SYNC_REMOTE_MUSIC_DIRECTORY = '/repository/Musics/'
+MEDIA_SYNC_REMOTE_PLAYLIST_DIRECTORY = '/repository/Playlists/'
+MEDIA_SYNC_LOCAL_MUSIC_DIRECTORY = MUSIC_DIRECTORY
+MEDIA_SYNC_LOCAL_PLAYLIST_DIRECTORY = MPD_PLAYLIST_DIRECTORY
+MEDIA_SYNC_MIN_INTERVAL_SECONDS = 1800
 
 # GPS (gpsd)
 GPS_HOST = 'localhost'

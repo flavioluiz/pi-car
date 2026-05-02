@@ -1374,6 +1374,90 @@ h2 {
     background: linear-gradient(90deg, var(--red), var(--blue));
 }
 
+.sync-settings-card {
+    grid-column: 1 / -1;
+    padding: 14px;
+    display: grid;
+    gap: 14px;
+}
+
+.sync-settings-head,
+.sync-status-grid,
+.sync-status-row {
+    display: grid;
+    gap: 12px;
+}
+
+.sync-settings-head {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+}
+
+.sync-settings-copy {
+    margin: 6px 0 0;
+    color: var(--muted);
+    max-width: 52ch;
+}
+
+.sync-button {
+    min-width: 128px;
+    min-height: 48px;
+    border-radius: 14px;
+}
+
+.sync-button[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.sync-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sync-status-row {
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.sync-status-row span {
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.sync-status-row strong {
+    font-size: 0.95rem;
+}
+
+.sync-summary {
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+}
+
+.sync-output {
+    margin: 0;
+    min-height: 120px;
+    max-height: 220px;
+    overflow: auto;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: rgba(6, 10, 16, 0.92);
+    color: var(--muted);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .setting-row {
     justify-content: space-between;
     padding: 12px 14px;
@@ -1436,7 +1520,8 @@ h2 {
     .music-layout,
     .two-column,
     .home-lower,
-    .settings-grid {
+    .settings-grid,
+    .sync-status-grid {
         grid-template-columns: 1fr;
     }
 
@@ -1499,6 +1584,15 @@ h2 {
 
     .page-header {
         margin-bottom: 8px;
+    }
+
+    .sync-settings-head {
+        grid-template-columns: 1fr;
+    }
+
+    .sync-status-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
     }
 
     h1 {

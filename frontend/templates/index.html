@@ -640,6 +640,35 @@
                                 </div>
                             </div>
                         </section>
+                        <section class="card sync-settings-card">
+                            <div class="sync-settings-head">
+                                <div>
+                                    <div class="list-title">Media Sync</div>
+                                    <p class="sync-settings-copy">Sync remote repositories into the local MPD library and playlist store.</p>
+                                </div>
+                                <button id="media-sync-button" class="sync-button" type="button" onclick="requestMediaSync(true, 'manual-button')">Sync now</button>
+                            </div>
+                            <div class="sync-status-grid">
+                                <div class="sync-status-row">
+                                    <span>Status</span>
+                                    <strong id="media-sync-state">Idle</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Last success</span>
+                                    <strong id="media-sync-last-success">Never</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Music</span>
+                                    <strong id="media-sync-music-dir">~/Music</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Playlists</span>
+                                    <strong id="media-sync-playlist-dir">~/.mpd/playlists</strong>
+                                </div>
+                            </div>
+                            <div id="media-sync-summary" class="sync-summary">Waiting for first sync.</div>
+                            <pre id="media-sync-output" class="sync-output">No sync logs yet.</pre>
+                        </section>
                     </div>
                 </section>
             </main>

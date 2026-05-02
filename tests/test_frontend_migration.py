@@ -106,6 +106,8 @@ class FrontendMigrationSmokeTest(unittest.TestCase):
             'id="panel-vehicle"',
             'id="panel-radio"',
             'id="panel-settings"',
+            'id="media-sync-button"',
+            'id="media-sync-state"',
             'id="music-title"',
             'id="music-artist"',
             'id="btn-play"',

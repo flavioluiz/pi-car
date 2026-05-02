@@ -78,6 +78,8 @@ const themeDescriptions = {
     'signal-cyan': 'Cooler telemetry look',
     'amber-dusk': 'Warmer night panel'
 };
+let mediaSyncStatus = null;
+let mediaSyncPoller = null;
 
 function applyTheme(themeName, label) {
     document.body.dataset.theme = themeName;
@@ -97,6 +99,81 @@ themeButtons.forEach(btn => {
 });
 
 applyTheme(localStorage.getItem('picasso-compat-theme') || 'picasso-red');
+
+// ============ MEDIA SYNC ============
+function formatSyncDate(value) {
+    if (!value) return 'Never';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString();
+}
+
+function updateMediaSyncStatus(status) {
+    mediaSyncStatus = status;
+
+    const state = document.getElementById('media-sync-state');
+    const lastSuccess = document.getElementById('media-sync-last-success');
+    const musicDir = document.getElementById('media-sync-music-dir');
+    const playlistDir = document.getElementById('media-sync-playlist-dir');
+    const summary = document.getElementById('media-sync-summary');
+    const output = document.getElementById('media-sync-output');
+    const button = document.getElementById('media-sync-button');
+    if (!state || !lastSuccess || !musicDir || !playlistDir || !summary || !output || !button) return;
+
+    state.textContent = status.running
+        ? 'Running'
+        : status.configured === false
+            ? 'Not configured'
+            : status.last_error
+                ? 'Error'
+                : 'Idle';
+    lastSuccess.textContent = formatSyncDate(status.last_success_at);
+    musicDir.textContent = status.music_local_dir || '~/Music';
+    playlistDir.textContent = status.playlist_local_dir || '~/.mpd/playlists';
+    summary.textContent = status.configured === false
+        ? (status.preflight_error || 'Media sync is not configured.')
+        : (status.last_summary || 'No sync information available.');
+    output.textContent = status.last_output || 'No sync logs yet.';
+    button.disabled = Boolean(status.running) || status.configured === false;
+    button.textContent = status.running ? 'Syncing...' : 'Sync now';
+}
+
+function fetchMediaSyncStatus() {
+    fetch('/api/media/sync')
+        .then(r => r.json())
+        .then(updateMediaSyncStatus)
+        .catch(err => console.error('Error loading media sync status:', err));
+}
+
+function requestMediaSync(force = true, reason = 'manual') {
+    fetch('/api/media/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force, reason })
+    })
+        .then(r => r.json())
+        .then(status => {
+            updateMediaSyncStatus(status);
+            if (status.accepted) {
+                loadedMusicTabs.delete('artists');
+                loadedMusicTabs.delete('playlists');
+            }
+        })
+        .catch(err => console.error('Error starting media sync:', err));
+}
+
+function maybeAutoSyncMedia(reason = 'browser-online') {
+    if (!navigator.onLine) return;
+    if (mediaSyncStatus && mediaSyncStatus.configured === false) return;
+    fetch('/api/media/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: false, reason })
+    })
+        .then(r => r.json())
+        .then(updateMediaSyncStatus)
+        .catch(err => console.error('Error auto-syncing media:', err));
+}
 
 // ============ CLOCK ============
 function updateClock() {
@@ -1782,6 +1859,13 @@ updateData = function() {
 // Load presets on page load if radio panel exists
 if (document.getElementById('fm-presets')) {
     loadRadioPresets();
+}
+
+if (document.getElementById('media-sync-state')) {
+    fetchMediaSyncStatus();
+    mediaSyncPoller = setInterval(fetchMediaSyncStatus, 5000);
+    maybeAutoSyncMedia('page-load');
+    window.addEventListener('online', () => maybeAutoSyncMedia('browser-online'));
 }
 
 updateData();
