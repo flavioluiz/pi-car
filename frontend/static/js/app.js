@@ -524,6 +524,10 @@ document.querySelectorAll('.music-tab').forEach(tab => {
 
 const loadedMusicTabs = new Set();
 
+function invalidateQueueView() {
+    loadedMusicTabs.delete('queue');
+}
+
 // Load content based on tab
 function loadMusicContent(type) {
     switch (type) {
@@ -531,8 +535,6 @@ function loadMusicContent(type) {
             // Player updates automatically
             break;
         case 'queue':
-            if (loadedMusicTabs.has(type)) break;
-            loadedMusicTabs.add(type);
             loadQueue();
             break;
         case 'artists':
@@ -610,7 +612,11 @@ function loadQueue() {
 function removeFromQueue(pos) {
     fetch('/api/music/remove/' + pos, { method: 'POST' })
         .then(r => r.json())
-        .then(() => loadQueue())
+        .then(() => {
+            invalidateQueueView();
+            loadQueue();
+            updateData();
+        })
         .catch(err => console.error('Error:', err));
 }
 
@@ -620,6 +626,7 @@ function clearQueue() {
         .then(r => r.json())
         .then(() => {
             queueFiles.clear();
+            invalidateQueueView();
             loadQueue();
             updateData();
         })
@@ -740,6 +747,7 @@ function playAllSongs() {
     fetch('/api/music/all/play', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
+            invalidateQueueView();
             document.querySelector('.music-tab[data-music="playing"]').click();
             updateData();
         })
@@ -751,6 +759,7 @@ function addAllSongsToQueue() {
     fetch('/api/music/all/add', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
+            invalidateQueueView();
             loadQueue();
         })
         .catch(err => console.error('Error:', err));
@@ -761,6 +770,7 @@ function playArtist(artist) {
     fetch('/api/music/artist/' + encodeURIComponent(artist) + '/play', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
+            invalidateQueueView();
             document.querySelector('.music-tab[data-music="playing"]').click();
             updateData();
         })
@@ -772,6 +782,7 @@ function addArtistToQueue(artist) {
     fetch('/api/music/artist/' + encodeURIComponent(artist) + '/add', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
+            invalidateQueueView();
             loadQueue();
         })
         .catch(err => console.error('Error:', err));
@@ -807,6 +818,7 @@ function playPlaylist(name) {
     fetch('/api/music/playlists/' + encodeURIComponent(name) + '/play', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
+            invalidateQueueView();
             document.querySelector('.music-tab[data-music="playing"]').click();
             updateData();
         })
@@ -818,6 +830,7 @@ function addPlaylistToQueue(name) {
     fetch('/api/music/playlists/' + encodeURIComponent(name) + '/add', { method: 'POST' })
         .then(r => r.json())
         .then(() => {
+            invalidateQueueView();
             loadQueue();
         })
         .catch(err => console.error('Error:', err));
@@ -898,6 +911,7 @@ function addToQueue(file) {
         .then(r => r.json())
         .then(() => {
             queueFiles.add(file);
+            invalidateQueueView();
             if (document.getElementById('music-queue').classList.contains('active')) {
                 loadQueue();
             }
@@ -915,6 +929,7 @@ function addToQueueAndMark(btn, file) {
         .then(r => r.json())
         .then(() => {
             queueFiles.add(file);
+            invalidateQueueView();
             btn.classList.add('added');
             // Mark the icon too
             const item = btn.closest('.browser-item');
@@ -937,6 +952,7 @@ function playSong(file) {
         .then(() => {
             queueFiles.clear();
             queueFiles.add(file);
+            invalidateQueueView();
             document.querySelector('.music-tab[data-music="playing"]').click();
             updateData();
         })
