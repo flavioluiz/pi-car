@@ -518,9 +518,11 @@ document.querySelectorAll('.music-tab').forEach(tab => {
         document.getElementById(panelId).classList.add('active');
 
         // Load tab content
-        loadMusicContent(tab.dataset.music);
+        requestAnimationFrame(() => loadMusicContent(tab.dataset.music));
     });
 });
+
+const loadedMusicTabs = new Set();
 
 // Load content based on tab
 function loadMusicContent(type) {
@@ -529,12 +531,18 @@ function loadMusicContent(type) {
             // Player updates automatically
             break;
         case 'queue':
+            if (loadedMusicTabs.has(type)) break;
+            loadedMusicTabs.add(type);
             loadQueue();
             break;
         case 'artists':
+            if (loadedMusicTabs.has(type)) break;
+            loadedMusicTabs.add(type);
             loadArtists();
             break;
         case 'playlists':
+            if (loadedMusicTabs.has(type)) break;
+            loadedMusicTabs.add(type);
             loadPlaylists();
             break;
         case 'search':
@@ -982,9 +990,6 @@ function keyClear() {
 
 // Initialize keyboard
 createKeyboard();
-
-// Load initial queue
-loadQueue();
 
 // ============ RADIO SDR ============
 
