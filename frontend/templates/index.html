@@ -3,348 +3,564 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Car Dashboard</title>
+    <title>PiCASSO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">Pi·Car</div>
-        <div class="clock" id="clock">00:00</div>
-        <div class="status-indicators">
-            <div class="indicator" id="ind-music" title="Music"></div>
-            <div class="indicator" id="ind-gps" title="GPS"></div>
-            <div class="indicator" id="ind-obd" title="OBD-II"></div>
-            <div class="indicator" id="ind-radio" title="Radio"></div>
-        </div>
-    </header>
-
-    <!-- Navigation tabs -->
-    <nav class="tabs">
-        <button class="tab active" data-panel="music">MUSIC</button>
-        <button class="tab" data-panel="vehicle">VEHICLE</button>
-        <button class="tab" data-panel="gps">GPS</button>
-        <button class="tab" data-panel="radio">RADIO</button>
-    </nav>
-
-    <!-- Panels -->
-    <main class="panels">
-
-        <!-- Panel: Music -->
-        <section class="panel active" id="panel-music">
-            <!-- Music submenu -->
-            <div class="music-tabs">
-                <button class="music-tab active" data-music="playing">Playing</button>
-                <button class="music-tab" data-music="queue">Queue</button>
-                <button class="music-tab" data-music="artists">Artists</button>
-                <button class="music-tab" data-music="playlists">Playlists</button>
-                <button class="music-tab" data-music="search">Search</button>
+<body data-theme="picasso-red">
+    <div class="app-shell page-home-active">
+        <aside class="sidebar">
+            <div class="brand-panel">
+                <img class="brand-logo" src="{{ url_for('static', filename='logos/picasso_logo.png') }}" alt="PiCASSO logo">
             </div>
 
-            <!-- Tab content -->
-            <div class="music-content">
-                <!-- Tab: Playing (current player) -->
-                <div class="music-panel active" id="music-playing">
-                    <div class="music-now-playing">
-                        <div class="music-artwork" id="music-artwork">&#9835;</div>
-                        <div class="music-info">
-                            <div class="music-title" id="music-title">No music</div>
-                            <div class="music-artist" id="music-artist">-</div>
-                            <div class="music-controls">
-                                <button class="control-btn small" onclick="restartSong()" title="Restart">&#8634;</button>
-                                <button class="control-btn" onclick="musicControl('prev')">&#9664;&#9664;</button>
-                                <button class="control-btn play-pause" id="btn-play" onclick="musicControl('play')">&#9654;</button>
-                                <button class="control-btn" onclick="musicControl('next')">&#9654;&#9654;</button>
+            <nav class="main-nav tabs">
+                <button class="nav-item tab active" data-page="home" data-panel="home">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M4 11.5 12 5l8 6.5"></path>
+                            <path d="M7 10.5V19h10v-8.5"></path>
+                        </svg>
+                    </span>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item tab" data-page="music" data-panel="music">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M9 18.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"></path>
+                            <path d="M18 16.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"></path>
+                            <path d="M9 18.5V6l9-2v12.5"></path>
+                            <path d="M9 9.5 18 7"></path>
+                        </svg>
+                    </span>
+                    <span>Music</span>
+                </button>
+                <button class="nav-item tab" data-page="navigation" data-panel="gps">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="m12 4 6 14-6-3-6 3 6-14Z"></path>
+                            <path d="m12 4 0 11"></path>
+                        </svg>
+                    </span>
+                    <span>Navigation</span>
+                </button>
+                <button class="nav-item tab" data-page="vehicle" data-panel="vehicle">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M5 15.5 6.8 10a2 2 0 0 1 1.9-1.4h6.6a2 2 0 0 1 1.9 1.4l1.8 5.5"></path>
+                            <path d="M4.5 15.5h15a1.5 1.5 0 0 1 1.5 1.5V19h-2v-1.5h-2V19H7v-1.5H5V19H3v-2a1.5 1.5 0 0 1 1.5-1.5Z"></path>
+                            <path d="M7.5 13h1"></path>
+                            <path d="M15.5 13h1"></path>
+                        </svg>
+                    </span>
+                    <span>Vehicle</span>
+                </button>
+                <button class="nav-item tab" data-page="radio" data-panel="radio">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M12 12v7"></path>
+                            <path d="m9 19 3-7 3 7"></path>
+                            <path d="M12 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+                            <path d="M7.5 6.5a6.5 6.5 0 0 0 0 9"></path>
+                            <path d="M16.5 6.5a6.5 6.5 0 0 1 0 9"></path>
+                            <path d="M4.5 3.5a10.5 10.5 0 0 0 0 15"></path>
+                            <path d="M19.5 3.5a10.5 10.5 0 0 1 0 15"></path>
+                        </svg>
+                    </span>
+                    <span>SDR Radio</span>
+                </button>
+                <button class="nav-item tab" data-page="settings" data-panel="settings">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="m12 3 1.1 2.2 2.5.4.8 2.4 2.1 1.4-.6 2.4.6 2.4-2.1 1.4-.8 2.4-2.5.4L12 21l-1.1-2.2-2.5-.4-.8-2.4-2.1-1.4.6-2.4-.6-2.4 2.1-1.4.8-2.4 2.5-.4Z"></path>
+                            <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path>
+                        </svg>
+                    </span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </aside>
+
+        <section class="main-stage">
+            <header class="topbar">
+                <img class="topbar-wordmark" src="{{ url_for('static', filename='logos/picasso_name_only.png') }}" alt="PiCASSO">
+                <div class="status-strip">
+                    <span>GPS <i class="dot indicator" id="ind-gps"></i></span>
+                    <span>OBD-II <i class="dot indicator" id="ind-obd"></i></span>
+                    <span>SDR <i class="dot indicator" id="ind-radio"></i></span>
+                    <span>MPD <i class="dot indicator" id="ind-music"></i></span>
+                </div>
+                <div class="topbar-right">
+                    <span>Wi-Fi</span>
+                    <strong id="clock">00:00</strong>
+                </div>
+            </header>
+
+            <main class="content panels">
+                <section class="page panel active" id="panel-home">
+                    <div class="home-grid">
+                        <section class="card card-obd-hero">
+                            <div class="card-header">
+                                <strong>OBD-II Live Metrics</strong>
                             </div>
-                            <div class="music-extra-controls">
-                                <button class="mode-btn" id="btn-shuffle" onclick="toggleShuffle()" title="Shuffle">&#8645;</button>
-                                <div class="volume-control">
-                                    <button class="volume-btn" onclick="musicControl('voldown')">-</button>
-                                    <span class="volume-display" id="volume-display">100%</span>
-                                    <button class="volume-btn" onclick="musicControl('volup')">+</button>
+                            <div class="obd-hero-layout">
+                                <div class="metric-dial speed-hero full">
+                                    <span class="metric-label">Vehicle Speed</span>
+                                    <strong id="home-obd-speed">--</strong>
+                                    <span class="metric-unit">km/h</span>
+                                    <div class="metric-scale">
+                                        <div class="metric-fill speed" id="home-speed-fill"></div>
+                                    </div>
                                 </div>
-                                <button class="mode-btn" id="btn-repeat" onclick="toggleRepeat()" title="Repeat">&#8634;</button>
                             </div>
-                        </div>
-                    </div>
-                    <div class="music-progress">
-                        <div class="progress-bar" id="progress-bar" onclick="seekToPosition(event)">
-                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-time">
-                            <span id="time-elapsed">0:00</span>
-                            <span id="time-duration">0:00</span>
-                        </div>
-                    </div>
-                </div>
+                        </section>
 
-                <!-- Tab: Queue -->
-                <div class="music-panel" id="music-queue">
-                    <div class="browser-list" id="queue-list"></div>
-                </div>
-
-                <!-- Tab: Artists -->
-                <div class="music-panel" id="music-artists">
-                    <div class="browser-list" id="artists-list"></div>
-                </div>
-
-                <!-- Tab: Playlists -->
-                <div class="music-panel" id="music-playlists">
-                    <div class="browser-list" id="playlists-list"></div>
-                </div>
-
-                <!-- Tab: Search -->
-                <div class="music-panel" id="music-search">
-                    <div class="search-input-container">
-                        <input type="text" id="search-input" placeholder="Type to search..." readonly>
-                    </div>
-                    <div id="virtual-keyboard"></div>
-                    <div class="browser-list" id="search-results"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Panel: Vehicle (OBD) -->
-        <section class="panel" id="panel-vehicle">
-            <div id="obd-content">
-                <div class="vehicle-toolbar">
-                    <div class="vehicle-identity">
-                        <div class="vehicle-title" id="obd-vehicle-name">Citroen C3 Picasso 2013</div>
-                        <div class="vehicle-subtitle" id="obd-connection-line">OBD-II aguardando dados</div>
-                    </div>
-                    <div class="vehicle-actions">
-                        <select id="obd-fuel-select" onchange="setOBDFuel(this.value)">
-                            <option value="gasoline_e27">Gasolina E27</option>
-                            <option value="ethanol">Etanol</option>
-                        </select>
-                        <button class="trip-reset-btn" onclick="resetOBDTrip()">Reset Trip</button>
-                    </div>
-                </div>
-                <div class="vehicle-alerts" id="obd-alerts"></div>
-                <div class="vehicle-main-grid">
-                    <div class="gauge primary speed">
-                        <div class="gauge-value" id="obd-speed">--</div>
-                        <div class="gauge-unit">km/h</div>
-                        <div class="gauge-label">Velocidade</div>
-                    </div>
-                    <div class="gauge primary rpm">
-                        <div class="gauge-value" id="obd-rpm">--</div>
-                        <div class="gauge-unit">rpm</div>
-                        <div class="gauge-label">Motor</div>
-                    </div>
-                    <div class="gauge primary temp">
-                        <div class="gauge-value" id="obd-coolant">--</div>
-                        <div class="gauge-unit">C</div>
-                        <div class="gauge-label">Arrefecimento</div>
-                    </div>
-                    <div class="gauge primary fuel">
-                        <div class="gauge-value" id="obd-consumption">--</div>
-                        <div class="gauge-unit" id="obd-consumption-unit">L/h</div>
-                        <div class="gauge-label">Consumo atual</div>
-                    </div>
-                </div>
-                <div class="trip-grid">
-                    <div class="trip-stat">
-                        <div class="trip-value" id="obd-trip-distance">--</div>
-                        <div class="trip-label">km viagem</div>
-                    </div>
-                    <div class="trip-stat">
-                        <div class="trip-value" id="obd-trip-fuel">--</div>
-                        <div class="trip-label">L consumidos</div>
-                    </div>
-                    <div class="trip-stat">
-                        <div class="trip-value" id="obd-trip-average">--</div>
-                        <div class="trip-label">km/L medio</div>
-                    </div>
-                    <div class="trip-stat">
-                        <div class="trip-value" id="obd-voltage">--</div>
-                        <div class="trip-label">V bateria</div>
-                    </div>
-                </div>
-                <div class="vehicle-section-title">Tecnico</div>
-                <div class="gauges-grid" id="gauges-grid">
-                    <!-- Technical gauges will be dynamically rendered based on available metrics -->
-                </div>
-            </div>
-            <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
-                <div class="icon">[OBD]</div>
-                <p>OBD-II not connected</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Check USB connection at /dev/serial/by-id/... or /dev/ttyUSB0</p>
-            </div>
-            <div id="obd-error" class="disconnected-msg" style="display: none;">
-                <div class="icon">[!]</div>
-                <p id="obd-error-text">Error</p>
-            </div>
-        </section>
-
-        <!-- Panel: GPS -->
-        <section class="panel" id="panel-gps">
-            <div id="gps-content">
-                <div class="gps-info">
-                    <div class="gps-stat">
-                        <div class="gps-stat-value" id="gps-speed">0</div>
-                        <div class="gps-stat-label">km/h</div>
-                    </div>
-                    <div class="gps-stat">
-                        <div class="gps-stat-value" id="gps-sats">0</div>
-                        <div class="gps-stat-label">Satellites</div>
-                    </div>
-                    <div class="gps-stat gps-coords">
-                        <div id="gps-coords">Waiting for GPS signal...</div>
-                    </div>
-                    <button class="navit-btn" onclick="openNavit()">
-                        OPEN NAVIGATION
-                    </button>
-                </div>
-            </div>
-            <div id="gps-disconnected" class="disconnected-msg" style="display: none;">
-                <div class="icon">[GPS]</div>
-                <p>GPS not connected</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Check the GPS module</p>
-            </div>
-        </section>
-
-        <!-- Panel: SDR Radio -->
-        <section class="panel" id="panel-radio">
-            <!-- Radio connected content -->
-            <div id="radio-content">
-                <!-- Radio submenu -->
-                <div class="music-tabs">
-                    <button class="radio-tab active" data-radio="tuner">Tuner</button>
-                    <button class="radio-tab" data-radio="spectrum">Spectrum</button>
-                    <button class="radio-tab" data-radio="presets">Presets</button>
-                    <button class="radio-tab" data-radio="favorites">Favorites</button>
-                </div>
-
-                <!-- Tab: Tuner -->
-                <div class="radio-panel active" id="radio-tuner">
-                    <div class="radio-display">
-                        <div class="radio-mode" id="radio-mode">FM</div>
-                        <div class="radio-frequency">
-                            <span id="radio-freq">99.5</span>
-                            <span class="radio-freq-unit">MHz</span>
-                        </div>
-                        <div class="radio-signal">
-                            <div class="signal-bars" id="signal-bars">
-                                <div class="signal-bar"></div>
-                                <div class="signal-bar"></div>
-                                <div class="signal-bar"></div>
-                                <div class="signal-bar"></div>
-                                <div class="signal-bar"></div>
+                        <section class="card home-trip-card">
+                            <div class="mini-panel">
+                                <div class="card-header">
+                                    <strong>Trip Summary</strong>
+                                </div>
+                                <div class="trip-summary-grid">
+                                    <div><span>Fuel Used</span><strong id="home-trip-fuel">-- L</strong></div>
+                                    <div><span>Battery</span><strong id="home-battery">-- V</strong></div>
+                                    <div><span>Efficiency</span><strong id="home-avg-kml">-- km/L</strong></div>
+                                    <div><span>Trip</span><strong id="home-trip-dist">-- km</strong></div>
+                                </div>
+                                <div class="rpm-inline-card">
+                                    <span class="metric-label">Engine RPM</span>
+                                    <strong id="home-rpm">--</strong>
+                                    <span class="metric-unit">x1000 rpm</span>
+                                    <div class="metric-scale">
+                                        <div class="metric-fill rpm" id="home-rpm-fill"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <span id="signal-dbm">-100 dBm</span>
-                        </div>
-                    </div>
-                    <div class="radio-tuning">
-                        <button class="tune-btn" onclick="radioTuneStep(-1)">-</button>
-                        <button class="tune-btn big" onclick="radioTuneStep(-0.1)">&#9664;</button>
-                        <div class="tune-display">
-                            <input type="number" id="freq-input" step="0.1" min="24" max="1800" value="99.5">
-                            <button class="tune-go" onclick="radioTuneManual()">GO</button>
-                        </div>
-                        <button class="tune-btn big" onclick="radioTuneStep(0.1)">&#9654;</button>
-                        <button class="tune-btn" onclick="radioTuneStep(1)">+</button>
-                    </div>
-                    <div class="radio-controls">
-                        <div class="radio-mode-selector">
-                            <button class="mode-select active" id="mode-fm" onclick="radioSetMode('FM')">FM</button>
-                            <button class="mode-select" id="mode-am" onclick="radioSetMode('AM')">AM</button>
-                        </div>
-                        <button class="radio-play-btn" id="radio-play-btn" onclick="radioTogglePlay()">
-                            <span id="radio-play-icon">&#9654;</span>
-                        </button>
-                        <div class="radio-volume">
-                            <button class="vol-btn" onclick="radioVolumeDown()">-</button>
-                            <span class="vol-display" id="radio-vol">80%</span>
-                            <button class="vol-btn" onclick="radioVolumeUp()">+</button>
-                        </div>
-                    </div>
-                    <div class="radio-quick-presets">
-                        <button class="quick-preset" onclick="radioTune(97.5, 'FM')">97.5 FM</button>
-                        <button class="quick-preset" onclick="radioTune(95.7, 'FM')">95.7 FM</button>
-                        <button class="quick-preset" onclick="radioTune(118.5, 'AM')">SBSJ TWR</button>
-                        <button class="quick-preset" onclick="radioTune(127.65, 'AM')">SBSJ ATIS</button>
-                        <button class="quick-preset" onclick="radioAddFavorite()">+ FAV</button>
-                    </div>
-                </div>
+                        </section>
 
-                <!-- Tab: Spectrum -->
-                <div class="radio-panel" id="radio-spectrum">
-                    <div class="spectrum-header">
-                        <span id="spectrum-mode-indicator" class="spectrum-indicator">WAITING</span>
-                        <span class="spectrum-note">Audio pauses during LIVE mode</span>
-                    </div>
-                    <canvas id="spectrogram" width="800" height="200"></canvas>
-                    <div class="spectrum-controls">
-                        <div class="spectrum-info">
-                            <span id="spectrum-start">98.5</span> MHz
-                            <span class="spectrum-center-label">Center: <span id="spectrum-center">99.5</span> MHz</span>
-                            <span id="spectrum-end">100.5</span> MHz
-                        </div>
-                        <!-- Frequency adjustment buttons -->
-                        <div class="freq-adjust-panel">
-                            <div class="freq-adjust-row">
-                                <button class="freq-btn large" onclick="adjustSpectrumFreq(-10)">-10</button>
-                                <button class="freq-btn medium" onclick="adjustSpectrumFreq(-1)">-1</button>
-                                <button class="freq-btn small" onclick="adjustSpectrumFreq(-0.1)">-0.1</button>
-                                <span class="freq-display" id="spectrum-freq-display">99.5</span>
-                                <button class="freq-btn small" onclick="adjustSpectrumFreq(0.1)">+0.1</button>
-                                <button class="freq-btn medium" onclick="adjustSpectrumFreq(1)">+1</button>
-                                <button class="freq-btn large" onclick="adjustSpectrumFreq(10)">+10</button>
+                        <section class="card card-player home-music-card">
+                            <div class="card-header">
+                                <strong>Music</strong>
+                                <span>MPD</span>
                             </div>
-                            <div class="freq-adjust-label">MHz</div>
-                        </div>
+                            <div class="home-music-layout">
+                                <div class="home-track-meta">
+                                    <div class="track-copy">
+                                        <strong id="home-music-title">No music</strong>
+                                        <span id="home-music-artist">-</span>
+                                    </div>
+                                </div>
+                                <div class="home-music-controls">
+                                    <div class="player-controls compact-home">
+                                        <button onclick="musicControl('prev')">Prev</button>
+                                        <button class="primary" id="home-btn-play" onclick="musicControl('play')">Play</button>
+                                        <button onclick="musicControl('next')">Next</button>
+                                    </div>
+                                    <div class="volume-row">
+                                        <span>Vol</span>
+                                        <div class="progress-bar quiet"><div id="home-vol-fill"></div></div>
+                                        <span id="home-vol-pct">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress-row home-progress">
+                                <span id="home-time-elapsed">0:00</span>
+                                <div class="progress-bar"><div id="home-progress-fill"></div></div>
+                                <span id="home-time-duration">0:00</span>
+                            </div>
+                        </section>
+                    </div>
+                </section>
 
-                        <div class="spectrum-config-grid">
-                            <div class="spectrum-config-item">
-                                <label for="spectrum-update-interval">Update Interval (ms):</label>
+                <section class="page panel" id="panel-music">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Media</span>
+                            <h1>Music</h1>
+                        </div>
+                    </div>
+
+                    <div class="subtabs music-tabs">
+                        <button class="subtab music-tab active" data-subtab="music-playing" data-music="playing">Now Playing</button>
+                        <button class="subtab music-tab" data-subtab="music-queue" data-music="queue">Queue</button>
+                        <button class="subtab music-tab" data-subtab="music-artists" data-music="artists">Artists</button>
+                        <button class="subtab music-tab" data-subtab="music-playlists" data-music="playlists">Playlists</button>
+                        <button class="subtab music-tab" data-subtab="music-search" data-music="search">Search</button>
+                    </div>
+
+                    <div class="subpage music-panel active" id="music-playing">
+                        <div class="music-layout">
+                            <section class="card hero-track">
+                                <div class="hero-album music-artwork" id="music-artwork"></div>
+                                <div class="hero-track-copy">
+                                    <span class="eyebrow">Now Playing</span>
+                                    <h2 id="music-title">No music</h2>
+                                    <p id="music-artist">-</p>
+                                    <div class="progress-row">
+                                        <span id="time-elapsed">0:00</span>
+                                        <div class="progress-bar" id="progress-bar" onclick="seekToPosition(event)">
+                                            <div id="progress-fill" style="width: 0%"></div>
+                                        </div>
+                                        <span id="time-duration">0:00</span>
+                                    </div>
+                                    <div class="player-controls left">
+                                        <button onclick="restartSong()">Start</button>
+                                        <button onclick="musicControl('prev')">Prev</button>
+                                        <button class="primary" id="btn-play" onclick="musicControl('play')">&#9654;</button>
+                                        <button onclick="musicControl('next')">Next</button>
+                                    </div>
+                                    <div class="music-utility-row">
+                                        <button class="mini-control mode-btn" id="btn-shuffle" onclick="toggleShuffle()">Shuffle</button>
+                                        <button class="mini-control mode-btn" id="btn-repeat" onclick="toggleRepeat()">&#8634;</button>
+                                        <div class="mini-volume">
+                                            <button onclick="musicControl('voldown')">-</button>
+                                            <span class="volume-display" id="volume-display">100%</span>
+                                            <button onclick="musicControl('volup')">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Playback</div>
+                                <div class="stack-stats playback-grid">
+                                    <div><strong>Shuffle</strong><span id="stat-shuffle">Off</span></div>
+                                    <div><strong>Repeat</strong><span id="stat-repeat">Off</span></div>
+                                    <div><strong>Volume</strong><span id="stat-volume">100%</span></div>
+                                    <div><strong>Queue</strong><span id="stat-queue-len">0 tracks</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-queue">
+                        <section class="card list-card">
+                            <div class="browser-list" id="queue-list"></div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-artists">
+                        <section class="card tile-card">
+                            <div class="browser-list" id="artists-list"></div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-playlists">
+                        <section class="card tile-card">
+                            <div class="browser-list" id="playlists-list"></div>
+                        </section>
+                    </div>
+
+                    <div class="subpage music-panel" id="music-search">
+                        <section class="card search-card">
+                            <div class="search-input-container">
+                                <input type="text" id="search-input" placeholder="Type to search..." readonly>
+                            </div>
+                            <div id="virtual-keyboard"></div>
+                            <div class="browser-list" id="search-results"></div>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-gps">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Location</span>
+                            <h1>Navigation</h1>
+                        </div>
+                    </div>
+                    <div class="two-column" id="gps-content">
+                        <section class="card nav-map-large">
+                            <div class="card-header">
+                                <strong>Route Preview</strong>
+                                <span>Primary map view</span>
+                            </div>
+                            <div class="map-scene large">
+                                <div class="map-grid"></div>
+                                <div class="map-route wide"></div>
+                                <div class="map-car"></div>
+                            </div>
+                        </section>
+                        <section class="card side-stats">
+                            <div class="list-title">GPS Details</div>
+                            <div class="stack-stats">
+                                <div><strong>Speed</strong><span><span id="gps-speed">0</span> km/h</span></div>
+                                <div><strong>Satellites</strong><span><span id="gps-sats">0</span> locked</span></div>
+                                <div><strong>Coordinates</strong><span id="gps-coords">Waiting for GPS signal...</span></div>
+                            </div>
+                            <div class="action-grid single">
+                                <button onclick="openNavit()">Open Navit</button>
+                            </div>
+                        </section>
+                    </div>
+                    <div id="gps-disconnected" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[GPS]</div>
+                        <p>GPS not connected</p>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-vehicle">
+                    <div id="obd-content">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Diagnostics</span>
+                            <h1>Vehicle</h1>
+                        </div>
+                    </div>
+                    <div class="subtabs vehicle-tabs">
+                        <button class="subtab active" data-subtab="vehicle-drive">Drive</button>
+                        <button class="subtab" data-subtab="vehicle-engine">Engine</button>
+                        <button class="subtab" data-subtab="vehicle-fuel-o2">Fuel &amp; O2</button>
+                        <button class="subtab" data-subtab="vehicle-diagnostics">Diagnostics</button>
+                        <button class="subtab" data-subtab="vehicle-id">Vehicle ID</button>
+                        <button class="subtab" data-subtab="vehicle-advanced">Advanced</button>
+                    </div>
+                    <div class="subpage active" id="vehicle-drive">
+                        <div class="two-column">
+                            <section class="card vehicle-hero">
+                                <div class="card-header">
+                                    <strong id="obd-vehicle-name">Citroen C3 Picasso 2013</strong>
+                                    <span id="obd-connection-line">OBD-II aguardando dados</span>
+                                </div>
+                                <div class="vehicle-alerts" id="obd-alerts"></div>
+                                <div class="vehicle-gauges">
+                                    <div class="metric-box major"><strong id="obd-speed">--</strong><span>Speed km/h</span></div>
+                                    <div class="metric-box major"><strong id="obd-rpm">--</strong><span>Engine rpm</span></div>
+                                    <div class="metric-box major"><strong id="obd-coolant">--</strong><span>Coolant C</span></div>
+                                    <div class="metric-box major"><strong id="obd-consumption">--</strong><span>Instant <span id="obd-consumption-unit">L/h</span></span></div>
+                                </div>
+                                <div class="trip-strip">
+                                    <div><strong id="obd-trip-distance">--</strong><span>Trip km</span></div>
+                                    <div><strong id="obd-trip-fuel">--</strong><span>Fuel used L</span></div>
+                                    <div><strong id="obd-trip-average">--</strong><span>Average km/L</span></div>
+                                    <div><strong id="obd-voltage">--</strong><span>Battery V</span></div>
+                                </div>
+                                <div class="vehicle-section-title">Technical</div>
+                                <div class="list-table" id="gauges-grid"></div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Vehicle Controls</div>
+                                <div class="tile-grid controls">
+                                    <select id="obd-fuel-select" onchange="setOBDFuel(this.value)">
+                                        <option value="gasoline_e27">Gasoline E27</option>
+                                        <option value="ethanol">Ethanol</option>
+                                    </select>
+                                    <button onclick="resetOBDTrip()">Reset Trip</button>
+                                </div>
+                                <div class="list-title spaced">Technical Alerts</div>
+                                <div class="stack-stats">
+                                    <div><strong>MIL</strong><span id="stat-mil">Off</span></div>
+                                    <div><strong>Battery</strong><span id="stat-battery">Stable</span></div>
+                                    <div><strong>Connection</strong><span id="stat-connection">--</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="subpage" id="vehicle-engine">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Engine Data</div>
+                            <div class="vehicle-data-grid">
+                                <div class="metric-box"><strong id="v-engine-load">--</strong><span>Calculated Load 0104</span></div>
+                                <div class="metric-box"><strong id="v-map">--</strong><span>MAP 010B</span></div>
+                                <div class="metric-box"><strong id="v-timing">--</strong><span>Timing Advance 010E</span></div>
+                                <div class="metric-box"><strong id="v-intake-temp">--</strong><span>Intake Air Temp 010F</span></div>
+                                <div class="metric-box"><strong id="v-throttle">--</strong><span>Throttle Position 0111</span></div>
+                                <div class="metric-box"><strong id="v-fuel-sys">--</strong><span>Fuel System 0103</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="subpage" id="vehicle-fuel-o2">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Fuel Trims &amp; O2</div>
+                            <div class="vehicle-data-grid">
+                                <div class="metric-box"><strong id="v-stft">--</strong><span>STFT B1 0106</span></div>
+                                <div class="metric-box"><strong id="v-ltft">--</strong><span>LTFT B1 0107</span></div>
+                                <div class="metric-box"><strong id="v-o2b1s1">--</strong><span>O2 B1S1 0114</span></div>
+                                <div class="metric-box"><strong id="v-o2b1s2">--</strong><span>O2 B1S2 0115</span></div>
+                                <div class="metric-box"><strong id="v-o2present">--</strong><span>O2 Sensors 0113</span></div>
+                                <div class="metric-box"><strong>Estimated</strong><span>Consumption, no MAF / 015E</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="subpage" id="vehicle-diagnostics">
+                        <div class="two-column">
+                            <section class="card list-card vehicle-data-card">
+                                <div class="list-title">OBD Status</div>
+                                <div class="stack-stats">
+                                    <div><strong>MIL / Monitors</strong><span id="v-mil-status">0101</span></div>
+                                    <div><strong>DTC Active</strong><span id="v-dtc-active">03 -> none</span></div>
+                                    <div><strong>DTC Pending</strong><span id="v-dtc-pending">07 -> none</span></div>
+                                    <div><strong>Distance with MIL</strong><span id="v-dist-mil">0121 -> 0 km</span></div>
+                                    <div><strong>OBD Standard</strong><span id="v-obd-std">011C</span></div>
+                                </div>
+                            </section>
+                            <section class="card list-card vehicle-data-card">
+                                <div class="list-title">Connection</div>
+                                <div class="stack-stats">
+                                    <div><strong>Adapter</strong><span id="v-adapter">--</span></div>
+                                    <div><strong>Port</strong><span id="v-port">--</span></div>
+                                    <div><strong>Baudrate</strong><span id="v-baud">--</span></div>
+                                    <div><strong>Protocol</strong><span id="v-proto">--</span></div>
+                                    <div><strong>Adapter Voltage</strong><span id="v-atrv">--</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="subpage" id="vehicle-id">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Vehicle Identification</div>
+                            <div class="stack-stats">
+                                <div><strong>VIN</strong><span id="v-vin">--</span></div>
+                                <div><strong>Calibration ID</strong><span id="v-calid">--</span></div>
+                                <div><strong>CVN</strong><span id="v-cvn">--</span></div>
+                                <div><strong>Vehicle</strong><span id="v-vehicle-desc">--</span></div>
+                                <div><strong>Engine</strong><span id="v-engine-desc">--</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="subpage" id="vehicle-advanced">
+                        <section class="card list-card vehicle-data-card">
+                            <div class="list-title">Advanced / Mode 06</div>
+                            <div class="stack-stats">
+                                <div><strong>Supported Blocks</strong><span>0600, 0620, 0640, 0660, 0680</span></div>
+                                <div><strong>Use</strong><span>Onboard monitor diagnostics only</span></div>
+                                <div><strong>Recommendation</strong><span>Keep out of realtime loop</span></div>
+                                <div><strong>Example TIDs</strong><span>0601, 0602, 0621, 0641, 0642, 0681</span></div>
+                                <div><strong>Raw Decoding</strong><span>Needs TID/CID-specific parser</span></div>
+                            </div>
+                        </section>
+                    </div>
+                    </div>
+                    <div id="obd-disconnected" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[OBD]</div>
+                        <p>OBD-II not connected</p>
+                    </div>
+                    <div id="obd-error" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[!]</div>
+                        <p id="obd-error-text">Error</p>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-radio">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">Receiver</span>
+                            <h1>SDR Radio</h1>
+                        </div>
+                    </div>
+
+                    <div id="radio-content">
+                    <div class="subtabs music-tabs">
+                        <button class="subtab radio-tab active" data-subtab="radio-tuner" data-radio="tuner">Tuner</button>
+                        <button class="subtab radio-tab" data-subtab="radio-spectrum" data-radio="spectrum">Spectrum</button>
+                        <button class="subtab radio-tab" data-subtab="radio-presets" data-radio="presets">Presets</button>
+                        <button class="subtab radio-tab" data-subtab="radio-favorites" data-radio="favorites">Favorites</button>
+                    </div>
+
+                    <div class="subpage radio-panel active" id="radio-tuner">
+                        <div class="two-column">
+                            <section class="card tuner-card">
+                                <div class="radio-mode-line" id="radio-mode">FM</div>
+                                <div class="radio-frequency-large"><span id="radio-freq">99.5</span> <small>MHz</small></div>
+                                <div class="signal-meter radio-signal">
+                                    <div class="signal-bars" id="signal-bars">
+                                        <div class="signal-bar"></div>
+                                        <div class="signal-bar"></div>
+                                        <div class="signal-bar"></div>
+                                        <div class="signal-bar"></div>
+                                        <div class="signal-bar"></div>
+                                    </div>
+                                    <span id="signal-dbm">-100 dBm</span>
+                                </div>
+                                <div class="tuner-actions radio-tuning">
+                                    <button onclick="radioTuneStep(-1)">-1.0</button>
+                                    <button onclick="radioTuneStep(-0.1)">-0.1</button>
+                                    <div class="search-row tune-display">
+                                        <input type="number" id="freq-input" step="0.1" min="24" max="1800" value="99.5">
+                                        <button onclick="radioTuneManual()">Go</button>
+                                    </div>
+                                    <button onclick="radioTuneStep(0.1)">+0.1</button>
+                                    <button onclick="radioTuneStep(1)">+1.0</button>
+                                </div>
+                                <div class="tuner-actions radio-controls">
+                                    <button class="mini-control mode-select active" id="mode-fm" onclick="radioSetMode('FM')">FM</button>
+                                    <button class="mini-control mode-select" id="mode-am" onclick="radioSetMode('AM')">AM</button>
+                                    <button class="primary mini-control radio-play-btn" id="radio-play-btn" onclick="radioTogglePlay()"><span id="radio-play-icon">&#9654;</span></button>
+                                    <div class="mini-volume radio-volume">
+                                        <button onclick="radioVolumeDown()">-</button>
+                                        <span class="vol-display" id="radio-vol">80%</span>
+                                        <button onclick="radioVolumeUp()">+</button>
+                                    </div>
+                                </div>
+                                <div class="preset-strip">
+                                    <button onclick="radioTune(97.5, 'FM')">97.5 FM</button>
+                                    <button onclick="radioTune(95.7, 'FM')">95.7 FM</button>
+                                    <button onclick="radioTune(118.5, 'AM')">SBSJ TWR</button>
+                                    <button onclick="radioAddFavorite()">+ Favorite</button>
+                                </div>
+                            </section>
+                            <section class="card side-stats">
+                                <div class="list-title">Session</div>
+                                <div class="stack-stats">
+                                    <div><strong>Signal</strong><span id="stat-signal">-- dBm</span></div>
+                                    <div><strong>Mode</strong><span id="stat-mode">FM</span></div>
+                                    <div><strong>Volume</strong><span id="stat-vol">80%</span></div>
+                                    <div><strong>Status</strong><span id="stat-radio-status">Idle</span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-spectrum">
+                        <section class="card spectrum-card">
+                            <div class="card-header">
+                                <strong>Live Spectrum</strong>
+                                <span>Audio pauses in live mode</span>
+                            </div>
+                            <div class="radio-mode-line"><span id="spectrum-mode-indicator">WAITING</span> <span class="muted">Center <span id="spectrum-center">99.5</span> MHz</span></div>
+                            <canvas id="spectrogram" width="800" height="200"></canvas>
+                            <div class="spectrum-controls-template">
+                                <button onclick="adjustSpectrumFreq(-10)">-10</button>
+                                <button onclick="adjustSpectrumFreq(-1)">-1</button>
+                                <button onclick="adjustSpectrumFreq(-0.1)">-0.1</button>
+                                <strong><span id="spectrum-start">98.5</span> - <span id="spectrum-end">100.5</span> MHz</strong>
+                                <button onclick="adjustSpectrumFreq(0.1)">+0.1</button>
+                                <button onclick="adjustSpectrumFreq(1)">+1</button>
+                                <button onclick="adjustSpectrumFreq(10)">+10</button>
+                            </div>
+                            <div class="tile-grid">
+                                <button id="spectrum-freq-display">99.5</button>
+                                <span id="spectrum-span" style="display:none;">2.4</span>
                                 <select id="spectrum-update-interval" onchange="applySpectrumUpdateInterval()">
                                     <option value="50">50</option>
                                     <option value="100" selected>100</option>
                                     <option value="200">200</option>
                                     <option value="500">500</option>
                                 </select>
-                            </div>
-                            <div class="spectrum-config-item">
-                                <label for="spectrum-integration-time">Integration Time (s):</label>
                                 <select id="spectrum-integration-time" onchange="applySpectrumIntegrationTime()">
                                     <option value="0.05">0.05</option>
                                     <option value="0.1" selected>0.1</option>
                                     <option value="0.2">0.2</option>
                                     <option value="0.5">0.5</option>
                                 </select>
-                            </div>
-                            <div class="spectrum-config-item">
-                                <label for="spectrum-max-rows">Max Rows:</label>
                                 <select id="spectrum-max-rows" onchange="applySpectrumMaxRows()">
                                     <option value="50">50</option>
                                     <option value="100" selected>100</option>
                                     <option value="200">200</option>
                                     <option value="300">300</option>
                                 </select>
-                            </div>
-                            <div class="spectrum-config-item">
-                                <label for="spectrum-db-smoothing">DB Smoothing:</label>
                                 <select id="spectrum-db-smoothing" onchange="applySpectrumDbSmoothing()">
                                     <option value="0.05">0.05</option>
                                     <option value="0.1" selected>0.1</option>
                                     <option value="0.2">0.2</option>
                                     <option value="0.5">0.5</option>
                                 </select>
-                            </div>
-                            <div class="spectrum-config-item">
-                                <label for="spectrum-db-margin">DB Margin (dB):</label>
                                 <select id="spectrum-db-margin" onchange="applySpectrumDbMargin()">
                                     <option value="2">2</option>
                                     <option value="5" selected>5</option>
                                     <option value="10">10</option>
                                     <option value="15">15</option>
                                 </select>
-                            </div>
-                            <div class="spectrum-config-item">
-                                <label for="spectrum-min-range">MIN Range (dB):</label>
                                 <select id="spectrum-min-range" onchange="applySpectrumMinRange()">
                                     <option value="5">5</option>
                                     <option value="10" selected>10</option>
@@ -352,50 +568,83 @@
                                     <option value="30">30</option>
                                 </select>
                             </div>
+                        </section>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-presets">
+                        <section class="card tile-card">
+                            <div class="list-title">FM Stations</div>
+                            <div class="tile-grid" id="fm-presets"></div>
+                            <div class="list-title spaced">Aviation - SBSJ</div>
+                            <div class="tile-grid" id="airport-presets-sbsj"></div>
+                            <div class="list-title spaced">Aviation - SBGR</div>
+                            <div class="tile-grid" id="airport-presets-sbgr"></div>
+                        </section>
+                    </div>
+
+                    <div class="subpage radio-panel" id="radio-favorites">
+                        <section class="card list-card">
+                            <div class="card-header">
+                                <strong>Favorites</strong>
+                                <button onclick="radioClearFavorites()">Clear All</button>
+                            </div>
+                            <div class="list-table preset-list" id="favorites-list">
+                                <div class="empty-message">No favorites yet. Tune to a frequency and tap "+ FAV"</div>
+                            </div>
+                        </section>
+                    </div>
+                    </div>
+                    <div id="radio-disconnected" class="disconnected-msg" style="display: none;">
+                        <div class="icon">[SDR]</div>
+                        <p>RTL-SDR not connected</p>
+                    </div>
+                </section>
+
+                <section class="page panel" id="panel-settings">
+                    <div class="page-header">
+                        <div>
+                            <span class="eyebrow">System</span>
+                            <h1>Settings</h1>
                         </div>
                     </div>
-                </div>
-
-                <!-- Tab: Presets -->
-                <div class="radio-panel" id="radio-presets">
-                    <div class="preset-section">
-                        <div class="preset-title">FM Stations</div>
-                        <div class="preset-list" id="fm-presets"></div>
+                    <div class="theme-settings-grid">
+                        <section class="card theme-group">
+                            <div class="list-title">Themes</div>
+                            <div class="theme-grid">
+                                <button class="theme-card active" data-theme="picasso-red" data-theme-label="PiCASSO Red">
+                                    <span class="theme-swatch swatch-red"></span>
+                                    <strong>PiCASSO Red</strong>
+                                    <span>Default cockpit</span>
+                                </button>
+                                <button class="theme-card" data-theme="signal-cyan" data-theme-label="Signal Cyan">
+                                    <span class="theme-swatch swatch-cyan"></span>
+                                    <strong>Signal Cyan</strong>
+                                    <span>Cooler telemetry look</span>
+                                </button>
+                                <button class="theme-card" data-theme="amber-dusk" data-theme-label="Amber Dusk">
+                                    <span class="theme-swatch swatch-amber"></span>
+                                    <strong>Amber Dusk</strong>
+                                    <span>Warmer night panel</span>
+                                </button>
+                            </div>
+                        </section>
+                        <section class="card theme-preview-card">
+                            <div class="list-title">Current Theme</div>
+                            <div class="theme-preview">
+                                <strong id="theme-preview-name">PiCASSO Red</strong>
+                                <span id="theme-preview-copy">Default cockpit</span>
+                                <div class="theme-preview-bars">
+                                    <i></i>
+                                    <i></i>
+                                    <i></i>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                    <div class="preset-section">
-                        <div class="preset-title">Aviation - SBSJ (Sao Jose dos Campos)</div>
-                        <div class="preset-list" id="airport-presets-sbsj"></div>
-                    </div>
-                    <div class="preset-section">
-                        <div class="preset-title">Aviation - SBGR (Guarulhos)</div>
-                        <div class="preset-list" id="airport-presets-sbgr"></div>
-                    </div>
-                </div>
-
-                <!-- Tab: Favorites -->
-                <div class="radio-panel" id="radio-favorites">
-                    <div class="favorites-header">
-                        <span>My Favorites</span>
-                        <button class="clear-favs" onclick="radioClearFavorites()">Clear All</button>
-                    </div>
-                    <div class="preset-list" id="favorites-list">
-                        <div class="empty-message">No favorites yet. Tune to a frequency and tap "+ FAV"</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Radio disconnected message -->
-            <div id="radio-disconnected" class="disconnected-msg" style="display: none;">
-                <div class="icon">[SDR]</div>
-                <p>RTL-SDR not connected</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;">Check USB connection</p>
-                <button class="navit-btn" style="margin-top: 20px;" onclick="openGqrx()">
-                    OPEN GQRX
-                </button>
-            </div>
+                </section>
+            </main>
         </section>
-
-    </main>
+    </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>

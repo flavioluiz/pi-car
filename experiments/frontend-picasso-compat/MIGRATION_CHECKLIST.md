@@ -6,119 +6,121 @@ Mark items only after verifying the actual behavior.
 
 ## 1. Pre-Migration
 
-- [ ] Create a dedicated migration branch.
-- [ ] Keep the current production frontend restorable in one commit.
-- [ ] Confirm target runtime is still `800x480`.
-- [ ] Confirm migration scope for v1:
-  - [ ] new shell
-  - [ ] Music
-  - [ ] GPS
-  - [ ] Vehicle with tabs
-  - [ ] Radio
-  - [ ] Themes-only Settings
-- [ ] Freeze nonessential design changes until after first live test.
+- [x] Create a dedicated migration branch.
+- [x] Keep the current production frontend restorable in one commit.
+- [x] Confirm target runtime is still `800x480`.
+- [x] Confirm migration scope for v1:
+  - [x] new shell
+  - [x] Music
+  - [x] GPS
+  - [x] Vehicle with tabs
+  - [x] Radio
+  - [x] Themes-only Settings
+- [x] Freeze nonessential design changes until after first live test.
 
 ## 2. DOM Hook Audit
 
-- [ ] Confirm all current JS-critical ids exist in the migrated template.
-- [ ] Validate status indicators:
-  - [ ] `ind-music`
-  - [ ] `ind-gps`
-  - [ ] `ind-obd`
-  - [ ] `ind-radio`
-- [ ] Validate Music hooks:
-  - [ ] `music-title`
-  - [ ] `music-artist`
-  - [ ] `btn-play`
-  - [ ] `btn-shuffle`
-  - [ ] `btn-repeat`
-  - [ ] `volume-display`
-  - [ ] `progress-bar`
-  - [ ] `progress-fill`
-  - [ ] `time-elapsed`
-  - [ ] `time-duration`
-  - [ ] `queue-list`
-  - [ ] `artists-list`
-  - [ ] `playlists-list`
-  - [ ] `search-input`
-  - [ ] `virtual-keyboard`
-  - [ ] `search-results`
-- [ ] Validate Vehicle hooks:
-  - [ ] `obd-content`
-  - [ ] `obd-disconnected`
-  - [ ] `obd-error`
-  - [ ] `obd-error-text`
-  - [ ] `obd-vehicle-name`
-  - [ ] `obd-connection-line`
-  - [ ] `obd-fuel-select`
-  - [ ] `obd-alerts`
-  - [ ] `obd-speed`
-  - [ ] `obd-rpm`
-  - [ ] `obd-coolant`
-  - [ ] `obd-consumption`
-  - [ ] `obd-consumption-unit`
-  - [ ] `obd-trip-distance`
-  - [ ] `obd-trip-fuel`
-  - [ ] `obd-trip-average`
-  - [ ] `obd-voltage`
-  - [ ] `gauges-grid`
-- [ ] Validate GPS hooks:
-  - [ ] `gps-content`
-  - [ ] `gps-disconnected`
-  - [ ] `gps-speed`
-  - [ ] `gps-sats`
-  - [ ] `gps-coords`
-- [ ] Validate Radio hooks:
-  - [ ] `radio-content`
-  - [ ] `radio-disconnected`
-  - [ ] `radio-mode`
-  - [ ] `radio-freq`
-  - [ ] `signal-bars`
-  - [ ] `signal-dbm`
-  - [ ] `freq-input`
-  - [ ] `mode-fm`
-  - [ ] `mode-am`
-  - [ ] `radio-play-btn`
-  - [ ] `radio-play-icon`
-  - [ ] `radio-vol`
-  - [ ] `spectrogram`
-  - [ ] `spectrum-mode-indicator`
-  - [ ] `spectrum-start`
-  - [ ] `spectrum-center`
-  - [ ] `spectrum-end`
-  - [ ] `spectrum-freq-display`
-  - [ ] `spectrum-update-interval`
-  - [ ] `spectrum-integration-time`
-  - [ ] `spectrum-max-rows`
-  - [ ] `spectrum-db-smoothing`
-  - [ ] `spectrum-db-margin`
-  - [ ] `spectrum-min-range`
-  - [ ] `fm-presets`
-  - [ ] `airport-presets-sbsj`
-  - [ ] `airport-presets-sbgr`
-  - [ ] `favorites-list`
+- [x] Confirm all current JS-critical ids exist in the migrated template.
+- [ ] Confirm every new field added by the new UI is backed by real data or explicitly marked unavailable.
+- [ ] Confirm production logos are served from `frontend/static/logos` via `url_for('static', ...)`.
+- [x] Validate status indicators:
+  - [x] `ind-music`
+  - [x] `ind-gps`
+  - [x] `ind-obd`
+  - [x] `ind-radio`
+- [x] Validate Music hooks:
+  - [x] `music-title`
+  - [x] `music-artist`
+  - [x] `btn-play`
+  - [x] `btn-shuffle`
+  - [x] `btn-repeat`
+  - [x] `volume-display`
+  - [x] `progress-bar`
+  - [x] `progress-fill`
+  - [x] `time-elapsed`
+  - [x] `time-duration`
+  - [x] `queue-list`
+  - [x] `artists-list`
+  - [x] `playlists-list`
+  - [x] `search-input`
+  - [x] `virtual-keyboard`
+  - [x] `search-results`
+- [x] Validate Vehicle hooks:
+  - [x] `obd-content`
+  - [x] `obd-disconnected`
+  - [x] `obd-error`
+  - [x] `obd-error-text`
+  - [x] `obd-vehicle-name`
+  - [x] `obd-connection-line`
+  - [x] `obd-fuel-select`
+  - [x] `obd-alerts`
+  - [x] `obd-speed`
+  - [x] `obd-rpm`
+  - [x] `obd-coolant`
+  - [x] `obd-consumption`
+  - [x] `obd-consumption-unit`
+  - [x] `obd-trip-distance`
+  - [x] `obd-trip-fuel`
+  - [x] `obd-trip-average`
+  - [x] `obd-voltage`
+  - [x] `gauges-grid`
+- [x] Validate GPS hooks:
+  - [x] `gps-content`
+  - [x] `gps-disconnected`
+  - [x] `gps-speed`
+  - [x] `gps-sats`
+  - [x] `gps-coords`
+- [x] Validate Radio hooks:
+  - [x] `radio-content`
+  - [x] `radio-disconnected`
+  - [x] `radio-mode`
+  - [x] `radio-freq`
+  - [x] `signal-bars`
+  - [x] `signal-dbm`
+  - [x] `freq-input`
+  - [x] `mode-fm`
+  - [x] `mode-am`
+  - [x] `radio-play-btn`
+  - [x] `radio-play-icon`
+  - [x] `radio-vol`
+  - [x] `spectrogram`
+  - [x] `spectrum-mode-indicator`
+  - [x] `spectrum-start`
+  - [x] `spectrum-center`
+  - [x] `spectrum-end`
+  - [x] `spectrum-freq-display`
+  - [x] `spectrum-update-interval`
+  - [x] `spectrum-integration-time`
+  - [x] `spectrum-max-rows`
+  - [x] `spectrum-db-smoothing`
+  - [x] `spectrum-db-margin`
+  - [x] `spectrum-min-range`
+  - [x] `fm-presets`
+  - [x] `airport-presets-sbsj`
+  - [x] `airport-presets-sbgr`
+  - [x] `favorites-list`
 
 ## 3. Shell Migration
 
-- [ ] Port topbar into production template.
-- [ ] Port sidebar/navigation into production template.
-- [ ] Preserve main panel ids:
-  - [ ] `panel-music`
-  - [ ] `panel-vehicle`
-  - [ ] `panel-gps`
-  - [ ] `panel-radio`
+- [x] Port topbar into production template.
+- [x] Port sidebar/navigation into production template.
+- [x] Preserve main panel ids:
+  - [x] `panel-music`
+  - [x] `panel-vehicle`
+  - [x] `panel-gps`
+  - [x] `panel-radio`
 - [ ] Confirm panel switching still works.
 - [ ] Confirm clock still updates.
 - [ ] Confirm no hidden panel remains focusable/clickable.
 
 ## 4. Music Migration
 
-- [ ] Port `music-tabs`, `music-tab`, `music-panel` structure.
-- [ ] Port `Now Playing` layout.
-- [ ] Port `Queue` browser layout.
-- [ ] Port `Artists` browser layout.
-- [ ] Port `Playlists` browser layout.
-- [ ] Port `Search` layout.
+- [x] Port `music-tabs`, `music-tab`, `music-panel` structure.
+- [x] Port `Now Playing` layout.
+- [x] Port `Queue` browser layout.
+- [x] Port `Artists` browser layout.
+- [x] Port `Playlists` browser layout.
+- [x] Port `Search` layout.
 - [ ] Confirm music subtab switching works.
 - [ ] Confirm title updates.
 - [ ] Confirm artist updates.
@@ -137,7 +139,7 @@ Mark items only after verifying the actual behavior.
 
 ## 5. GPS Migration
 
-- [ ] Port GPS panel layout.
+- [x] Port GPS panel layout.
 - [ ] Confirm connected state renders.
 - [ ] Confirm disconnected state renders.
 - [ ] Confirm speed updates.
@@ -149,7 +151,7 @@ Mark items only after verifying the actual behavior.
 
 ### Drive
 
-- [ ] Port `Drive` tab as default.
+- [x] Port `Drive` tab as default.
 - [ ] Confirm `obd-speed` updates.
 - [ ] Confirm `obd-rpm` updates.
 - [ ] Confirm `obd-coolant` updates.
@@ -165,7 +167,7 @@ Mark items only after verifying the actual behavior.
 
 ### Engine
 
-- [ ] Populate/validate:
+- [x] Populate/validate (markup structure in place):
   - [ ] `0104` load
   - [ ] `010B` MAP
   - [ ] `010E` timing advance
@@ -175,17 +177,17 @@ Mark items only after verifying the actual behavior.
 
 ### Fuel & O2
 
-- [ ] Populate/validate:
+- [x] Populate/validate (markup structure in place):
   - [ ] `0106` STFT
   - [ ] `0107` LTFT
   - [ ] `0114` O2 B1S1
   - [ ] `0115` O2 B1S2
   - [ ] `0113` O2 sensors present
-- [ ] Explicitly label inferred consumption as estimated.
+- [x] Explicitly label inferred consumption as estimated.
 
 ### Diagnostics
 
-- [ ] Validate:
+- [x] Validate (markup structure in place):
   - [ ] `0101` MIL / monitors
   - [ ] `03` active DTCs
   - [ ] `07` pending DTCs
@@ -195,23 +197,23 @@ Mark items only after verifying the actual behavior.
 
 ### Vehicle ID
 
-- [ ] Validate:
+- [x] Validate (markup structure in place):
   - [ ] VIN `0902`
   - [ ] Calibration ID `0904`
   - [ ] CVN `0906`
 
 ### Advanced
 
-- [ ] Keep `Mode 06` outside high-frequency realtime loop.
-- [ ] Confirm no expensive polling was added accidentally.
+- [x] Keep `Mode 06` outside high-frequency realtime loop.
+- [x] Confirm no expensive polling was added accidentally.
 
 ## 7. Radio Migration
 
-- [ ] Port `radio-tab` and `radio-panel` structure.
-- [ ] Port tuner layout.
-- [ ] Port spectrum layout.
-- [ ] Port presets layout.
-- [ ] Port favorites layout.
+- [x] Port `radio-tab` and `radio-panel` structure.
+- [x] Port tuner layout.
+- [x] Port spectrum layout.
+- [x] Port presets layout.
+- [x] Port favorites layout.
 - [ ] Confirm radio subtab switching works.
 - [ ] Confirm connected/disconnected switching works.
 - [ ] Confirm frequency updates.
@@ -225,7 +227,7 @@ Mark items only after verifying the actual behavior.
 
 ## 8. Themes
 
-- [ ] Keep Settings restricted to Themes only.
+- [x] Keep Settings restricted to Themes only.
 - [ ] Confirm `PiCASSO Red` works.
 - [ ] Confirm `Signal Cyan` works.
 - [ ] Confirm `Amber Dusk` works.

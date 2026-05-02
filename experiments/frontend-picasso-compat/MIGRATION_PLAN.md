@@ -152,6 +152,25 @@ Deliverable:
 
 This prevents silent regressions where one missing id breaks a feature without obvious console feedback on the Pi.
 
+## Post-Review Guardrails
+
+The compatibility migration introduced two classes of issues that must now be treated as hard rules:
+
+1. Brand assets used by the production template must live under `frontend/static/` and be referenced with `url_for('static', ...)`.
+2. New dashboard fields must not be added unless the current backend already exposes the corresponding data or the JS patch that fills them ships in the same commit.
+
+Examples of fields that require explicit backend support before appearing in production:
+
+- average speed on Home
+- queue length in Music status
+- OBD standard, O2 sensor details, calibration ids and CVN
+
+If a value is not available yet, prefer:
+
+- hiding the field
+- renaming it to match an available metric
+- or rendering a clear `Not available` state instead of stale/static placeholder text
+
 ## Phase 2. Shell Replacement
 
 Replace only the top-level shell in the real frontend:

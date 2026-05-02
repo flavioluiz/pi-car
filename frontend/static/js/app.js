@@ -45,15 +45,58 @@ const FREQ_MAX_MHZ = 1800;
 // ============ TABS ============
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-        // Remove active from all tabs
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
-        // Activate clicked tab
         tab.classList.add('active');
         document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+
+        const appShell = document.querySelector('.app-shell');
+        if (appShell) {
+            appShell.classList.toggle('page-home-active', tab.dataset.panel === 'home');
+        }
     });
 });
+
+// ============ VEHICLE SUBTABS ============
+document.querySelectorAll('.vehicle-tabs .subtab').forEach(subtab => {
+    subtab.addEventListener('click', () => {
+        document.querySelectorAll('.vehicle-tabs .subtab').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('#panel-vehicle .subpage').forEach(p => p.classList.remove('active'));
+        subtab.classList.add('active');
+        const target = document.getElementById(subtab.dataset.subtab);
+        if (target) target.classList.add('active');
+    });
+});
+
+// ============ THEMES ============
+const themeButtons = document.querySelectorAll('.theme-card[data-theme]');
+const themePreviewName = document.getElementById('theme-preview-name');
+const themePreviewCopy = document.getElementById('theme-preview-copy');
+const themeDescriptions = {
+    'picasso-red': 'Default cockpit',
+    'signal-cyan': 'Cooler telemetry look',
+    'amber-dusk': 'Warmer night panel'
+};
+
+function applyTheme(themeName, label) {
+    document.body.dataset.theme = themeName;
+    themeButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === themeName);
+    });
+    const resolvedLabel = label || document.querySelector(`[data-theme="${themeName}"]`)?.dataset.themeLabel || themeName;
+    if (themePreviewName) themePreviewName.textContent = resolvedLabel;
+    if (themePreviewCopy) themePreviewCopy.textContent = themeDescriptions[themeName] || '';
+    localStorage.setItem('picasso-compat-theme', themeName);
+}
+
+themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        applyTheme(btn.dataset.theme, btn.dataset.themeLabel);
+    });
+});
+
+applyTheme(localStorage.getItem('picasso-compat-theme') || 'picasso-red');
 
 // ============ CLOCK ============
 function updateClock() {
@@ -113,6 +156,25 @@ function formatOBDValue(value, digits = 0) {
 function setText(id, text) {
     const element = document.getElementById(id);
     if (element) element.textContent = text;
+}
+
+function formatStateValue(value, unit = '', digits = 1) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+        return '--';
+    }
+    const formatted = Number(value).toFixed(digits);
+    return unit ? `${formatted} ${unit}` : formatted;
+}
+
+function updatePlaybackSummary(musicData) {
+    setText('stat-shuffle', musicData.random ? 'On' : 'Off');
+    setText('stat-repeat', musicData.repeat_mode === 'song'
+        ? 'Song'
+        : musicData.repeat_mode === 'playlist'
+            ? 'Playlist'
+            : 'Off');
+    setText('stat-volume', `${musicData.volume}%`);
+    setText('stat-queue-len', `${queueFiles.size} track${queueFiles.size === 1 ? '' : 's'}`);
 }
 
 // Update OBD display with dynamic metrics
@@ -182,6 +244,15 @@ function updateOBDDisplay(obdData) {
     setText('obd-trip-average', formatOBDValue(inferred.trip_average_km_l, 1));
     setText('obd-voltage', formatOBDValue(direct.adapter_voltage_v, 1));
 
+    setText('stat-mil', direct.mil_on === true ? 'On' : direct.mil_on === false ? 'Off' : '--');
+    setText('stat-battery', direct.adapter_voltage_v ? `${formatOBDValue(direct.adapter_voltage_v, 1)} V` : 'Waiting');
+    setText(
+        'stat-connection',
+        connection.connected
+            ? `${connection.adapter || 'ELM327'}${connection.protocol ? ` · ${connection.protocol}` : ''}`
+            : 'Disconnected'
+    );
+
     const alerts = [];
     if (direct.mil_on) alerts.push('Check engine aceso');
     if (metadata.dynamic_stale) alerts.push(`Dados OBD atrasados: ${metadata.dynamic_stale_age_s || '?'}s`);
@@ -230,6 +301,51 @@ function updateOBDDisplay(obdData) {
     if (gaugesGrid.innerHTML !== gaugesHTML) {
         gaugesGrid.innerHTML = gaugesHTML || '<div class="obd-waiting">Waiting for vehicle data...</div>';
     }
+
+    const supported = new Set(obdData.supported_commands || []);
+
+    setText('v-engine-load', formatStateValue(metrics.ENGINE_LOAD?.value, '%', 1));
+    setText('v-map', formatStateValue(metrics.INTAKE_PRESSURE?.value, 'kPa', 0));
+    setText('v-timing', formatStateValue(metrics.TIMING_ADVANCE?.value, 'deg', 1));
+    setText('v-intake-temp', formatStateValue(metrics.INTAKE_TEMP?.value, 'C', 0));
+    setText('v-throttle', formatStateValue(metrics.THROTTLE_POS?.value, '%', 1));
+    setText('v-fuel-sys', supported.has('FUEL_STATUS') ? 'Supported' : 'Not reported');
+
+    setText('v-stft', formatStateValue(metrics.SHORT_FUEL_TRIM_1?.value, '%', 1));
+    setText('v-ltft', formatStateValue(metrics.LONG_FUEL_TRIM_1?.value, '%', 1));
+    setText('v-o2b1s1', supported.has('O2_B1S1') ? 'Sensor present' : 'Not reported');
+    setText('v-o2b1s2', supported.has('O2_B1S2') ? 'Sensor present' : 'Not reported');
+    setText(
+        'v-o2present',
+        [supported.has('O2_B1S1') ? 'B1S1' : null, supported.has('O2_B1S2') ? 'B1S2' : null]
+            .filter(Boolean)
+            .join(', ') || 'Not reported'
+    );
+
+    setText(
+        'v-mil-status',
+        direct.mil_on === true
+            ? 'MIL on'
+            : direct.mil_on === false
+                ? 'MIL off'
+                : 'Waiting'
+    );
+    setText('v-dtc-active', (direct.active_dtcs || []).join(', ') || 'None');
+    setText('v-dtc-pending', (direct.pending_dtcs || []).join(', ') || 'None');
+    setText('v-dist-mil', supported.has('DISTANCE_WITH_MIL') ? 'PID supported' : 'Not reported');
+    setText('v-obd-std', supported.has('OBD_STANDARD') ? 'PID 011C supported' : 'Not reported');
+
+    setText('v-adapter', connection.adapter || '--');
+    setText('v-port', connection.port || '--');
+    setText('v-baud', connection.baudrate ? `${connection.baudrate}` : '--');
+    setText('v-proto', connection.protocol || '--');
+    setText('v-atrv', direct.adapter_voltage_v ? `${formatOBDValue(direct.adapter_voltage_v, 1)} V` : '--');
+
+    setText('v-vin', metadata.vin || '--');
+    setText('v-calid', 'Not available');
+    setText('v-cvn', 'Not available');
+    setText('v-vehicle-desc', metadata.vehicle || '--');
+    setText('v-engine-desc', 'Not available');
 }
 
 function setOBDFuel(fuel) {
@@ -309,10 +425,6 @@ function updateData() {
         })
         .catch(err => console.error('Error updating:', err));
 }
-
-// Update every 1 second
-updateData();
-setInterval(updateData, 1000);
 
 // ============ MUSIC CONTROLS ============
 function musicControl(action) {
@@ -442,12 +554,30 @@ function loadQueue() {
             const list = document.getElementById('queue-list');
             if (!queue || queue.length === 0 || queue.error) {
                 queueFiles.clear();
+                updatePlaybackSummary({
+                    random: document.getElementById('btn-shuffle')?.classList.contains('active'),
+                    repeat_mode: document.getElementById('btn-repeat')?.classList.contains('repeat-song')
+                        ? 'song'
+                        : document.getElementById('btn-repeat')?.classList.contains('active')
+                            ? 'playlist'
+                            : 'off',
+                    volume: parseInt((document.getElementById('volume-display')?.textContent || '0').replace('%', ''), 10) || 0
+                });
                 list.innerHTML = '<div class="browser-empty"><div class="browser-empty-icon">&#9835;</div>Queue empty</div>';
                 return;
             }
 
             // Update queue files set
             queueFiles = new Set(queue.map(s => s.file));
+            updatePlaybackSummary({
+                random: document.getElementById('btn-shuffle')?.classList.contains('active'),
+                repeat_mode: document.getElementById('btn-repeat')?.classList.contains('repeat-song')
+                    ? 'song'
+                    : document.getElementById('btn-repeat')?.classList.contains('active')
+                        ? 'playlist'
+                        : 'off',
+                volume: parseInt((document.getElementById('volume-display')?.textContent || '0').replace('%', ''), 10) || 0
+            });
 
             list.innerHTML = `
                 <div class="browser-header">
@@ -1522,29 +1652,24 @@ document.querySelectorAll('.radio-tab').forEach(tab => {
 // ============ INTEGRATE RADIO INTO UPDATE LOOP ============
 
 // Modify updateData to include radio
-const originalUpdateData = updateData;
 updateData = function() {
     fetch('/api/status')
         .then(r => r.json())
         .then(data => {
-            // Connection indicators
             document.getElementById('ind-music').classList.toggle('connected', data.music.connected);
             document.getElementById('ind-gps').classList.toggle('connected', data.gps.connected);
             document.getElementById('ind-obd').classList.toggle('connected', data.obd.connected);
 
-            // Radio indicator and display
             if (data.radio) {
                 updateRadioDisplay(data.radio);
             }
 
-            // Music
             document.getElementById('music-title').textContent = data.music.title || 'No music';
-            document.getElementById('music-artist').textContent = data.music.artist || '-';
+            document.getElementById('music-artist').textContent = data.music.artists_all || data.music.artist || '-';
             document.getElementById('volume-display').textContent = data.music.volume + '%';
             document.getElementById('time-elapsed').textContent = formatTime(data.music.elapsed);
             document.getElementById('time-duration').textContent = formatTime(data.music.duration);
 
-            // Store duration for seek
             currentDuration = data.music.duration || 0;
 
             const progress = data.music.duration > 0 ? (data.music.elapsed / data.music.duration * 100) : 0;
@@ -1562,14 +1687,12 @@ updateData = function() {
                 artwork.classList.remove('playing');
             }
 
-            // Shuffle and Repeat
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
             updateRepeatButton(data.music.repeat_mode);
+            updatePlaybackSummary(data.music);
 
-            // OBD - Dynamic metrics display
             updateOBDDisplay(data.obd);
 
-            // GPS
             if (data.gps.connected && data.gps.lat) {
                 document.getElementById('gps-content').style.display = 'block';
                 document.getElementById('gps-disconnected').style.display = 'none';
@@ -1581,6 +1704,56 @@ updateData = function() {
                 document.getElementById('gps-content').style.display = 'none';
                 document.getElementById('gps-disconnected').style.display = 'block';
             }
+
+            // ============ HOME PANEL ============
+            const obd = data.obd;
+            if (obd && obd.connected) {
+                const d = obd.direct || {};
+                const inf = obd.inferred || {};
+                setText('home-obd-speed', formatOBDValue(d.speed_kmh));
+                setText('home-trip-fuel', formatOBDValue(inf.trip_consumed_l, 2) + ' L');
+                setText('home-trip-dist', formatOBDValue(inf.trip_distance_km, 1) + ' km');
+                setText('home-avg-kml', formatOBDValue(inf.trip_average_km_l, 1) + ' km/L');
+                setText('home-battery', formatOBDValue(d.adapter_voltage_v, 1) + ' V');
+                setText('home-rpm', d.rpm ? (d.rpm / 1000).toFixed(1) : '--');
+                const speedFill = document.getElementById('home-speed-fill');
+                if (speedFill) speedFill.style.width = Math.min(100, (d.speed_kmh || 0) / 200 * 100) + '%';
+                const rpmFill = document.getElementById('home-rpm-fill');
+                if (rpmFill) rpmFill.style.width = Math.min(100, (d.rpm || 0) / 7000 * 100) + '%';
+            } else {
+                setText('home-obd-speed', '--');
+                setText('home-trip-fuel', '-- L');
+                setText('home-trip-dist', '-- km');
+                setText('home-avg-kml', '-- km/L');
+                setText('home-battery', '-- V');
+                setText('home-rpm', '--');
+                const speedFill = document.getElementById('home-speed-fill');
+                if (speedFill) speedFill.style.width = '0%';
+                const rpmFill = document.getElementById('home-rpm-fill');
+                if (rpmFill) rpmFill.style.width = '0%';
+            }
+            setText('home-music-title', data.music.title || 'No music');
+            setText('home-music-artist', data.music.artists_all || data.music.artist || '-');
+            const homePlay = document.getElementById('home-btn-play');
+            if (homePlay) {
+                if (data.music.state === 'play') {
+                    homePlay.innerHTML = '&#9612;&#9612;';
+                    homePlay.onclick = () => musicControl('pause');
+                } else {
+                    homePlay.innerHTML = '&#9654;';
+                    homePlay.onclick = () => musicControl('play');
+                }
+            }
+            setText('home-vol-pct', data.music.volume + '%');
+            const homeVolFill = document.getElementById('home-vol-fill');
+            if (homeVolFill) homeVolFill.style.width = data.music.volume + '%';
+            setText('home-time-elapsed', formatTime(data.music.elapsed));
+            setText('home-time-duration', formatTime(data.music.duration));
+            const homeProgress = document.getElementById('home-progress-fill');
+            if (homeProgress) {
+                const p = data.music.duration > 0 ? (data.music.elapsed / data.music.duration * 100) : 0;
+                homeProgress.style.width = p + '%';
+            }
         })
         .catch(err => console.error('Error updating:', err));
 };
@@ -1589,3 +1762,6 @@ updateData = function() {
 if (document.getElementById('fm-presets')) {
     loadRadioPresets();
 }
+
+updateData();
+setInterval(updateData, 1000);
