@@ -640,6 +640,8 @@ h2 {
 
 .album-cover,
 .hero-album {
+    position: relative;
+    overflow: hidden;
     border-radius: 10px;
     background:
         radial-gradient(circle at center, #141419 0 28%, transparent 28%),
@@ -2567,6 +2569,7 @@ h2 {
     inset: 0;
     border-radius: 10px;
     box-shadow: inset 0 0 24px rgba(216, 13, 35, 0.08);
+    pointer-events: none;
 }
 
 .vehicle-section-title {
