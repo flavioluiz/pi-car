@@ -235,34 +235,26 @@ function setText(id, text) {
     if (element) element.textContent = text;
 }
 
-function setWifiIndicator(state = 'unknown', label = 'Checking') {
+function setWifiIndicator(state = 'disconnected') {
     const dot = document.getElementById('ind-wifi');
-    const text = document.getElementById('wifi-status');
-    if (!dot || !text) return;
+    if (!dot) return;
 
     dot.classList.toggle('connected', state === 'connected');
-    dot.classList.toggle('unknown', state === 'unknown');
-    text.textContent = label;
+    dot.classList.toggle('disconnected', state !== 'connected');
 }
 
 function updateWifiStatus(wifiData) {
     if (!wifiData) {
-        setWifiIndicator('unknown', 'Unavailable');
+        setWifiIndicator('disconnected');
         return;
     }
 
     if (wifiData.connected) {
-        const ssid = (wifiData.ssid || '').trim();
-        setWifiIndicator('connected', ssid || 'Connected');
+        setWifiIndicator('connected');
         return;
     }
 
-    if (wifiData.state === 'disconnected') {
-        setWifiIndicator('disconnected', 'Disconnected');
-        return;
-    }
-
-    setWifiIndicator('unknown', 'Unavailable');
+    setWifiIndicator('disconnected');
 }
 
 function formatStateValue(value, unit = '', digits = 1) {
@@ -532,11 +524,7 @@ function updateData() {
             }
         })
         .catch(err => {
-            if (navigator.onLine === false) {
-                setWifiIndicator('disconnected', 'Offline');
-            } else {
-                setWifiIndicator('unknown', 'Unreachable');
-            }
+            setWifiIndicator('disconnected');
             console.error('Error updating:', err);
         });
 }
@@ -1906,8 +1894,8 @@ if (document.getElementById('media-sync-state')) {
     window.addEventListener('online', () => maybeAutoSyncMedia('browser-online'));
 }
 
-window.addEventListener('online', () => setWifiIndicator('unknown', 'Checking'));
-window.addEventListener('offline', () => setWifiIndicator('disconnected', 'Offline'));
+window.addEventListener('online', () => setWifiIndicator('disconnected'));
+window.addEventListener('offline', () => setWifiIndicator('disconnected'));
 
 updateData();
 setInterval(updateData, 1000);
