@@ -670,6 +670,15 @@ h2 {
     font-size: 1.5rem;
 }
 
+#home-music-artist,
+#music-artist {
+    color: var(--muted);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .progress-row,
 .volume-row {
     padding: 0 16px;
@@ -2027,7 +2036,7 @@ h2 {
     }
 
     .track-copy span:last-child {
-        display: none;
+        display: block;
     }
 
     .progress-row,
@@ -2254,7 +2263,7 @@ h2 {
     }
 
     .hero-track-copy p:last-of-type {
-        display: none;
+        display: block;
     }
 
     .hero-track .progress-row {
