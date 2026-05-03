@@ -2607,46 +2607,141 @@ h2 {
         gap: 8px;
     }
 
+    #panel-settings.active {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #panel-settings .theme-settings-grid {
+        grid-template-columns: 1.05fr 0.95fr;
+        grid-template-rows: auto minmax(0, 1fr);
+        overflow: hidden;
+    }
+
+    #panel-settings .theme-group,
+    #panel-settings .theme-preview-card,
+    #panel-settings .sync-settings-card {
+        min-height: 0;
+    }
+
+    #panel-settings .theme-group {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 6px;
+    }
+
     .theme-grid {
         grid-template-columns: 1fr;
-        gap: 8px;
+        gap: 6px;
+        overflow-y: auto;
+        align-content: start;
+        padding-right: 2px;
     }
 
     .theme-card {
         grid-template-columns: 44px 1fr;
         align-items: center;
-        gap: 8px 10px;
-        padding: 10px;
+        gap: 6px 8px;
+        padding: 8px 10px;
         border-radius: 12px;
     }
 
     .theme-card strong,
     .theme-preview strong {
-        font-size: 0.82rem;
+        font-size: 0.78rem;
     }
 
     .theme-card span:last-child,
     .theme-preview span {
-        font-size: 0.7rem;
+        font-size: 0.66rem;
+        line-height: 1.15;
     }
 
     .theme-swatch {
-        width: 44px;
-        height: 44px;
+        width: 38px;
+        height: 38px;
         grid-row: span 2;
         border-radius: 10px;
     }
 
     .theme-preview {
-        gap: 8px;
-    }
-
-    .theme-preview-bars {
         gap: 6px;
     }
 
+    .theme-preview-bars {
+        gap: 5px;
+    }
+
     .theme-preview-bars i {
-        height: 10px;
+        height: 8px;
+    }
+
+    #panel-settings .sync-settings-card {
+        gap: 8px;
+        align-content: start;
+    }
+
+    #panel-settings .sync-settings-head {
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: center;
+    }
+
+    #panel-settings .sync-settings-copy {
+        display: none;
+    }
+
+    #panel-settings .sync-button {
+        min-width: 92px;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 10px;
+        font-size: 0.72rem;
+    }
+
+    #panel-settings .sync-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    #panel-settings .sync-status-grid .sync-status-row:nth-child(n+3) {
+        display: none;
+    }
+
+    #panel-settings .sync-status-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        align-items: start;
+    }
+
+    #panel-settings .sync-status-row span {
+        font-size: 0.6rem;
+    }
+
+    #panel-settings .sync-status-row strong {
+        font-size: 0.8rem;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #panel-settings .sync-summary {
+        padding: 8px 10px;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        line-height: 1.2;
+    }
+
+    #panel-settings .sync-output {
+        min-height: 52px;
+        max-height: 68px;
+        padding: 10px;
+        border-radius: 12px;
+        font-size: 0.66rem;
+        line-height: 1.3;
     }
 
     .setting-row {
