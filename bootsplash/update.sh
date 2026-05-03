@@ -108,46 +108,14 @@ if [ -n "$CONFIG" ]; then
     fi
 fi
 
-info "Updating Plymouth hold service..."
-install -m 0755 /dev/stdin "$HOLD_SCRIPT" <<'HOLDSCRIPT'
-#!/bin/sh
-set -eu
-
-deadline=$(( $(date +%s) + 45 ))
-while [ "$(date +%s)" -lt "$deadline" ]; do
-    if pgrep -x chromium >/dev/null 2>&1 ||
-       pgrep -x chromium-browser >/dev/null 2>&1 ||
-       pgrep -x openbox >/dev/null 2>&1; then
-        sleep 3
-        break
-    fi
-    sleep 1
-done
-
-plymouth quit --retain-splash >/dev/null 2>&1 || plymouth quit >/dev/null 2>&1 || true
-HOLDSCRIPT
-
-cat > "$HOLD_SERVICE" <<'HOLDSERVICE'
-[Unit]
-Description=Keep Pi-Car Plymouth splash until dashboard startup
-DefaultDependencies=no
-After=plymouth-start.service getty@tty1.service
-Before=display-manager.service
-ConditionPathExists=/run/plymouth/pid
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/bin/pi-car-plymouth-hold
-TimeoutStartSec=60
-
-[Install]
-WantedBy=multi-user.target
-HOLDSERVICE
-
+info "Restoring safe Plymouth handoff before X starts..."
+systemctl disable pi-car-plymouth-hold.service >/dev/null 2>&1 || true
+rm -f "$HOLD_SERVICE" "$HOLD_SCRIPT"
 systemctl daemon-reload
-systemctl mask plymouth-quit.service        >/dev/null 2>&1 || true
-systemctl mask plymouth-quit-wait.service   >/dev/null 2>&1 || true
-systemctl enable pi-car-plymouth-hold.service >/dev/null 2>&1 || true
+systemctl unmask plymouth-quit.service       >/dev/null 2>&1 || true
+systemctl unmask plymouth-quit-wait.service  >/dev/null 2>&1 || true
+systemctl disable plymouth-quit.service      >/dev/null 2>&1 || true
+systemctl enable  plymouth-quit-wait.service >/dev/null 2>&1 || true
 
 echo ""
 ok "Boot splash updated without reinstalling packages."
