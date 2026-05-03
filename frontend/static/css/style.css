@@ -221,6 +221,8 @@ select {
     display: inline-flex;
     align-items: center;
     gap: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .dot.indicator.disconnected {
@@ -997,6 +999,8 @@ h2 {
 .browser-list {
     display: grid;
     gap: 0;
+    align-content: start;
+    width: 100%;
 }
 
 #panel-music .browser-list {
