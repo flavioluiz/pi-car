@@ -239,8 +239,8 @@ function setWifiIndicator(state = 'disconnected') {
     const dot = document.getElementById('ind-wifi');
     if (!dot) return;
 
-    dot.classList.toggle('connected', state === 'connected');
-    dot.classList.toggle('disconnected', state !== 'connected');
+    dot.classList.remove('connected', 'disconnected');
+    dot.classList.add(state === 'connected' ? 'connected' : 'disconnected');
 }
 
 function updateWifiStatus(wifiData) {
@@ -950,6 +950,7 @@ function doSearch() {
     const query = document.getElementById('search-input').value.trim();
     // If empty, search all songs
     const url = query ? '/api/music/search?q=' + encodeURIComponent(query) : '/api/music/all';
+    hideSearchKeyboard();
 
     fetch(url)
         .then(r => r.json())
@@ -1087,22 +1088,41 @@ function createKeyboard() {
             <button class="keyboard-key special search" onclick="doSearch()">SEARCH</button>
         </div>
     `;
+
+    const input = document.getElementById('search-input');
+    if (input) {
+        input.addEventListener('click', showSearchKeyboard);
+        input.addEventListener('focus', showSearchKeyboard);
+    }
+}
+
+function showSearchKeyboard() {
+    const container = document.getElementById('virtual-keyboard');
+    if (container) container.classList.remove('hidden');
+}
+
+function hideSearchKeyboard() {
+    const container = document.getElementById('virtual-keyboard');
+    if (container) container.classList.add('hidden');
 }
 
 function keyPress(key) {
     const input = document.getElementById('search-input');
+    showSearchKeyboard();
     input.value += key;
     input.focus();
 }
 
 function keyBackspace() {
     const input = document.getElementById('search-input');
+    showSearchKeyboard();
     input.value = input.value.slice(0, -1);
     input.focus();
 }
 
 function keyClear() {
     const input = document.getElementById('search-input');
+    showSearchKeyboard();
     input.value = '';
     input.focus();
 }
@@ -1783,8 +1803,10 @@ updateData = function() {
             document.getElementById('ind-music').classList.toggle('connected', data.music.connected);
             document.getElementById('ind-gps').classList.toggle('connected', data.gps.connected);
             document.getElementById('ind-obd').classList.toggle('connected', data.obd.connected);
+            updateWifiStatus(data.wifi);
 
             if (data.radio) {
+                document.getElementById('ind-radio').classList.toggle('connected', data.radio.connected);
                 updateRadioDisplay(data.radio);
             }
 
