@@ -862,6 +862,25 @@ h2 {
     display: block;
 }
 
+#panel-music.active {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 12px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#panel-music .music-panel {
+    min-height: 0;
+    overflow: hidden;
+}
+
+#panel-music .music-panel.active {
+    display: grid;
+    min-height: 0;
+    overflow: hidden;
+}
+
 .music-layout {
     grid-template-columns: 1.35fr 0.65fr;
 }
@@ -910,6 +929,15 @@ h2 {
     padding: 14px;
 }
 
+#panel-music .list-card,
+#panel-music .tile-card,
+#panel-music .search-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
 .list-table {
     display: grid;
     gap: 12px;
@@ -949,6 +977,13 @@ h2 {
 .browser-list {
     display: grid;
     gap: 0;
+}
+
+#panel-music .browser-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .browser-item,
