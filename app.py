@@ -308,7 +308,7 @@ def create_app():
     )
 
     from backend.routes import music_bp, gps_bp, vehicle_bp, system_bp, radio_bp
-    from backend.services import gps_data, obd_data, radio_data, set_obd_service, set_rtlsdr_service
+    from backend.services import gps_data, obd_data, radio_data, set_obd_service, set_rtlsdr_service, wifi_data
 
     app.register_blueprint(music_bp, url_prefix='/api/music')
     app.register_blueprint(gps_bp, url_prefix='/api/gps')
@@ -319,6 +319,7 @@ def create_app():
     if TEST_MODE:
         from backend.services import mpd_service as mpd_service_module
         from backend.services.obd_service import OBDService
+        from backend.services.network_service import network_service
         from backend.services.rtlsdr_service import RTLSDRService
 
         mpd_service_module.music_library = fake_library
@@ -390,6 +391,7 @@ def create_app():
 
         set_obd_service(FakeOBDService())
         set_rtlsdr_service(FakeRTLSDRService())
+        network_service.get_wifi_status = lambda force=False: copy.deepcopy(wifi_data)
 
         @app.before_request
         def _test_tick():
@@ -500,6 +502,15 @@ def create_app():
                 'sample_rate': 2.4,
                 'signal_strength': random.uniform(-92, -38),
                 'error': None,
+            })
+
+            wifi_data.update({
+                'connected': True,
+                'state': 'connected',
+                'ssid': 'PiCASSO Test AP',
+                'interface': 'wlan0',
+                'source': 'test-mode',
+                'last_checked_at': datetime.now(timezone.utc).isoformat(),
             })
 
             return None

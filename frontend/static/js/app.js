@@ -235,6 +235,36 @@ function setText(id, text) {
     if (element) element.textContent = text;
 }
 
+function setWifiIndicator(state = 'unknown', label = 'Checking') {
+    const dot = document.getElementById('ind-wifi');
+    const text = document.getElementById('wifi-status');
+    if (!dot || !text) return;
+
+    dot.classList.toggle('connected', state === 'connected');
+    dot.classList.toggle('unknown', state === 'unknown');
+    text.textContent = label;
+}
+
+function updateWifiStatus(wifiData) {
+    if (!wifiData) {
+        setWifiIndicator('unknown', 'Unavailable');
+        return;
+    }
+
+    if (wifiData.connected) {
+        const ssid = (wifiData.ssid || '').trim();
+        setWifiIndicator('connected', ssid || 'Connected');
+        return;
+    }
+
+    if (wifiData.state === 'disconnected') {
+        setWifiIndicator('disconnected', 'Disconnected');
+        return;
+    }
+
+    setWifiIndicator('unknown', 'Unavailable');
+}
+
 function formatStateValue(value, unit = '', digits = 1) {
     if (value === null || value === undefined || Number.isNaN(Number(value))) {
         return '--';
@@ -454,6 +484,7 @@ function updateData() {
             document.getElementById('ind-music').classList.toggle('connected', data.music.connected);
             document.getElementById('ind-gps').classList.toggle('connected', data.gps.connected);
             document.getElementById('ind-obd').classList.toggle('connected', data.obd.connected);
+            updateWifiStatus(data.wifi);
 
             // Music
             document.getElementById('music-title').textContent = data.music.title || 'No music';
@@ -500,7 +531,14 @@ function updateData() {
                 document.getElementById('gps-disconnected').style.display = 'block';
             }
         })
-        .catch(err => console.error('Error updating:', err));
+        .catch(err => {
+            if (navigator.onLine === false) {
+                setWifiIndicator('disconnected', 'Offline');
+            } else {
+                setWifiIndicator('unknown', 'Unreachable');
+            }
+            console.error('Error updating:', err);
+        });
 }
 
 // ============ MUSIC CONTROLS ============
@@ -1867,6 +1905,9 @@ if (document.getElementById('media-sync-state')) {
     maybeAutoSyncMedia('page-load');
     window.addEventListener('online', () => maybeAutoSyncMedia('browser-online'));
 }
+
+window.addEventListener('online', () => setWifiIndicator('unknown', 'Checking'));
+window.addEventListener('offline', () => setWifiIndicator('disconnected', 'Offline'));
 
 updateData();
 setInterval(updateData, 1000);

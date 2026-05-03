@@ -175,6 +175,8 @@ class AppTestModeSmokeTest(unittest.TestCase):
             self.assertTrue(payload["obd"]["connected"])
             self.assertTrue(payload["radio"]["connected"])
             self.assertTrue(payload["music"]["connected"])
+            self.assertTrue(payload["wifi"]["connected"])
+            self.assertEqual(payload["wifi"]["state"], "connected")
             self.assertGreaterEqual(payload["music"]["elapsed"], 0)
             self.assertGreater(payload["obd"]["direct"]["speed_kmh"], -1)
         finally:

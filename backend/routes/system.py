@@ -10,6 +10,7 @@ from backend.services.mpd_service import MPDService, music_data
 from backend.services.gps_service import gps_data
 from backend.services.obd_service import obd_data
 from backend.services.rtlsdr_service import radio_data
+from backend.services.network_service import network_service
 from backend.services.media_sync import media_sync_service
 
 system_bp = Blueprint('system', __name__)
@@ -21,12 +22,14 @@ def api_status():
     """Retorna todos os dados do veiculo"""
     # Atualiza dados de musica (GPS e OBD sao atualizados por threads)
     mpd_service.get_status()
+    wifi_status = network_service.get_wifi_status()
 
     return jsonify({
         'gps': gps_data,
         'obd': obd_data,
         'music': music_data,
-        'radio': radio_data
+        'radio': radio_data,
+        'wifi': wifi_status,
     })
 
 
