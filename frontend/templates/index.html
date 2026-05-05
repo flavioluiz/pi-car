@@ -179,13 +179,17 @@
                     </div>
 
                     <div class="subpage music-panel active" id="music-playing">
-                        <div class="music-layout">
-                            <section class="card hero-track">
+                        <div class="music-layout-v2">
+                            <div class="music-visualizer" id="music-visualizer" title="Tap to change visual">
+                                <canvas id="music-viz-canvas"></canvas>
+                            </div>
+                            <section class="card music-player-bar">
                                 <div class="hero-album music-artwork" id="music-artwork"></div>
-                                <div class="hero-track-copy">
-                                    <span class="eyebrow">Now Playing</span>
-                                    <h2 id="music-title">No music</h2>
-                                    <p id="music-artist">-</p>
+                                <div class="music-player-main">
+                                    <div class="music-track-info">
+                                        <h2 id="music-title">No music</h2>
+                                        <p id="music-artist">-</p>
+                                    </div>
                                     <div class="progress-row">
                                         <span id="time-elapsed">0:00</span>
                                         <div class="progress-bar" id="progress-bar" onclick="seekToPosition(event)">
@@ -193,30 +197,32 @@
                                         </div>
                                         <span id="time-duration">0:00</span>
                                     </div>
-                                    <div class="player-controls left">
-                                        <button onclick="restartSong()">Start</button>
-                                        <button onclick="musicControl('prev')">Prev</button>
-                                        <button class="primary" id="btn-play" onclick="musicControl('play')">&#9654;</button>
-                                        <button onclick="musicControl('next')">Next</button>
-                                    </div>
-                                    <div class="music-utility-row">
-                                        <button class="mini-control mode-btn" id="btn-shuffle" onclick="toggleShuffle()">Shuffle</button>
-                                        <button class="mini-control mode-btn" id="btn-repeat" onclick="toggleRepeat()">&#8634;</button>
-                                        <div class="mini-volume">
-                                            <button onclick="musicControl('voldown')">-</button>
+                                    <div class="music-controls-row">
+                                        <button class="icon-btn" id="btn-shuffle" onclick="toggleShuffle()" title="Shuffle">
+                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+                                        </button>
+                                        <button class="icon-btn" onclick="musicControl('prev')" title="Previous">
+                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zm3.5 7 8.5 5V7z"/></svg>
+                                        </button>
+                                        <button class="icon-btn primary big-play" id="btn-play" onclick="musicControl('play')" title="Play/Pause">
+                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                        </button>
+                                        <button class="icon-btn" onclick="musicControl('next')" title="Next">
+                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zm-1.5 7L6 7v10z"/></svg>
+                                        </button>
+                                        <button class="icon-btn" id="btn-repeat" onclick="toggleRepeat()" title="Repeat">
+                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                                        </button>
+                                        <div class="volume-cluster">
+                                            <button class="icon-btn small" onclick="musicControl('voldown')" title="Volume down">
+                                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 10v4h4l5 5V5L9 10H5z"/></svg>
+                                            </button>
                                             <span class="volume-display" id="volume-display">100%</span>
-                                            <button onclick="musicControl('volup')">+</button>
+                                            <button class="icon-btn small" onclick="musicControl('volup')" title="Volume up">
+                                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 10v4h4l5 5V5L9 10H5zm9-1.46v6.92c1.48-.74 2.5-2.27 2.5-4.04S15.48 9.28 14 8.54z"/></svg>
+                                            </button>
                                         </div>
                                     </div>
-                                </div>
-                            </section>
-                            <section class="card side-stats">
-                                <div class="list-title">Playback</div>
-                                <div class="stack-stats playback-grid">
-                                    <div><strong>Shuffle</strong><span id="stat-shuffle">Off</span></div>
-                                    <div><strong>Repeat</strong><span id="stat-repeat">Off</span></div>
-                                    <div><strong>Volume</strong><span id="stat-volume">100%</span></div>
-                                    <div><strong>Queue</strong><span id="stat-queue-len">0 tracks</span></div>
                                 </div>
                             </section>
                         </div>

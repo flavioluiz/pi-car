@@ -491,17 +491,10 @@ function updateData() {
             const progress = data.music.duration > 0 ? (data.music.elapsed / data.music.duration * 100) : 0;
             document.getElementById('progress-fill').style.width = progress + '%';
 
-            const btnPlay = document.getElementById('btn-play');
+            updatePlayButton(data.music.state);
             const artwork = document.getElementById('music-artwork');
-            if (data.music.state === 'play') {
-                btnPlay.innerHTML = '&#9612;&#9612;';
-                btnPlay.onclick = () => musicControl('pause');
-                artwork.classList.add('playing');
-            } else {
-                btnPlay.innerHTML = '&#9654;';
-                btnPlay.onclick = () => musicControl('play');
-                artwork.classList.remove('playing');
-            }
+            if (data.music.state === 'play') artwork.classList.add('playing');
+            else artwork.classList.remove('playing');
 
             // Shuffle and Repeat
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
@@ -591,19 +584,36 @@ function toggleRepeat() {
         .catch(err => console.error('Error:', err));
 }
 
+const REPEAT_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>';
+const PLAY_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
+
+function updatePlayButton(state) {
+    const btn = document.getElementById('btn-play');
+    if (!btn) return;
+    if (state === 'play') {
+        btn.innerHTML = PAUSE_SVG;
+        btn.dataset.state = 'play';
+        btn.onclick = () => musicControl('pause');
+    } else {
+        btn.innerHTML = PLAY_SVG;
+        btn.dataset.state = 'pause';
+        btn.onclick = () => musicControl('play');
+    }
+}
+
 function updateRepeatButton(mode) {
     const btn = document.getElementById('btn-repeat');
+    if (!btn) return;
+    btn.innerHTML = REPEAT_SVG;
     btn.classList.remove('active', 'repeat-song');
     if (mode === 'playlist') {
         btn.classList.add('active');
-        btn.innerHTML = '&#8634;';
         btn.title = 'Repeat playlist';
     } else if (mode === 'song') {
         btn.classList.add('active', 'repeat-song');
-        btn.innerHTML = '&#8634;1';
         btn.title = 'Repeat song';
     } else {
-        btn.innerHTML = '&#8634;';
         btn.title = 'Repeat off';
     }
 }
@@ -1821,17 +1831,10 @@ updateData = function() {
             const progress = data.music.duration > 0 ? (data.music.elapsed / data.music.duration * 100) : 0;
             document.getElementById('progress-fill').style.width = progress + '%';
 
-            const btnPlay = document.getElementById('btn-play');
+            updatePlayButton(data.music.state);
             const artwork = document.getElementById('music-artwork');
-            if (data.music.state === 'play') {
-                btnPlay.innerHTML = '&#9612;&#9612;';
-                btnPlay.onclick = () => musicControl('pause');
-                artwork.classList.add('playing');
-            } else {
-                btnPlay.innerHTML = '&#9654;';
-                btnPlay.onclick = () => musicControl('play');
-                artwork.classList.remove('playing');
-            }
+            if (data.music.state === 'play') artwork.classList.add('playing');
+            else artwork.classList.remove('playing');
 
             document.getElementById('btn-shuffle').classList.toggle('active', data.music.random);
             updateRepeatButton(data.music.repeat_mode);
@@ -1921,3 +1924,140 @@ window.addEventListener('offline', () => setWifiIndicator('disconnected'));
 
 updateData();
 setInterval(updateData, 1000);
+
+// ============ MUSIC VISUALIZER ============
+(function () {
+    const canvas = document.getElementById('music-viz-canvas');
+    const wrap = document.getElementById('music-visualizer');
+    if (!canvas || !wrap) return;
+    const ctx = canvas.getContext('2d');
+    const NUM_MODES = 4;
+    let mode = parseInt(localStorage.getItem('music-viz-mode') || '0', 10);
+    if (isNaN(mode) || mode < 0 || mode >= NUM_MODES) mode = 0;
+    let t = 0;
+
+    function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const r = wrap.getBoundingClientRect();
+        canvas.width = Math.max(1, Math.floor(r.width * dpr));
+        canvas.height = Math.max(1, Math.floor(r.height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resize);
+
+    function isPlaying() {
+        const btn = document.getElementById('btn-play');
+        return btn && btn.dataset.state === 'play';
+    }
+
+    function colors() {
+        const css = getComputedStyle(document.documentElement);
+        return {
+            red: (css.getPropertyValue('--red') || '#e63946').trim() || '#e63946',
+            redDark: (css.getPropertyValue('--red-dark') || '#a4161a').trim() || '#a4161a',
+        };
+    }
+
+    function drawBars(w, h, playing) {
+        const N = 28;
+        const bw = w / N;
+        const c = colors();
+        for (let i = 0; i < N; i++) {
+            const phase = playing ? t * 0.06 : 0;
+            const v = playing
+                ? (Math.sin(i * 0.45 + phase) * 0.4 + Math.sin(i * 0.13 + phase * 1.7) * 0.35 + 0.55)
+                : 0.18 + Math.sin(i * 0.3) * 0.04;
+            const bh = Math.max(3, Math.min(1, Math.abs(v)) * h * 0.9);
+            const grad = ctx.createLinearGradient(0, h - bh, 0, h);
+            grad.addColorStop(0, c.red);
+            grad.addColorStop(1, c.redDark);
+            ctx.fillStyle = grad;
+            ctx.fillRect(i * bw + 2, h - bh, bw - 4, bh);
+        }
+    }
+
+    function drawWave(w, h, playing) {
+        const c = colors();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = c.red;
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 2) {
+            const phase = playing ? t * 0.05 : 0;
+            const y = h / 2 + Math.sin(x * 0.025 + phase) * h * 0.25
+                    + (playing ? Math.sin(x * 0.08 + phase * 2.3) * h * 0.12 : 0);
+            if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function drawRadial(w, h, playing) {
+        const c = colors();
+        const cx = w / 2, cy = h / 2;
+        const baseR = Math.min(w, h) * 0.18;
+        const N = 56;
+        for (let i = 0; i < N; i++) {
+            const a = (i / N) * Math.PI * 2;
+            const phase = playing ? t * 0.07 : 0;
+            const len = playing
+                ? (Math.sin(i * 0.5 + phase) * 0.5 + 0.5) * baseR * 1.4
+                : baseR * 0.25;
+            const x1 = cx + Math.cos(a) * baseR;
+            const y1 = cy + Math.sin(a) * baseR;
+            const x2 = cx + Math.cos(a) * (baseR + len);
+            const y2 = cy + Math.sin(a) * (baseR + len);
+            ctx.strokeStyle = i % 2 ? c.red : c.redDark;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+    }
+
+    const dots = Array.from({ length: 55 }, () => ({
+        x: Math.random(), y: Math.random(),
+        vx: (Math.random() - 0.5) * 0.0025,
+        vy: (Math.random() - 0.5) * 0.0025,
+        r: 1 + Math.random() * 2.5,
+        seed: Math.random() * 10,
+    }));
+    function drawDots(w, h, playing) {
+        const c = colors();
+        for (const d of dots) {
+            if (playing) {
+                d.x += d.vx; d.y += d.vy;
+                if (d.x < 0 || d.x > 1) d.vx *= -1;
+                if (d.y < 0 || d.y > 1) d.vy *= -1;
+            }
+            const pulse = playing ? (Math.sin(t * 0.06 + d.seed) * 0.5 + 0.5) : 0.3;
+            ctx.fillStyle = c.red;
+            ctx.globalAlpha = 0.25 + pulse * 0.7;
+            ctx.beginPath();
+            ctx.arc(d.x * w, d.y * h, d.r * (0.5 + pulse * 0.9), 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    let lastW = 0, lastH = 0;
+    function frame() {
+        const r = wrap.getBoundingClientRect();
+        const w = r.width, h = r.height;
+        if (w !== lastW || h !== lastH) { resize(); lastW = w; lastH = h; }
+        ctx.clearRect(0, 0, w, h);
+        const playing = isPlaying();
+        if (playing) t++;
+        if (mode === 0) drawBars(w, h, playing);
+        else if (mode === 1) drawWave(w, h, playing);
+        else if (mode === 2) drawRadial(w, h, playing);
+        else drawDots(w, h, playing);
+        requestAnimationFrame(frame);
+    }
+
+    wrap.addEventListener('click', () => {
+        mode = (mode + 1) % NUM_MODES;
+        localStorage.setItem('music-viz-mode', String(mode));
+    });
+
+    requestAnimationFrame(frame);
+})();

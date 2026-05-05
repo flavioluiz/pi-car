@@ -3045,3 +3045,200 @@ h2 {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
 }
+
+/* ===== Music Now Playing v2 ===== */
+.music-layout-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    min-height: 0;
+}
+
+.music-visualizer {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 100px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.music-visualizer canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.music-player-bar {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    flex: 0 0 auto;
+}
+
+.music-player-bar .music-artwork {
+    width: 96px;
+    height: 96px;
+    border-radius: 14px;
+    background-size: cover;
+    background-position: center;
+}
+
+.music-player-main {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.music-track-info {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.music-track-info h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-track-info p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+}
+
+.music-controls-row .icon-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex: 0 0 auto;
+    position: relative;
+}
+
+.music-controls-row .icon-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.music-controls-row .icon-btn.big-play {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(180deg, var(--red), var(--red-dark));
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.music-controls-row .icon-btn.big-play svg {
+    width: 28px;
+    height: 28px;
+}
+
+.music-controls-row .icon-btn.active {
+    background: linear-gradient(180deg, var(--red), var(--red-dark));
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.music-controls-row .icon-btn.small {
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: transparent;
+}
+
+.music-controls-row .icon-btn.small svg {
+    width: 18px;
+    height: 18px;
+}
+
+#btn-repeat.repeat-song::after {
+    content: "1";
+    position: absolute;
+    bottom: 3px;
+    right: 6px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.volume-cluster {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 3px 6px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.volume-cluster .volume-display {
+    min-width: 42px;
+    text-align: center;
+    font-family: "Michroma", sans-serif;
+    font-size: 0.78rem;
+}
+
+@media (max-width: 900px), (max-height: 520px) {
+    .music-player-bar {
+        grid-template-columns: 78px 1fr;
+        padding: 8px 10px;
+        gap: 10px;
+    }
+    .music-player-bar .music-artwork {
+        width: 78px;
+        height: 78px;
+        border-radius: 12px;
+    }
+    .music-track-info h2 { font-size: 1.05rem; }
+    .music-track-info p { font-size: 0.8rem; }
+    .music-controls-row { gap: 6px; }
+    .music-controls-row .icon-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+    .music-controls-row .icon-btn svg { width: 18px; height: 18px; }
+    .music-controls-row .icon-btn.big-play {
+        width: 50px;
+        height: 50px;
+    }
+    .music-controls-row .icon-btn.big-play svg { width: 22px; height: 22px; }
+    .music-controls-row .icon-btn.small { width: 28px; height: 28px; }
+    .music-controls-row .icon-btn.small svg { width: 16px; height: 16px; }
+    .volume-cluster {
+        padding: 2px 4px;
+    }
+    .volume-cluster .volume-display {
+        min-width: 36px;
+        font-size: 0.7rem;
+    }
+    .music-visualizer { min-height: 80px; }
+}
