@@ -1883,10 +1883,10 @@ updateData = function() {
             const homePlay = document.getElementById('home-btn-play');
             if (homePlay) {
                 if (data.music.state === 'play') {
-                    homePlay.innerHTML = '⏸';
+                    homePlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>';
                     homePlay.onclick = () => musicControl('pause');
                 } else {
-                    homePlay.innerHTML = '▶';
+                    homePlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
                     homePlay.onclick = () => musicControl('play');
                 }
             }

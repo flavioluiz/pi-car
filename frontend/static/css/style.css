@@ -2076,7 +2076,7 @@ h2 {
     .volume-row {
         padding: 0 10px;
         gap: 6px;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
 
     .player-controls {
@@ -2095,9 +2095,17 @@ h2 {
     }
 
     .player-controls.compact-home button {
-        min-height: 44px;
-        font-size: 1.8rem;
-        padding: 4px;
+        min-height: 48px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .player-controls.compact-home button svg {
+        width: 2rem;
+        height: 2rem;
+        display: block;
     }
 
     .mini-panel {
