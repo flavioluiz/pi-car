@@ -1886,13 +1886,25 @@ updateData = function() {
             const homePlay = document.getElementById('home-btn-play');
             if (homePlay) {
                 if (data.music.state === 'play') {
-                    homePlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>';
+                    homePlay.innerHTML = PAUSE_SVG;
+                    homePlay.dataset.state = 'play';
                     homePlay.onclick = () => musicControl('pause');
                 } else {
-                    homePlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                    homePlay.innerHTML = PLAY_SVG;
+                    homePlay.dataset.state = 'pause';
                     homePlay.onclick = () => musicControl('play');
                 }
             }
+            const homeShuffle = document.getElementById('home-btn-shuffle');
+            if (homeShuffle) homeShuffle.classList.toggle('active', !!data.music.random);
+            const homeRepeat = document.getElementById('home-btn-repeat');
+            if (homeRepeat) {
+                homeRepeat.innerHTML = REPEAT_SVG;
+                homeRepeat.classList.remove('active', 'repeat-song');
+                if (data.music.repeat_mode === 'playlist') homeRepeat.classList.add('active');
+                else if (data.music.repeat_mode === 'song') homeRepeat.classList.add('active', 'repeat-song');
+            }
+            setText('home-volume-display', data.music.volume + '%');
             setText('home-vol-pct', data.music.volume + '%');
             const homeVolFill = document.getElementById('home-vol-fill');
             if (homeVolFill) homeVolFill.style.width = data.music.volume + '%';

@@ -3121,11 +3121,21 @@ h2 {
 }
 
 .music-controls-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+}
+
+.transport-group {
     display: flex;
     align-items: center;
     gap: 8px;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
+    justify-content: center;
+}
+
+.controls-spacer {
+    min-width: 0;
 }
 
 .music-controls-row .icon-btn {
@@ -3178,7 +3188,7 @@ h2 {
     height: 28px;
 }
 
-#btn-repeat.repeat-song::after {
+.icon-btn.repeat-song::after {
     content: "1";
     position: absolute;
     bottom: 3px;
@@ -3192,7 +3202,7 @@ h2 {
     display: flex;
     align-items: center;
     gap: 2px;
-    margin-left: auto;
+    justify-self: end;
     border: 1px solid var(--line);
     border-radius: 12px;
     padding: 3px 6px;
@@ -3204,6 +3214,54 @@ h2 {
     text-align: center;
     font-family: "Michroma", sans-serif;
     font-size: 0.78rem;
+}
+
+.music-controls-row.home-controls {
+    gap: 6px;
+}
+
+.music-controls-row.home-controls .transport-group {
+    gap: 6px;
+}
+
+.music-controls-row.home-controls .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.music-controls-row.home-controls .icon-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.music-controls-row.home-controls .icon-btn.big-play {
+    width: 50px;
+    height: 50px;
+}
+
+.music-controls-row.home-controls .icon-btn.big-play svg {
+    width: 22px;
+    height: 22px;
+}
+
+.music-controls-row.home-controls .icon-btn.small {
+    width: 32px;
+    height: 32px;
+}
+
+.music-controls-row.home-controls .icon-btn.small svg {
+    width: 18px;
+    height: 18px;
+}
+
+.music-controls-row.home-controls .volume-cluster {
+    padding: 2px 4px;
+}
+
+.music-controls-row.home-controls .volume-cluster .volume-display {
+    min-width: 34px;
+    font-size: 0.7rem;
 }
 
 @media (max-width: 900px), (max-height: 520px) {
