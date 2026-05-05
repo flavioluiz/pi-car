@@ -333,89 +333,67 @@
                     </div>
                     <div class="subtabs vehicle-tabs">
                         <button class="subtab active" data-subtab="vehicle-drive">Drive</button>
-                        <button class="subtab" data-subtab="vehicle-engine">Engine</button>
-                        <button class="subtab" data-subtab="vehicle-fuel-o2">Fuel &amp; O2</button>
                         <button class="subtab" data-subtab="vehicle-diagnostics">Diagnostics</button>
-                        <button class="subtab" data-subtab="vehicle-id">Vehicle ID</button>
-                        <button class="subtab" data-subtab="vehicle-advanced">Advanced</button>
+                        <button class="subtab" data-subtab="vehicle-id">About</button>
                     </div>
                     <div class="subpage active" id="vehicle-drive">
-                        <div class="two-column">
-                            <section class="card vehicle-hero">
-                                <div class="card-header">
-                                    <strong id="obd-vehicle-name">Citroen C3 Picasso 2013</strong>
-                                    <span id="obd-connection-line">OBD-II aguardando dados</span>
+                        <section class="card vehicle-hero">
+                            <div class="card-header">
+                                <strong id="obd-vehicle-name">Citroen C3 Picasso 2013</strong>
+                                <span id="obd-connection-line">OBD-II aguardando dados</span>
+                            </div>
+                            <div class="vehicle-alerts" id="obd-alerts"></div>
+                            <div class="vehicle-gauges">
+                                <div class="metric-box major"><strong id="obd-speed">--</strong><span>Speed km/h</span></div>
+                                <div class="metric-box major"><strong id="obd-rpm">--</strong><span>Engine rpm</span></div>
+                                <div class="metric-box major"><strong id="obd-coolant">--</strong><span>Coolant C</span></div>
+                                <div class="metric-box major"><strong id="obd-consumption">--</strong><span>Instant <span id="obd-consumption-unit">L/h</span> <em class="data-tag est">EST</em></span></div>
+                            </div>
+                        </section>
+
+                        <div class="vehicle-data-row">
+                            <section class="card vehicle-data-card">
+                                <div class="card-header-inline"><div class="list-title">Live OBD</div><span class="data-tag live">LIVE</span></div>
+                                <div class="vehicle-data-grid">
+                                    <div class="metric-box" title="Calculated load (PID 0104)"><strong id="v-engine-load">--</strong><span>Load %</span></div>
+                                    <div class="metric-box" title="Throttle position (PID 0111)"><strong id="v-throttle">--</strong><span>Throttle %</span></div>
+                                    <div class="metric-box" title="Manifold pressure (PID 010B)"><strong id="v-map">--</strong><span>MAP kPa</span></div>
+                                    <div class="metric-box" title="Timing advance (PID 010E)"><strong id="v-timing">--</strong><span>Timing °</span></div>
+                                    <div class="metric-box" title="Intake air temperature (PID 010F)"><strong id="v-intake-temp">--</strong><span>IAT °C</span></div>
+                                    <div class="metric-box" title="Short-term fuel trim B1 (PID 0106)"><strong id="v-stft">--</strong><span>STFT %</span></div>
+                                    <div class="metric-box" title="Long-term fuel trim B1 (PID 0107)"><strong id="v-ltft">--</strong><span>LTFT %</span></div>
+                                    <div class="metric-box" title="Adapter voltage (ATRV)"><strong id="obd-voltage">--</strong><span>Battery V</span></div>
                                 </div>
-                                <div class="vehicle-alerts" id="obd-alerts"></div>
-                                <div class="vehicle-gauges">
-                                    <div class="metric-box major"><strong id="obd-speed">--</strong><span>Speed km/h</span></div>
-                                    <div class="metric-box major"><strong id="obd-rpm">--</strong><span>Engine rpm</span></div>
-                                    <div class="metric-box major"><strong id="obd-coolant">--</strong><span>Coolant C</span></div>
-                                    <div class="metric-box major"><strong id="obd-consumption">--</strong><span>Instant <span id="obd-consumption-unit">L/h</span></span></div>
-                                </div>
-                                <div class="trip-strip">
-                                    <div><strong id="obd-trip-distance">--</strong><span>Trip km</span></div>
-                                    <div><strong id="obd-trip-fuel">--</strong><span>Fuel used L</span></div>
-                                    <div><strong id="obd-trip-average">--</strong><span>Average km/L</span></div>
-                                    <div><strong id="obd-voltage">--</strong><span>Battery V</span></div>
-                                </div>
-                                <div class="vehicle-section-title">Technical</div>
-                                <div class="list-table" id="gauges-grid"></div>
                             </section>
-                            <section class="card side-stats">
-                                <div class="list-title">Vehicle Controls</div>
-                                <div class="tile-grid controls">
+
+                            <section class="card vehicle-data-card">
+                                <div class="card-header-inline"><div class="list-title">Estimated</div><span class="data-tag est">EST</span></div>
+                                <div class="vehicle-data-grid two-col">
+                                    <div class="metric-box" title="Trip distance integrated from speed"><strong id="obd-trip-distance">--</strong><span>Trip km</span></div>
+                                    <div class="metric-box" title="Fuel consumed integrated from estimated rate"><strong id="obd-trip-fuel">--</strong><span>Fuel L</span></div>
+                                    <div class="metric-box" title="Trip average km/L"><strong id="obd-trip-average">--</strong><span>Avg km/L</span></div>
+                                    <div class="metric-box" title="Instant km/L from MAP+RPM+IAT"><strong id="obd-inst-kml">--</strong><span>Inst km/L</span></div>
+                                </div>
+                                <div class="vehicle-controls-row">
                                     <select id="obd-fuel-select" onchange="setOBDFuel(this.value)">
                                         <option value="gasoline_e27">Gasoline E27</option>
                                         <option value="ethanol">Ethanol</option>
                                     </select>
-                                    <button onclick="resetOBDTrip()">Reset Trip</button>
-                                </div>
-                                <div class="list-title spaced">Technical Alerts</div>
-                                <div class="stack-stats">
-                                    <div><strong>MIL</strong><span id="stat-mil">Off</span></div>
-                                    <div><strong>Battery</strong><span id="stat-battery">Stable</span></div>
-                                    <div><strong>Connection</strong><span id="stat-connection">--</span></div>
+                                    <button onclick="resetOBDTrip()">Reset trip</button>
                                 </div>
                             </section>
                         </div>
                     </div>
-                    <div class="subpage" id="vehicle-engine">
-                        <section class="card list-card vehicle-data-card">
-                            <div class="list-title">Engine Data</div>
-                            <div class="vehicle-data-grid">
-                                <div class="metric-box"><strong id="v-engine-load">--</strong><span>Calculated Load 0104</span></div>
-                                <div class="metric-box"><strong id="v-map">--</strong><span>MAP 010B</span></div>
-                                <div class="metric-box"><strong id="v-timing">--</strong><span>Timing Advance 010E</span></div>
-                                <div class="metric-box"><strong id="v-intake-temp">--</strong><span>Intake Air Temp 010F</span></div>
-                                <div class="metric-box"><strong id="v-throttle">--</strong><span>Throttle Position 0111</span></div>
-                                <div class="metric-box"><strong id="v-fuel-sys">--</strong><span>Fuel System 0103</span></div>
-                            </div>
-                        </section>
-                    </div>
-                    <div class="subpage" id="vehicle-fuel-o2">
-                        <section class="card list-card vehicle-data-card">
-                            <div class="list-title">Fuel Trims &amp; O2</div>
-                            <div class="vehicle-data-grid">
-                                <div class="metric-box"><strong id="v-stft">--</strong><span>STFT B1 0106</span></div>
-                                <div class="metric-box"><strong id="v-ltft">--</strong><span>LTFT B1 0107</span></div>
-                                <div class="metric-box"><strong id="v-o2b1s1">--</strong><span>O2 B1S1 0114</span></div>
-                                <div class="metric-box"><strong id="v-o2b1s2">--</strong><span>O2 B1S2 0115</span></div>
-                                <div class="metric-box"><strong id="v-o2present">--</strong><span>O2 Sensors 0113</span></div>
-                                <div class="metric-box"><strong>Estimated</strong><span>Consumption, no MAF / 015E</span></div>
-                            </div>
-                        </section>
-                    </div>
                     <div class="subpage" id="vehicle-diagnostics">
                         <div class="two-column">
                             <section class="card list-card vehicle-data-card">
-                                <div class="list-title">OBD Status</div>
+                                <div class="card-header-inline"><div class="list-title">Status</div><span class="data-tag live">LIVE</span></div>
                                 <div class="stack-stats">
-                                    <div><strong>MIL / Monitors</strong><span id="v-mil-status">0101</span></div>
-                                    <div><strong>DTC Active</strong><span id="v-dtc-active">03 -> none</span></div>
-                                    <div><strong>DTC Pending</strong><span id="v-dtc-pending">07 -> none</span></div>
-                                    <div><strong>Distance with MIL</strong><span id="v-dist-mil">0121 -> 0 km</span></div>
-                                    <div><strong>OBD Standard</strong><span id="v-obd-std">011C</span></div>
+                                    <div><strong>MIL</strong><span id="v-mil-status">Waiting</span></div>
+                                    <div><strong>DTC active</strong><span id="v-dtc-active">None</span></div>
+                                    <div><strong>DTC pending</strong><span id="v-dtc-pending">None</span></div>
+                                    <div><strong>Battery</strong><span id="v-atrv">--</span></div>
+                                    <div><strong>Last sample</strong><span id="v-sample-time">--</span></div>
                                 </div>
                             </section>
                             <section class="card list-card vehicle-data-card">
@@ -425,33 +403,21 @@
                                     <div><strong>Port</strong><span id="v-port">--</span></div>
                                     <div><strong>Baudrate</strong><span id="v-baud">--</span></div>
                                     <div><strong>Protocol</strong><span id="v-proto">--</span></div>
-                                    <div><strong>Adapter Voltage</strong><span id="v-atrv">--</span></div>
+                                    <div><strong>Last command</strong><span id="v-last-cmd">--</span></div>
                                 </div>
                             </section>
                         </div>
                     </div>
                     <div class="subpage" id="vehicle-id">
                         <section class="card list-card vehicle-data-card">
-                            <div class="list-title">Vehicle Identification</div>
+                            <div class="list-title">About this vehicle</div>
                             <div class="stack-stats">
-                                <div><strong>VIN</strong><span id="v-vin">--</span></div>
-                                <div><strong>Calibration ID</strong><span id="v-calid">--</span></div>
-                                <div><strong>CVN</strong><span id="v-cvn">--</span></div>
                                 <div><strong>Vehicle</strong><span id="v-vehicle-desc">--</span></div>
-                                <div><strong>Engine</strong><span id="v-engine-desc">--</span></div>
+                                <div><strong>VIN</strong><span id="v-vin">--</span></div>
+                                <div><strong>Fuel</strong><span id="v-fuel-info">--</span></div>
                             </div>
-                        </section>
-                    </div>
-                    <div class="subpage" id="vehicle-advanced">
-                        <section class="card list-card vehicle-data-card">
-                            <div class="list-title">Advanced / Mode 06</div>
-                            <div class="stack-stats">
-                                <div><strong>Supported Blocks</strong><span>0600, 0620, 0640, 0660, 0680</span></div>
-                                <div><strong>Use</strong><span>Onboard monitor diagnostics only</span></div>
-                                <div><strong>Recommendation</strong><span>Keep out of realtime loop</span></div>
-                                <div><strong>Example TIDs</strong><span>0601, 0602, 0621, 0641, 0642, 0681</span></div>
-                                <div><strong>Raw Decoding</strong><span>Needs TID/CID-specific parser</span></div>
-                            </div>
+                            <div class="vehicle-section-title">Supported PIDs</div>
+                            <div class="pid-chips" id="v-supported-pids"></div>
                         </section>
                     </div>
                     </div>

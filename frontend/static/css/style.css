@@ -3060,6 +3060,117 @@ h2 {
     user-select: none;
 }
 
+/* ===== Vehicle redesign ===== */
+.data-tag {
+    display: inline-block;
+    font-family: "Michroma", sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    line-height: 1;
+    font-style: normal;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.data-tag.live {
+    color: #6affb0;
+    border-color: rgba(106, 255, 176, 0.35);
+    background: rgba(106, 255, 176, 0.08);
+}
+
+.data-tag.est {
+    color: #ffc36a;
+    border-color: rgba(255, 195, 106, 0.35);
+    background: rgba(255, 195, 106, 0.08);
+}
+
+.card-header-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.card-header-inline .list-title {
+    margin: 0;
+}
+
+.vehicle-data-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+    min-height: 0;
+}
+
+.vehicle-data-grid.two-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.vehicle-controls-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.vehicle-controls-row select,
+.vehicle-controls-row button {
+    flex: 1;
+    min-height: 38px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 6px 10px;
+}
+
+.pid-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.pid-chip {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-family: "Michroma", sans-serif;
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.pid-chip.muted {
+    opacity: 0.5;
+}
+
+@media (max-width: 900px), (max-height: 520px) {
+    .vehicle-data-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        margin-top: 6px;
+    }
+    .vehicle-controls-row {
+        margin-top: 6px;
+    }
+    .vehicle-controls-row select,
+    .vehicle-controls-row button {
+        min-height: 32px;
+        font-size: 0.85rem;
+    }
+    .pid-chip {
+        font-size: 0.62rem;
+        padding: 2px 7px;
+    }
+    .data-tag {
+        font-size: 0.55rem;
+    }
+}
+
 /* ===== Music Now Playing v2 ===== */
 .music-layout-v2 {
     display: flex;

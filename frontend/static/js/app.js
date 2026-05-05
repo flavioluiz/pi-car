@@ -281,7 +281,6 @@ function updateOBDDisplay(obdData) {
     const obdContent = document.getElementById('obd-content');
     const obdDisconnected = document.getElementById('obd-disconnected');
     const obdError = document.getElementById('obd-error');
-    const gaugesGrid = document.getElementById('gauges-grid');
 
     if (!obdData) {
         obdContent.style.display = 'none';
@@ -365,86 +364,60 @@ function updateOBDDisplay(obdData) {
         alertsElement.style.display = alerts.length ? 'flex' : 'none';
     }
 
-    // Get metrics and sort by priority
+    setText('obd-inst-kml', formatOBDValue(inferred.instant_km_l, 1));
+
     const metrics = obdData.metrics || {};
-    const metricKeys = Object.keys(metrics).filter(key => OBD_TECHNICAL_KEYS.includes(key));
-
-    // Sort by priority order
-    metricKeys.sort((a, b) => {
-        const indexA = OBD_PRIORITY.indexOf(a);
-        const indexB = OBD_PRIORITY.indexOf(b);
-        // If not in priority list, put at end
-        const priorityA = indexA === -1 ? 999 : indexA;
-        const priorityB = indexB === -1 ? 999 : indexB;
-        return priorityA - priorityB;
-    });
-
-    // Build gauges HTML
-    let gaugesHTML = '';
-    for (const key of metricKeys) {
-        const metric = metrics[key];
-        const gaugeClass = OBD_GAUGE_CLASS[key] || '';
-        const value = metric.value;
-        const displayValue = typeof value === 'number' ? Number(value).toFixed(Math.abs(value) < 10 ? 1 : 0) : '--';
-
-        gaugesHTML += `
-            <div class="gauge ${gaugeClass}">
-                <div class="gauge-value">${displayValue}</div>
-                <div class="gauge-unit">${metric.unit || ''}</div>
-                <div class="gauge-label">${metric.label || key}</div>
-            </div>
-        `;
-    }
-
-    // Only update if content changed (avoid flickering)
-    if (gaugesGrid.innerHTML !== gaugesHTML) {
-        gaugesGrid.innerHTML = gaugesHTML || '<div class="obd-waiting">Waiting for vehicle data...</div>';
-    }
-
-    const supported = new Set(obdData.supported_commands || []);
-
     setText('v-engine-load', formatStateValue(metrics.ENGINE_LOAD?.value, '%', 1));
     setText('v-map', formatStateValue(metrics.INTAKE_PRESSURE?.value, 'kPa', 0));
     setText('v-timing', formatStateValue(metrics.TIMING_ADVANCE?.value, 'deg', 1));
     setText('v-intake-temp', formatStateValue(metrics.INTAKE_TEMP?.value, 'C', 0));
     setText('v-throttle', formatStateValue(metrics.THROTTLE_POS?.value, '%', 1));
-    setText('v-fuel-sys', supported.has('FUEL_STATUS') ? 'Supported' : 'Not reported');
-
     setText('v-stft', formatStateValue(metrics.SHORT_FUEL_TRIM_1?.value, '%', 1));
     setText('v-ltft', formatStateValue(metrics.LONG_FUEL_TRIM_1?.value, '%', 1));
-    setText('v-o2b1s1', supported.has('O2_B1S1') ? 'Sensor present' : 'Not reported');
-    setText('v-o2b1s2', supported.has('O2_B1S2') ? 'Sensor present' : 'Not reported');
-    setText(
-        'v-o2present',
-        [supported.has('O2_B1S1') ? 'B1S1' : null, supported.has('O2_B1S2') ? 'B1S2' : null]
-            .filter(Boolean)
-            .join(', ') || 'Not reported'
-    );
 
     setText(
         'v-mil-status',
-        direct.mil_on === true
-            ? 'MIL on'
-            : direct.mil_on === false
-                ? 'MIL off'
-                : 'Waiting'
+        direct.mil_on === true ? 'On' : direct.mil_on === false ? 'Off' : 'Waiting'
     );
     setText('v-dtc-active', (direct.active_dtcs || []).join(', ') || 'None');
     setText('v-dtc-pending', (direct.pending_dtcs || []).join(', ') || 'None');
-    setText('v-dist-mil', supported.has('DISTANCE_WITH_MIL') ? 'PID supported' : 'Not reported');
-    setText('v-obd-std', supported.has('OBD_STANDARD') ? 'PID 011C supported' : 'Not reported');
+    setText('v-atrv', direct.adapter_voltage_v ? `${formatOBDValue(direct.adapter_voltage_v, 1)} V` : '--');
+    setText('v-sample-time', formatSampleTime(metadata));
 
     setText('v-adapter', connection.adapter || '--');
     setText('v-port', connection.port || '--');
     setText('v-baud', connection.baudrate ? `${connection.baudrate}` : '--');
     setText('v-proto', connection.protocol || '--');
-    setText('v-atrv', direct.adapter_voltage_v ? `${formatOBDValue(direct.adapter_voltage_v, 1)} V` : '--');
+    setText('v-last-cmd', metadata.last_successful_command || '--');
 
-    setText('v-vin', metadata.vin || '--');
-    setText('v-calid', 'Not available');
-    setText('v-cvn', 'Not available');
     setText('v-vehicle-desc', metadata.vehicle || '--');
-    setText('v-engine-desc', 'Not available');
+    setText('v-vin', metadata.vin || '--');
+    setText(
+        'v-fuel-info',
+        inferred.fuel === 'ethanol' ? 'Ethanol' : inferred.fuel === 'gasoline_e27' ? 'Gasoline E27' : '--'
+    );
+    renderSupportedPids(obdData.supported_commands || []);
+}
+
+function formatSampleTime(metadata) {
+    if (!metadata || !metadata.sample_time) return '--';
+    const stale = metadata.dynamic_stale ? ` · stale ${metadata.dynamic_stale_age_s || '?'}s` : '';
+    try {
+        const d = new Date(metadata.sample_time);
+        return d.toLocaleTimeString() + stale;
+    } catch (e) {
+        return metadata.sample_time + stale;
+    }
+}
+
+function renderSupportedPids(list) {
+    const wrap = document.getElementById('v-supported-pids');
+    if (!wrap) return;
+    if (!list.length) {
+        wrap.innerHTML = '<span class="pid-chip muted">--</span>';
+        return;
+    }
+    wrap.innerHTML = list.map(pid => `<span class="pid-chip">${pid}</span>`).join('');
 }
 
 function setOBDFuel(fuel) {
