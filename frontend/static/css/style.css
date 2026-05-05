@@ -1869,21 +1869,11 @@ h2 {
     }
 
     .sidebar {
-        padding: 6px;
-        gap: 6px;
-    }
-
-    .app-shell.page-home-active .sidebar {
         padding: 8px;
         gap: 8px;
     }
 
     .brand-panel {
-        padding: 6px;
-        border-radius: 12px;
-    }
-
-    .app-shell.page-home-active .brand-panel {
         padding: 8px;
         border-radius: 14px;
     }
@@ -1896,37 +1886,19 @@ h2 {
 
     .app-shell.page-home-active .nav-item {
         justify-content: flex-start;
-        min-height: 38px;
         padding: 8px 10px;
     }
 
     .nav-icon {
-        font-size: 1rem;
-    }
-
-    .app-shell.page-home-active .nav-icon {
-        width: 26px;
-        font-size: 1.15rem;
-    }
-
-    .app-shell.page-home-active .nav-icon svg {
-        width: 26px;
-        height: 26px;
-    }
-
-    .app-shell:not(.page-home-active) .nav-icon {
         width: 28px;
         font-size: 1.2rem;
     }
 
-    .app-shell:not(.page-home-active) .nav-icon svg {
+    .nav-icon svg {
         width: 28px;
         height: 28px;
     }
 
-    .app-shell:not(.page-home-active) .nav-item {
-        min-height: 48px;
-    }
 
     .app-shell:not(.page-home-active) .nav-item span:last-child {
         display: none;
