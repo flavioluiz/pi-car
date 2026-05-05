@@ -1957,7 +1957,7 @@ h2 {
     }
 
     .home-grid {
-        grid-template-columns: 1.55fr 1fr;
+        grid-template-columns: 1.1fr 1fr;
         grid-template-rows: 1fr auto;
         gap: 6px;
         height: calc(100% - 30px);
@@ -2094,8 +2094,15 @@ h2 {
         gap: 6px;
     }
 
+    .player-controls.compact-home {
+        justify-content: center;
+        gap: 10px;
+    }
+
     .player-controls.compact-home button {
-        min-height: 48px;
+        min-height: 52px;
+        width: 90px;
+        flex: 0 0 auto;
         padding: 8px;
         display: flex;
         align-items: center;
@@ -2103,8 +2110,8 @@ h2 {
     }
 
     .player-controls.compact-home button svg {
-        width: 2rem;
-        height: 2rem;
+        width: 2.4rem;
+        height: 2.4rem;
         display: block;
     }
 
@@ -2124,6 +2131,10 @@ h2 {
     }
 
     .trip-summary-grid strong {
+        font-size: 1.3rem;
+    }
+
+    .trip-summary-grid span {
         font-size: 0.78rem;
     }
 
