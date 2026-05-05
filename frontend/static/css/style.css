@@ -2000,6 +2000,7 @@ h2 {
 
     .obd-hero-layout {
         grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
         gap: 6px;
         padding: 4px 8px 8px;
     }
