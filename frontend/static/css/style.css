@@ -1011,7 +1011,9 @@ h2 {
 #panel-music .browser-list {
     flex: 1;
     min-height: 0;
+    min-width: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
 }
 
@@ -1027,6 +1029,9 @@ h2 {
     gap: 10px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--line);
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .browser-item:last-child {
@@ -3104,10 +3109,12 @@ h2 {
 .music-track-info h2 {
     margin: 0;
     font-size: 1.8rem;
-    line-height: 1.05;
-    white-space: nowrap;
+    line-height: 1.1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
 }
 
 .music-track-info p {
