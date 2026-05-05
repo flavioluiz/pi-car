@@ -2000,7 +2000,7 @@ h2 {
 
     .obd-hero-layout {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto;
+        grid-template-rows: minmax(0, 1fr) auto;
         gap: 6px;
         padding: 4px 8px 8px;
     }
@@ -2024,8 +2024,8 @@ h2 {
 
     .metric-dial.speed-hero.full {
         min-height: 0;
-        padding: 14px 12px 10px;
-        gap: 6px;
+        padding: 8px 12px 8px;
+        gap: 4px;
         align-content: center;
     }
 
@@ -2038,14 +2038,40 @@ h2 {
     }
 
     .rpm-inline-card {
-        margin-top: 8px;
-        padding: 8px;
+        margin-top: 0;
+        padding: 10px 12px;
         border-radius: 10px;
         gap: 4px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto auto;
+        align-items: baseline;
+        column-gap: 10px;
+    }
+
+    .rpm-inline-card .metric-label {
+        grid-column: 1;
+        grid-row: 1;
+        font-size: 0.78rem;
     }
 
     .rpm-inline-card strong {
-        font-size: 1rem;
+        grid-column: 1;
+        grid-row: 2;
+        font-size: 1.6rem;
+    }
+
+    .rpm-inline-card .metric-unit {
+        grid-column: 2;
+        grid-row: 2;
+        font-size: 0.78rem;
+        align-self: end;
+    }
+
+    .rpm-inline-card .metric-scale {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        margin-top: 2px;
     }
 
     .metric-scale {
