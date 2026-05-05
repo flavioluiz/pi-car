@@ -534,7 +534,7 @@ function musicControl(action) {
 function seekToPosition(event) {
     if (currentDuration <= 0) return;
 
-    const bar = document.getElementById('progress-bar');
+    const bar = event.currentTarget || document.getElementById('progress-bar');
     const rect = bar.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     const percentage = clickX / rect.width;
