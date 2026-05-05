@@ -1977,6 +1977,10 @@ h2 {
         font-size: 0.8rem;
     }
 
+    .home-music-card .card-header strong {
+        font-size: 1.4rem;
+    }
+
     .card-header span,
     .track-copy span,
     .route-footer span,
@@ -2029,7 +2033,7 @@ h2 {
     }
 
     .metric-dial.speed-hero strong {
-        font-size: 2.8rem;
+        font-size: 3.8rem;
     }
 
     .rpm-inline-card {
@@ -2072,7 +2076,7 @@ h2 {
     .volume-row {
         padding: 0 10px;
         gap: 6px;
-        font-size: 0.68rem;
+        font-size: 0.9rem;
     }
 
     .player-controls {
@@ -2819,12 +2823,12 @@ h2 {
     }
 
     .track-copy strong {
-        font-size: 1.47rem;
-        line-height: 1.08;
+        font-size: 1.9rem;
+        line-height: 1.05;
     }
 
     .track-copy span {
-        font-size: 1.02rem;
+        font-size: 1.35rem;
         line-height: 1.1;
     }
 
