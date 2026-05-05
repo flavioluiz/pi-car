@@ -1883,10 +1883,10 @@ updateData = function() {
             const homePlay = document.getElementById('home-btn-play');
             if (homePlay) {
                 if (data.music.state === 'play') {
-                    homePlay.innerHTML = '&#9612;&#9612;';
+                    homePlay.innerHTML = '⏸';
                     homePlay.onclick = () => musicControl('pause');
                 } else {
-                    homePlay.innerHTML = '&#9654;';
+                    homePlay.innerHTML = '▶';
                     homePlay.onclick = () => musicControl('play');
                 }
             }
