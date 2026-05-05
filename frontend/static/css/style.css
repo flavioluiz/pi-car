@@ -2000,7 +2000,7 @@ h2 {
 
     .obd-hero-layout {
         grid-template-columns: 1fr;
-        grid-template-rows: minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr);
         gap: 6px;
         padding: 4px 8px 8px;
     }
@@ -2039,39 +2039,32 @@ h2 {
 
     .rpm-inline-card {
         margin-top: 0;
-        padding: 10px 12px;
+        padding: 8px 12px;
         border-radius: 10px;
-        gap: 4px;
         display: grid;
         grid-template-columns: auto 1fr;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto;
         align-items: baseline;
         column-gap: 10px;
-    }
-
-    .rpm-inline-card .metric-label {
-        grid-column: 1;
-        grid-row: 1;
-        font-size: 0.78rem;
+        row-gap: 4px;
     }
 
     .rpm-inline-card strong {
         grid-column: 1;
-        grid-row: 2;
+        grid-row: 1;
         font-size: 1.6rem;
     }
 
     .rpm-inline-card .metric-unit {
         grid-column: 2;
-        grid-row: 2;
-        font-size: 0.78rem;
-        align-self: end;
+        grid-row: 1;
+        font-size: 1rem;
+        align-self: baseline;
     }
 
     .rpm-inline-card .metric-scale {
         grid-column: 1 / -1;
-        grid-row: 3;
-        margin-top: 2px;
+        grid-row: 2;
     }
 
     .metric-scale {
@@ -2127,10 +2120,10 @@ h2 {
     }
 
     .player-controls.compact-home button {
-        min-height: 52px;
+        min-height: 38px;
         width: 90px;
         flex: 0 0 auto;
-        padding: 8px;
+        padding: 2px 8px;
         display: flex;
         align-items: center;
         justify-content: center;
