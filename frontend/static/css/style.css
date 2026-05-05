@@ -360,7 +360,7 @@ h2 {
 
 .card-obd-hero {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 1fr;
     grid-column: 1;
     grid-row: 1;
 }
@@ -368,8 +368,8 @@ h2 {
 .obd-hero-layout {
     display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
     gap: 12px;
-    align-items: stretch;
     padding: 8px 14px 14px;
 }
 
