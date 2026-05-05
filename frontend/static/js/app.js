@@ -1861,7 +1861,7 @@ updateData = function() {
                 setText('home-trip-dist', formatOBDValue(inf.trip_distance_km, 1) + ' km');
                 setText('home-avg-kml', formatOBDValue(inf.trip_average_km_l, 1) + ' km/L');
                 setText('home-battery', formatOBDValue(d.adapter_voltage_v, 1) + ' V');
-                setText('home-rpm', d.rpm ? (d.rpm / 1000).toFixed(1) : '--');
+                setText('home-rpm', d.rpm ? Math.round(d.rpm).toString() : '--');
                 const speedFill = document.getElementById('home-speed-fill');
                 if (speedFill) speedFill.style.width = Math.min(100, (d.speed_kmh || 0) / 200 * 100) + '%';
                 const rpmFill = document.getElementById('home-rpm-fill');
