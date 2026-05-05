@@ -3103,8 +3103,8 @@ h2 {
 
 .music-track-info h2 {
     margin: 0;
-    font-size: 1.3rem;
-    line-height: 1.1;
+    font-size: 1.8rem;
+    line-height: 1.05;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3113,7 +3113,7 @@ h2 {
 .music-track-info p {
     margin: 0;
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: 1.4rem;
     line-height: 1.1;
     white-space: nowrap;
     overflow: hidden;
@@ -3167,15 +3167,15 @@ h2 {
 }
 
 .music-controls-row .icon-btn.small {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     border: none;
     background: transparent;
 }
 
 .music-controls-row .icon-btn.small svg {
-    width: 18px;
-    height: 18px;
+    width: 28px;
+    height: 28px;
 }
 
 #btn-repeat.repeat-song::after {
@@ -3217,8 +3217,8 @@ h2 {
         height: 78px;
         border-radius: 12px;
     }
-    .music-track-info h2 { font-size: 1.05rem; }
-    .music-track-info p { font-size: 0.8rem; }
+    .music-track-info h2 { font-size: 1.7rem; line-height: 1.05; }
+    .music-track-info p { font-size: 1.35rem; line-height: 1.1; }
     .music-controls-row { gap: 6px; }
     .music-controls-row .icon-btn {
         width: 40px;
@@ -3231,8 +3231,8 @@ h2 {
         height: 50px;
     }
     .music-controls-row .icon-btn.big-play svg { width: 22px; height: 22px; }
-    .music-controls-row .icon-btn.small { width: 28px; height: 28px; }
-    .music-controls-row .icon-btn.small svg { width: 16px; height: 16px; }
+    .music-controls-row .icon-btn.small { width: 38px; height: 38px; }
+    .music-controls-row .icon-btn.small svg { width: 24px; height: 24px; }
     .volume-cluster {
         padding: 2px 4px;
     }
