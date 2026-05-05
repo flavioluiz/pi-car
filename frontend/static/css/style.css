@@ -1914,6 +1914,20 @@ h2 {
         height: 18px;
     }
 
+    .app-shell:not(.page-home-active) .nav-icon {
+        width: 36px;
+        font-size: 1.5rem;
+    }
+
+    .app-shell:not(.page-home-active) .nav-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .app-shell:not(.page-home-active) .nav-item {
+        min-height: 56px;
+    }
+
     .app-shell:not(.page-home-active) .nav-item span:last-child {
         display: none;
     }
