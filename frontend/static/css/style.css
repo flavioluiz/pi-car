@@ -2120,9 +2120,9 @@ h2 {
     }
 
     .home-music-layout {
-        grid-template-columns: 0.82fr 1.18fr;
-        gap: 4px;
-        padding: 4px 8px 8px;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 6px 10px 4px;
     }
 
     .home-music-controls {
