@@ -63,6 +63,20 @@ def _install_test_dependency_stubs():
             'artists_all': 'M83',
             'album': 'Hurry Up, We\'re Dreaming',
         },
+        {
+            'file': 'PiCASSO/Test - Long Title Wraps Two Lines.mp3',
+            'title': 'A Reasonably Long Song Title That Wraps',
+            'artist': 'Test Artist With A Long Name',
+            'artists_all': 'Test Artist With A Long Name',
+            'album': 'Layout Test Album',
+        },
+        {
+            'file': 'PiCASSO/Test - Extremely Long Title For Truncation.mp3',
+            'title': 'An Extremely Long Song Title That Should Definitely Overflow Three Lines And Trigger Ellipsis Truncation Behavior',
+            'artist': 'A Very Long Artist Name Featuring Several Other Performers',
+            'artists_all': 'A Very Long Artist Name Featuring Several Other Performers',
+            'album': 'Truncation Stress Test Album',
+        },
     ]
 
     fake_playlists = {
