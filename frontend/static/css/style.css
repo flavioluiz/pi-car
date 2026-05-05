@@ -2023,7 +2023,7 @@ h2 {
     }
 
     .metric-dial.speed-hero.full {
-        min-height: 176px;
+        min-height: 0;
         padding: 14px 12px 10px;
         gap: 6px;
         align-content: center;
