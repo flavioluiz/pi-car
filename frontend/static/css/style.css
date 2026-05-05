@@ -1905,27 +1905,27 @@ h2 {
     }
 
     .app-shell.page-home-active .nav-icon {
-        width: 18px;
-        font-size: 0.95rem;
+        width: 26px;
+        font-size: 1.15rem;
     }
 
     .app-shell.page-home-active .nav-icon svg {
-        width: 18px;
-        height: 18px;
+        width: 26px;
+        height: 26px;
     }
 
     .app-shell:not(.page-home-active) .nav-icon {
-        width: 36px;
-        font-size: 1.5rem;
+        width: 28px;
+        font-size: 1.2rem;
     }
 
     .app-shell:not(.page-home-active) .nav-icon svg {
-        width: 36px;
-        height: 36px;
+        width: 28px;
+        height: 28px;
     }
 
     .app-shell:not(.page-home-active) .nav-item {
-        min-height: 56px;
+        min-height: 48px;
     }
 
     .app-shell:not(.page-home-active) .nav-item span:last-child {
