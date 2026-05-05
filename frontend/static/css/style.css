@@ -1003,9 +1003,11 @@ h2 {
 
 .browser-list {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0;
     align-content: start;
     width: 100%;
+    min-width: 0;
 }
 
 #panel-music .browser-list {
@@ -1051,10 +1053,12 @@ h2 {
 }
 
 .browser-item-info {
-    flex: 1;
+    flex: 1 1 0;
     min-width: 0;
+    max-width: 100%;
     flex-direction: column;
     align-items: flex-start;
+    overflow: hidden;
 }
 
 .browser-item-title {
@@ -1064,6 +1068,9 @@ h2 {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
+    min-width: 0;
+    display: block;
 }
 
 .browser-item-subtitle {
@@ -1072,6 +1079,9 @@ h2 {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
+    min-width: 0;
+    display: block;
 }
 
 .browser-item-action,
@@ -1090,6 +1100,11 @@ h2 {
     min-height: 34px;
     padding: 6px 10px;
     border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.browser-item-icon {
+    flex-shrink: 0;
 }
 
 .browser-item-action.play {
