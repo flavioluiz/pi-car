@@ -2151,11 +2151,11 @@ h2 {
     }
 
     .trip-summary-grid strong {
-        font-size: 1.3rem;
+        font-size: 1.7rem;
     }
 
     .trip-summary-grid span {
-        font-size: 0.78rem;
+        font-size: 0.95rem;
     }
 
     .home-music-layout {
@@ -2832,7 +2832,7 @@ h2 {
     .status-strip,
     .topbar-right {
         gap: 10px;
-        font-size: 1.14rem;
+        font-size: 1.35rem;
         line-height: 1.05;
     }
 
@@ -2853,7 +2853,7 @@ h2 {
     }
 
     .topbar-right strong {
-        font-size: 1.29rem;
+        font-size: 1.6rem;
         line-height: 1;
     }
 
