@@ -3204,17 +3204,49 @@ h2 {
 
 @media (max-width: 900px), (max-height: 520px) {
     .vehicle-data-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1.5fr 1fr;
         gap: 6px;
         margin-top: 6px;
+        min-height: 0;
+    }
+    #vehicle-drive {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 6px;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+    }
+    #vehicle-drive .vehicle-data-card {
+        padding: 8px 10px;
+        min-height: 0;
+        overflow: hidden;
+    }
+    #vehicle-drive .vehicle-data-grid {
+        gap: 5px;
+    }
+    #vehicle-drive .vehicle-data-grid .metric-box {
+        padding: 5px 7px;
+        border-radius: 9px;
+        min-height: 0;
+    }
+    #vehicle-drive .vehicle-data-grid .metric-box strong {
+        font-size: 0.92rem;
+    }
+    #vehicle-drive .vehicle-data-grid .metric-box span {
+        font-size: 0.6rem;
+    }
+    #vehicle-drive .card-header-inline {
+        margin-bottom: 4px;
     }
     .vehicle-controls-row {
         margin-top: 6px;
     }
     .vehicle-controls-row select,
     .vehicle-controls-row button {
-        min-height: 32px;
-        font-size: 0.85rem;
+        min-height: 28px;
+        font-size: 0.7rem;
+        padding: 4px 8px;
     }
     .pid-chip {
         font-size: 0.62rem;
@@ -3222,6 +3254,13 @@ h2 {
     }
     .data-tag {
         font-size: 0.55rem;
+    }
+    .metric-spark {
+        height: 16px;
+        margin-top: 2px;
+    }
+    #panel-vehicle .subtabs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
