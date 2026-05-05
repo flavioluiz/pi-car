@@ -13,10 +13,6 @@
 <body data-theme="picasso-red">
     <div class="app-shell page-home-active">
         <aside class="sidebar">
-            <div class="brand-panel">
-                <img class="brand-logo" src="{{ url_for('static', filename='logos/picasso_logo.png') }}" alt="PiCASSO logo">
-            </div>
-
             <nav class="main-nav tabs">
                 <button class="nav-item tab active" data-page="home" data-panel="home">
                     <span class="nav-icon" aria-hidden="true">
@@ -84,6 +80,10 @@
                     <span>Settings</span>
                 </button>
             </nav>
+
+            <div class="brand-panel">
+                <img class="brand-logo" src="{{ url_for('static', filename='logos/picasso_logo.png') }}" alt="PiCASSO logo">
+            </div>
         </aside>
 
         <section class="main-stage">

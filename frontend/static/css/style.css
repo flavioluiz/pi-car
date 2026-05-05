@@ -100,9 +100,13 @@ select {
     background: linear-gradient(180deg, #08080a, #050507);
     border-right: 1px solid var(--line);
     padding: 16px 14px;
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 18px;
+}
+
+.sidebar .brand-panel {
+    margin-top: auto;
 }
 
 .brand-panel {
@@ -1876,6 +1880,10 @@ h2 {
     .brand-panel {
         padding: 8px;
         border-radius: 14px;
+    }
+
+    .app-shell:not(.page-home-active) .brand-panel {
+        display: none;
     }
 
     .nav-item {
