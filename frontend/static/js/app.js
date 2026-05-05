@@ -1857,10 +1857,10 @@ updateData = function() {
                 const d = obd.direct || {};
                 const inf = obd.inferred || {};
                 setText('home-obd-speed', formatOBDValue(d.speed_kmh));
-                setText('home-trip-fuel', formatOBDValue(inf.trip_consumed_l, 2) + ' L');
-                setText('home-trip-dist', formatOBDValue(inf.trip_distance_km, 1) + ' km');
-                setText('home-avg-kml', formatOBDValue(inf.trip_average_km_l, 1) + ' km/L');
-                setText('home-battery', formatOBDValue(d.adapter_voltage_v, 1) + ' V');
+                setText('home-trip-fuel', formatOBDValue(inf.trip_consumed_l, 2));
+                setText('home-trip-dist', formatOBDValue(inf.trip_distance_km, 1));
+                setText('home-avg-kml', formatOBDValue(inf.trip_average_km_l, 1));
+                setText('home-battery', formatOBDValue(d.adapter_voltage_v, 1));
                 setText('home-rpm', d.rpm ? Math.round(d.rpm).toString() : '--');
                 const speedFill = document.getElementById('home-speed-fill');
                 if (speedFill) speedFill.style.width = Math.min(100, (d.speed_kmh || 0) / 200 * 100) + '%';
@@ -1868,10 +1868,10 @@ updateData = function() {
                 if (rpmFill) rpmFill.style.width = Math.min(100, (d.rpm || 0) / 7000 * 100) + '%';
             } else {
                 setText('home-obd-speed', '--');
-                setText('home-trip-fuel', '-- L');
-                setText('home-trip-dist', '-- km');
-                setText('home-avg-kml', '-- km/L');
-                setText('home-battery', '-- V');
+                setText('home-trip-fuel', '--');
+                setText('home-trip-dist', '--');
+                setText('home-avg-kml', '--');
+                setText('home-battery', '--');
                 setText('home-rpm', '--');
                 const speedFill = document.getElementById('home-speed-fill');
                 if (speedFill) speedFill.style.width = '0%';

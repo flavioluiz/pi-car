@@ -2050,18 +2050,30 @@ h2 {
 
     .rpm-inline-card .rpm-value-row {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0;
+        align-items: baseline;
+        gap: 6px;
         line-height: 1;
     }
 
     .rpm-inline-card strong {
-        font-size: 1.6rem;
+        font-size: 1.7rem;
     }
 
     .rpm-inline-card .metric-unit {
         font-size: 1rem;
+        color: var(--muted);
+    }
+
+    .trip-summary-grid .value-line {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        line-height: 1;
+    }
+
+    .trip-summary-grid .metric-unit {
+        font-size: 1rem;
+        color: var(--muted);
     }
 
     .rpm-inline-card .metric-scale {
