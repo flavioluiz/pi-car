@@ -344,10 +344,10 @@
                             </div>
                             <div class="vehicle-alerts" id="obd-alerts"></div>
                             <div class="vehicle-gauges">
-                                <div class="metric-box major"><strong id="obd-speed">--</strong><span>Speed km/h</span></div>
-                                <div class="metric-box major"><strong id="obd-rpm">--</strong><span>Engine rpm</span></div>
-                                <div class="metric-box major"><strong id="obd-coolant">--</strong><span>Coolant C</span></div>
-                                <div class="metric-box major"><strong id="obd-consumption">--</strong><span>Instant <span id="obd-consumption-unit">L/h</span> <em class="data-tag est">EST</em></span></div>
+                                <div class="metric-box major" id="box-speed"><strong id="obd-speed">--</strong><span>Speed km/h</span><canvas class="metric-spark" data-series="speed"></canvas></div>
+                                <div class="metric-box major" id="box-rpm"><strong id="obd-rpm">--</strong><span>Engine rpm</span><canvas class="metric-spark" data-series="rpm"></canvas></div>
+                                <div class="metric-box major" id="box-coolant"><strong id="obd-coolant">--</strong><span>Coolant C</span><canvas class="metric-spark" data-series="coolant"></canvas></div>
+                                <div class="metric-box major" id="box-consumption"><strong id="obd-consumption">--</strong><span>Instant <span id="obd-consumption-unit">L/h</span> <em class="data-tag est">EST</em></span><canvas class="metric-spark" data-series="consumption"></canvas></div>
                             </div>
                         </section>
 
@@ -413,7 +413,8 @@
                             <div class="list-title">About this vehicle</div>
                             <div class="stack-stats">
                                 <div><strong>Vehicle</strong><span id="v-vehicle-desc">--</span></div>
-                                <div><strong>VIN</strong><span id="v-vin">--</span></div>
+                                <div><strong>VIN</strong><span class="vin-row"><span id="v-vin">--</span><button class="vin-copy" onclick="copyVIN()" title="Copy VIN">Copy</button></span></div>
+                                <div><strong>Manufacturer</strong><span id="v-vin-mfr">--</span></div>
                                 <div><strong>Fuel</strong><span id="v-fuel-info">--</span></div>
                             </div>
                             <div class="vehicle-section-title">Supported PIDs</div>

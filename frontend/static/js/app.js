@@ -366,6 +366,19 @@ function updateOBDDisplay(obdData) {
 
     setText('obd-inst-kml', formatOBDValue(inferred.instant_km_l, 1));
 
+    const consumptionValue = (direct.speed_kmh > 0 && inferred.instant_km_l != null)
+        ? inferred.instant_km_l
+        : inferred.selected_fuel_rate_l_h;
+    pushVehicleSample({
+        speed: direct.speed_kmh,
+        rpm: direct.rpm,
+        coolant: direct.coolant_temp_c,
+        consumption: consumptionValue,
+    });
+    drawAllSparklines();
+
+    applyHealthHighlights({ direct, inferred, metadata, metrics: obdData.metrics || {} });
+
     const metrics = obdData.metrics || {};
     setText('v-engine-load', formatStateValue(metrics.ENGINE_LOAD?.value, '%', 1));
     setText('v-map', formatStateValue(metrics.INTAKE_PRESSURE?.value, 'kPa', 0));
@@ -392,6 +405,7 @@ function updateOBDDisplay(obdData) {
 
     setText('v-vehicle-desc', metadata.vehicle || '--');
     setText('v-vin', metadata.vin || '--');
+    setText('v-vin-mfr', decodeVIN(metadata.vin) || '--');
     setText(
         'v-fuel-info',
         inferred.fuel === 'ethanol' ? 'Ethanol' : inferred.fuel === 'gasoline_e27' ? 'Gasoline E27' : '--'
@@ -2046,3 +2060,132 @@ setInterval(updateData, 1000);
 
     requestAnimationFrame(frame);
 })();
+
+// ============ VEHICLE SPARKLINES & HEALTH ============
+const VEHICLE_HISTORY_MAX = 60;
+const vehicleHistory = { speed: [], rpm: [], coolant: [], consumption: [] };
+
+function pushVehicleSample(sample) {
+    for (const key of Object.keys(vehicleHistory)) {
+        const v = sample[key];
+        vehicleHistory[key].push(typeof v === 'number' && !isNaN(v) ? v : null);
+        if (vehicleHistory[key].length > VEHICLE_HISTORY_MAX) {
+            vehicleHistory[key].shift();
+        }
+    }
+}
+
+function drawSparkline(canvas, series) {
+    if (!canvas || !canvas.isConnected) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    if (canvas.width !== w * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    const data = series.filter(v => v !== null);
+    if (data.length < 2) return;
+    let min = Math.min(...data), max = Math.max(...data);
+    if (max - min < 1e-3) { min -= 1; max += 1; }
+    const pad = 2;
+    const css = getComputedStyle(document.documentElement);
+    const stroke = (css.getPropertyValue('--red') || '#e63946').trim() || '#e63946';
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    let started = false;
+    series.forEach((v, i) => {
+        if (v === null) return;
+        const x = (i / (series.length - 1)) * (w - pad * 2) + pad;
+        const y = h - pad - ((v - min) / (max - min)) * (h - pad * 2);
+        if (!started) { ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
+
+function drawAllSparklines() {
+    document.querySelectorAll('.metric-spark').forEach(c => {
+        const key = c.dataset.series;
+        if (vehicleHistory[key]) drawSparkline(c, vehicleHistory[key]);
+    });
+}
+
+function setHealth(el, level) {
+    if (!el) return;
+    el.classList.remove('health-warn', 'health-crit');
+    if (level === 'warn') el.classList.add('health-warn');
+    else if (level === 'crit') el.classList.add('health-crit');
+}
+
+function applyHealthHighlights({ direct, inferred, metadata, metrics }) {
+    const coolant = direct.coolant_temp_c;
+    setHealth(
+        document.getElementById('box-coolant'),
+        coolant == null ? null : coolant >= 105 ? 'crit' : coolant >= 100 ? 'warn' : null
+    );
+
+    const stft = metrics.SHORT_FUEL_TRIM_1?.value;
+    const ltft = metrics.LONG_FUEL_TRIM_1?.value;
+    const stftLevel = stft == null ? null : Math.abs(stft) >= 15 ? 'crit' : Math.abs(stft) >= 10 ? 'warn' : null;
+    const ltftLevel = ltft == null ? null : Math.abs(ltft) >= 15 ? 'crit' : Math.abs(ltft) >= 10 ? 'warn' : null;
+    setHealth(document.getElementById('v-stft')?.closest('.metric-box'), stftLevel);
+    setHealth(document.getElementById('v-ltft')?.closest('.metric-box'), ltftLevel);
+
+    const voltage = direct.adapter_voltage_v;
+    const battLevel = voltage == null ? null
+        : (direct.rpm > 0 && voltage < 13) ? 'warn'
+        : voltage < 11.8 ? 'crit'
+        : null;
+    setHealth(document.getElementById('obd-voltage')?.closest('.metric-box'), battLevel);
+
+    const obdContent = document.getElementById('obd-content');
+    if (obdContent) {
+        const stale = metadata.dynamic_stale && (metadata.dynamic_stale_age_s || 0) > 3;
+        obdContent.classList.toggle('obd-stale', !!stale);
+    }
+}
+
+// ============ VIN HELPERS ============
+const VIN_WMI = {
+    '8AD': 'Peugeot/Citroën Brasil',
+    '935': 'Citroën Brasil',
+    '936': 'Peugeot Brasil',
+    '8AF': 'Peugeot/Citroën',
+    '9BW': 'Volkswagen Brasil',
+    '9BG': 'GM Brasil',
+    '9BD': 'Fiat Brasil',
+    '9BF': 'Ford Brasil',
+    'VF7': 'Citroën France',
+    'VF3': 'Peugeot France',
+    '1G1': 'Chevrolet USA',
+    'WVW': 'Volkswagen Germany',
+    'WBA': 'BMW',
+    'WDB': 'Mercedes-Benz',
+    'JHM': 'Honda Japan',
+    'JT': 'Toyota Japan',
+};
+
+function decodeVIN(vin) {
+    if (!vin || vin.length < 3) return null;
+    const wmi3 = vin.slice(0, 3).toUpperCase();
+    const wmi2 = vin.slice(0, 2).toUpperCase();
+    return VIN_WMI[wmi3] || VIN_WMI[wmi2] || null;
+}
+
+function copyVIN() {
+    const vin = document.getElementById('v-vin')?.textContent?.trim();
+    if (!vin || vin === '--') return;
+    navigator.clipboard?.writeText(vin).then(() => {
+        const btn = document.querySelector('.vin-copy');
+        if (!btn) return;
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = original; }, 1200);
+    });
+}
