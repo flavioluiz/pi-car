@@ -2570,32 +2570,55 @@ h2 {
     }
 
     .search-input-container {
-        padding: 8px;
+        padding: 6px;
     }
 
     .search-input-container input {
-        padding: 11px 14px;
-        font-size: 1.14rem;
+        padding: 10px 12px;
+        font-size: 1.1rem;
+        border-radius: 10px;
+    }
+
+    #panel-music #music-search.search-card {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        gap: 6px;
+        padding: 8px;
     }
 
     #virtual-keyboard {
-        padding: 8px 10px;
-        gap: 5px;
+        padding: 4px 2px 2px;
+        gap: 6px;
     }
 
     .keyboard-row {
-        gap: 5px;
+        display: flex;
+        gap: 4px;
+        width: 100%;
     }
 
     .keyboard-key {
-        min-width: 30px;
-        min-height: 34px;
-        padding: 3px 8px;
-        font-size: 1.02rem;
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 46px;
+        padding: 4px 6px;
+        font-size: 1.22rem;
+        border-radius: 10px;
     }
 
     .keyboard-key.special {
-        min-width: 78px;
+        min-width: 0;
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+    }
+
+    .keyboard-key.space {
+        flex: 2 1 0;
+    }
+
+    #panel-music #music-search .browser-list {
+        min-height: 0;
+        padding-top: 2px;
     }
 
     .tile-grid {
