@@ -1,6 +1,9 @@
 __pycache__/
 *.pyc
 
+# macOS metadata
+.DS_Store
+
 # Experiments - exclude virtual environments and temporary files
 experiments/*/venv/
 experiments/*/*.log
