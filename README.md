@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-in%20development-yellow" alt="Status">
-  <img src="https://img.shields.io/badge/version-0.5.2-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.5.3-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </p>
 
@@ -167,16 +167,58 @@ The Settings tab exposes on-device administration without leaving the UI:
 
 ---
 
-## Media Sync via SSH
+## Optional: Media sync from `picasso-repo`
 
-The Settings page can sync the remote media repository into the Raspberry Pi:
+PiCASSO can pull music and playlists from a companion service called **picasso-repo** running on a computer in your home network. The Settings page exposes a **Sync now** button that runs `rsync` over SSH against this host.
 
-- `root@picasso-repo:/repository/Musics/` -> `~/Music/`
-- `root@picasso-repo:/repository/Playlists/` -> `~/.mpd/playlists/`
+This is **entirely optional** — you can also drop files directly into `~/Music/` and put `.m3u8` playlists in `~/.mpd/playlists/`. Use picasso-repo when you want a single source of truth for media that is auto-synced to the car every time it powers on inside your network.
 
-The backend expects the SSH key at `~/.ssh/id_ed25519`.
+### Architecture
 
-### 1. Generate the SSH key on the Raspberry Pi
+```
+┌────────────────────────┐         ┌──────────────────────────┐
+│  Home computer / NAS   │         │  Raspberry Pi (PiCASSO)  │
+│                        │         │                          │
+│  picasso-repo          │   SSH   │  Settings → Sync now     │
+│  (Podman pod)          │◄────────│  rsync over Tailscale    │
+│                        │         │                          │
+│  ~/Documents/          │         │  → ~/Music/              │
+│  PiCASSO_Repository/   │         │  → ~/.mpd/playlists/     │
+│  ├── Musics/           │         │                          │
+│  └── Playlists/        │         │                          │
+└────────────────────────┘         └──────────────────────────┘
+                  └──── Tailscale tailnet (hostname: picasso-repo) ────┘
+```
+
+picasso-repo is a small Podman pod that exposes its data directory over SSH/SFTP and joins a [Tailscale](https://tailscale.com/) tailnet under the hostname `picasso-repo`, so the Pi can reach it from anywhere with no port-forwarding or static IPs. Source and full setup: **https://github.com/flavioluiz/picasso-repo**.
+
+### Required folder layout on the host
+
+The data directory mounted into picasso-repo (default `~/Documents/PiCASSO_Repository`) must contain:
+
+```
+PiCASSO_Repository/
+├── Musics/        # MP3 files (any nested structure)
+└── Playlists/     # .m3u / .m3u8 playlists
+```
+
+These map directly to `~/Music/` and `~/.mpd/playlists/` on the Pi.
+
+### Why Tailscale (recommended)
+
+- The Pi may roam between your home network, a phone hotspot, and the car — Tailscale gives the host a stable hostname (`picasso-repo`) regardless of underlying IP.
+- No router configuration, no public exposure of SSH.
+- Free tier is sufficient (one device for the host, one for the Pi).
+
+Install the Tailscale client on both the Pi and the host computer, log into the same tailnet, and the picasso-repo container will register the `picasso-repo` hostname automatically (see its README for the `--authkey` setup).
+
+If you prefer not to use Tailscale, point the Pi at the host with any reachable name — edit the host alias in `backend/services/media_sync.py` or add an entry in `/etc/hosts` mapping `picasso-repo` to the host IP.
+
+### Setup on the Pi
+
+The backend expects an SSH key at `~/.ssh/id_ed25519`.
+
+**1. Generate the SSH key on the Raspberry Pi**
 
 ```bash
 mkdir -p ~/.ssh
@@ -188,41 +230,31 @@ chmod 644 ~/.ssh/id_ed25519.pub
 
 If the file already exists and you want to keep using it, do not overwrite it.
 
-### 2. Install the public key on `picasso-repo`
+**2. Install the public key on `picasso-repo`**
 
 ```bash
 cat ~/.ssh/id_ed25519.pub
 ```
 
-Append the printed key to the server's `authorized_keys`:
+picasso-repo loads its `authorized_keys` from a file you point at when creating the pod (`--authorized-keys-file`). Either:
 
-```bash
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
-echo "PASTE_THE_PUBLIC_KEY_HERE" >> /root/.ssh/authorized_keys
-chmod 600 /root/.ssh/authorized_keys
-```
+- add the line above to that file and recreate the pod (`./create-service.sh ...`), or
+- if you can SSH in as `root`, run `ssh-copy-id -i ~/.ssh/id_ed25519.pub root@picasso-repo`.
 
-Or, if you have password SSH access:
-
-```bash
-ssh-copy-id -i ~/.ssh/id_ed25519.pub root@picasso-repo
-```
-
-### 3. Test SSH access
+**3. Test SSH access**
 
 ```bash
 ssh -i ~/.ssh/id_ed25519 root@picasso-repo 'echo ok'
 ```
 
-### 4. Test rsync manually
+**4. Test rsync manually**
 
 ```bash
 rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" root@picasso-repo:/repository/Musics/ ~/Music/
 rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" root@picasso-repo:/repository/Playlists/ ~/.mpd/playlists/
 ```
 
-If both work, the **Sync now** button in Settings will work too.
+If both commands work, the **Sync now** button in Settings will work too.
 
 ---
 
