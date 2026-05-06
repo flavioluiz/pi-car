@@ -5,7 +5,7 @@
 A vehicle infotainment system for older cars using Raspberry Pi 4 with a touchscreen web interface. Integrates music player, offline GPS navigation, OBD-II diagnostics, and SDR radio.
 
 ![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![Version](https://img.shields.io/badge/version-0.4.0-blue)
+![Version](https://img.shields.io/badge/version-0.5.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
@@ -437,10 +437,19 @@ The system automatically discovers which OBD-II PIDs your vehicle supports. Comm
 Contributions are welcome! Please:
 
 1. Fork the project
-2. Create a branch for your feature (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -m 'Add new feature'`)
-4. Push to the branch (`git push origin feature/new-feature`)
-5. Open a Pull Request
+2. Enable the shared git hooks once: `git config core.hooksPath .githooks`
+3. Create a branch for your feature (`git checkout -b feature/new-feature`)
+4. Commit your changes (`git commit -m 'Add new feature'`)
+5. Push to the branch (`git push origin feature/new-feature`)
+6. Open a Pull Request
+
+### Versioning
+
+The project version lives in [`VERSION`](VERSION) and is mirrored in the README badge.
+
+- Each commit auto-bumps the **patch** number via the `pre-commit` hook in `.githooks/`. Enable it once with `git config core.hooksPath .githooks`.
+- For **minor** or **major** bumps, run `scripts/bump.sh minor` (or `major`) and stage the change before committing — the hook detects an already-staged `VERSION` and skips the auto-bump.
+- The hook is skipped during rebase, merge, cherry-pick, and revert.
 
 ---
 
