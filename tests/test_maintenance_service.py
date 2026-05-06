@@ -15,31 +15,41 @@ MaintenanceService = maintenance_service_module.MaintenanceService
 
 
 class MaintenanceServiceVersionTest(unittest.TestCase):
-    def test_set_version_updates_version_file_and_readme_badge(self):
+    def test_update_summary_reports_new_repo_version_without_changing_startup_version(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_dir = Path(tmpdir)
             (repo_dir / "VERSION").write_text("0.5.3\n", encoding="utf-8")
-            (repo_dir / "README.md").write_text(
-                '<img src="https://img.shields.io/badge/version-0.5.3-blue" alt="Version">\n',
-                encoding="utf-8",
-            )
 
             service = MaintenanceService()
             service.repo_dir = repo_dir
             service.version_file = repo_dir / "VERSION"
-            service.readme_file = repo_dir / "README.md"
             service.startup_version = service._read_version()
 
-            summary, output = service._set_version("0.6.0")
+            original_run = maintenance_service_module.subprocess.run
 
-            self.assertEqual(summary, "Version updated to 0.6.0.")
-            self.assertIn("Updated VERSION from 0.5.3 to 0.6.0.", output)
-            self.assertEqual(service.startup_version, "0.5.3")
-            self.assertEqual((repo_dir / "VERSION").read_text(encoding="utf-8"), "0.6.0\n")
-            self.assertIn(
-                "version-0.6.0-blue",
-                (repo_dir / "README.md").read_text(encoding="utf-8"),
+            def fake_run(command, cwd=None, check=False, capture_output=False, text=False):
+                (repo_dir / "VERSION").write_text("0.5.4\n", encoding="utf-8")
+
+                class Result:
+                    returncode = 0
+                    stdout = "Updating 123..456"
+                    stderr = ""
+
+                return Result()
+
+            maintenance_service_module.subprocess.run = fake_run
+            try:
+                summary, output = service._run_update()
+            finally:
+                maintenance_service_module.subprocess.run = original_run
+
+            self.assertEqual(
+                summary,
+                "Update completed. Repo version is now 0.5.4; restart the app to run it.",
             )
+            self.assertEqual(output, "Updating 123..456")
+            self.assertEqual(service.startup_version, "0.5.3")
+            self.assertEqual(service._read_version(), "0.5.4")
 
     def test_persisted_restart_status_survives_reinitialization(self):
         with tempfile.TemporaryDirectory() as tmpdir:

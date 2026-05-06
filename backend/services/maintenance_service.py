@@ -9,7 +9,6 @@ Expõe:
 from __future__ import annotations
 
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -79,22 +78,11 @@ class MaintenanceService:
     def start_action(self, payload: str | dict | None) -> dict:
         if isinstance(payload, dict):
             action = (payload.get('action') or '').strip().lower()
-            target_version = (payload.get('version') or '').strip()
         else:
             action = (payload or '').strip().lower()
-            target_version = ''
 
-        if action not in {'update', 'restart', 'set-version'}:
+        if action not in {'update', 'restart'}:
             return {'accepted': False, 'message': 'Unknown maintenance action.'}
-
-        if action == 'set-version':
-            if not self._is_valid_version(target_version):
-                return {
-                    'accepted': False,
-                    'message': 'Version must follow semantic versioning, for example 1.2.3.',
-                    'version': self.startup_version,
-                    'repo_version': self._read_version(),
-                }
 
         with self._lock:
             if self._status['running']:
@@ -131,7 +119,7 @@ class MaintenanceService:
             self._persist_status()
             self._thread = threading.Thread(
                 target=self._run_action,
-                kwargs={'action': action, 'target_version': target_version},
+                kwargs={'action': action},
                 daemon=True,
                 name=f'maintenance-{action}',
             )
@@ -141,7 +129,7 @@ class MaintenanceService:
             status['message'] = f'{action} started.'
             return status
 
-    def _run_action(self, *, action: str, target_version: str = '') -> None:
+    def _run_action(self, *, action: str) -> None:
         output = []
         error = None
         summary = ''
@@ -152,9 +140,6 @@ class MaintenanceService:
                 output.append(action_output)
             elif action == 'restart':
                 summary, action_output = self._schedule_restart()
-                output.append(action_output)
-            elif action == 'set-version':
-                summary, action_output = self._set_version(target_version)
                 output.append(action_output)
             else:
                 raise RuntimeError(f'Unsupported action: {action}')
@@ -181,6 +166,7 @@ class MaintenanceService:
                 self._persist_status()
 
     def _run_update(self) -> tuple[str, str]:
+        previous_version = self._read_version()
         completed = subprocess.run(
             ['git', 'pull', '--ff-only'],
             cwd=self.repo_dir,
@@ -193,8 +179,14 @@ class MaintenanceService:
         combined = '\n'.join(part for part in (stdout, stderr) if part).strip() or 'No output.'
         if completed.returncode != 0:
             raise RuntimeError(f'git pull failed (exit {completed.returncode}): {combined}')
+        current_version = self._read_version()
         if 'Already up to date.' in combined:
             return 'Repository is already up to date.', combined
+        if current_version != previous_version:
+            return (
+                f'Update completed. Repo version is now {current_version}; restart the app to run it.',
+                combined,
+            )
         return 'Update completed successfully.', combined
 
     def _schedule_restart(self) -> tuple[str, str]:
@@ -237,26 +229,6 @@ subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
         )
         return 'Application restart scheduled.', output
 
-    def _set_version(self, version: str) -> tuple[str, str]:
-        current_version = self._read_version()
-        if current_version == version:
-            return (
-                f'Version is already {version}.',
-                f'No files changed.\nCurrent version: {version}',
-            )
-
-        self.version_file.write_text(f'{version}\n', encoding='utf-8')
-        readme_updated = self._sync_readme_badge(version)
-        output_lines = [
-            f'Updated VERSION from {current_version or "--"} to {version}.',
-            f'Wrote: {self.version_file}',
-        ]
-        if readme_updated:
-            output_lines.append(f'Updated README badge: {self.readme_file}')
-        else:
-            output_lines.append('README badge not changed.')
-        return f'Version updated to {version}.', '\n'.join(output_lines)
-
     def _current_branch(self) -> str:
         return self._git_read(['git', 'branch', '--show-current']) or 'detached'
 
@@ -279,23 +251,6 @@ subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
         if not self.version_file.exists():
             return '--'
         return self.version_file.read_text(encoding='utf-8').strip() or '--'
-
-    def _sync_readme_badge(self, version: str) -> bool:
-        if not self.readme_file.exists():
-            return False
-        original = self.readme_file.read_text(encoding='utf-8')
-        updated = re.sub(
-            r'version-[0-9]+\.[0-9]+\.[0-9]+-blue',
-            f'version-{version}-blue',
-            original,
-        )
-        if updated == original:
-            return False
-        self.readme_file.write_text(updated, encoding='utf-8')
-        return True
-
-    def _is_valid_version(self, value: str) -> bool:
-        return bool(re.fullmatch(r'\d+\.\d+\.\d+', value or ''))
 
     def _load_persisted_status(self) -> None:
         if not self.state_file.exists():

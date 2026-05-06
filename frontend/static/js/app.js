@@ -195,8 +195,6 @@ function updateMaintenanceStatus(status) {
 
     const version = document.getElementById('maintenance-version');
     const repoVersion = document.getElementById('maintenance-repo-version');
-    const versionInput = document.getElementById('maintenance-version-input');
-    const versionButton = document.getElementById('maintenance-version-button');
     const state = document.getElementById('maintenance-state');
     const lastSuccess = document.getElementById('maintenance-last-success');
     const branch = document.getElementById('maintenance-branch');
@@ -205,13 +203,10 @@ function updateMaintenanceStatus(status) {
     const output = document.getElementById('maintenance-output');
     const updateButton = document.getElementById('maintenance-update-button');
     const restartButton = document.getElementById('maintenance-restart-button');
-    if (!version || !repoVersion || !versionInput || !versionButton || !state || !lastSuccess || !branch || !head || !summary || !output || !updateButton || !restartButton) return;
+    if (!version || !repoVersion || !state || !lastSuccess || !branch || !head || !summary || !output || !updateButton || !restartButton) return;
 
     version.textContent = status.version || '--';
     repoVersion.textContent = status.repo_version || '--';
-    if (document.activeElement !== versionInput) {
-        versionInput.value = status.repo_version && status.repo_version !== '--' ? status.repo_version : '';
-    }
     state.textContent = status.running
         ? `Running: ${status.last_action || 'action'}`
         : status.last_error
@@ -225,11 +220,8 @@ function updateMaintenanceStatus(status) {
 
     updateButton.disabled = Boolean(status.running) || status.git_available === false;
     restartButton.disabled = Boolean(status.running);
-    versionInput.disabled = Boolean(status.running);
-    versionButton.disabled = Boolean(status.running);
     updateButton.textContent = status.running && status.last_action === 'update' ? 'Updating...' : 'Update now';
     restartButton.textContent = status.running && status.last_action === 'restart' ? 'Restarting...' : 'Restart app';
-    versionButton.textContent = status.running && status.last_action === 'set-version' ? 'Saving...' : 'Save version';
 }
 
 function startRestartReconnect() {
@@ -294,21 +286,6 @@ function requestMaintenanceAction(action, extra = {}) {
             }
         })
         .catch(err => console.error('Error starting maintenance action:', err));
-}
-
-function requestVersionUpdate() {
-    const input = document.getElementById('maintenance-version-input');
-    const summary = document.getElementById('maintenance-summary');
-    if (!input) return;
-
-    const version = input.value.trim();
-    if (!/^\d+\.\d+\.\d+$/.test(version)) {
-        if (summary) summary.textContent = 'Version must follow semantic versioning, for example 1.2.3.';
-        input.focus();
-        return;
-    }
-
-    requestMaintenanceAction('set-version', { version });
 }
 
 // ============ CLOCK ============

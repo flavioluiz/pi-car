@@ -110,8 +110,6 @@ class FrontendMigrationSmokeTest(unittest.TestCase):
             'id="media-sync-state"',
             'id="maintenance-version"',
             'id="maintenance-repo-version"',
-            'id="maintenance-version-input"',
-            'id="maintenance-version-button"',
             'id="music-title"',
             'id="music-artist"',
             'id="btn-play"',
