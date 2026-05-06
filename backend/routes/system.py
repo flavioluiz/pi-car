@@ -97,6 +97,6 @@ def api_system_maintenance():
         return jsonify(maintenance_service.get_status())
 
     payload = request.get_json(silent=True) or {}
-    result = maintenance_service.start_action(payload.get('action', ''))
+    result = maintenance_service.start_action(payload)
     status_code = 202 if result.get('accepted') else 200
     return jsonify(result), status_code

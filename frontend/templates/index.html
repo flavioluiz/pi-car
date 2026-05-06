@@ -676,21 +676,26 @@
                             <div class="sync-settings-head">
                                 <div>
                                     <div class="list-title">Software Update</div>
-                                    <p class="sync-settings-copy">Run `git pull` on this repository and restart the current app process when needed.</p>
+                                    <p class="sync-settings-copy">Run `git pull`, inspect the current repository version and update `VERSION` from this page when needed.</p>
                                 </div>
                                 <div class="settings-action-row">
                                     <button id="maintenance-update-button" class="sync-button" type="button" onclick="requestMaintenanceAction('update')">Update now</button>
                                     <button id="maintenance-restart-button" class="sync-button secondary" type="button" onclick="requestMaintenanceAction('restart')">Restart app</button>
                                 </div>
                             </div>
+                            <div class="version-editor-row">
+                                <label class="version-editor-label" for="maintenance-version-input">Version</label>
+                                <input id="maintenance-version-input" class="version-editor-input" type="text" inputmode="decimal" placeholder="0.0.0" pattern="[0-9]+\\.[0-9]+\\.[0-9]+">
+                                <button id="maintenance-version-button" class="sync-button" type="button" onclick="requestVersionUpdate()">Save version</button>
+                            </div>
                             <div class="sync-status-grid">
+                                <div class="sync-status-row">
+                                    <span>Running version</span>
+                                    <strong id="maintenance-version">--</strong>
+                                </div>
                                 <div class="sync-status-row">
                                     <span>Status</span>
                                     <strong id="maintenance-state">Idle</strong>
-                                </div>
-                                <div class="sync-status-row">
-                                    <span>Last success</span>
-                                    <strong id="maintenance-last-success">Never</strong>
                                 </div>
                                 <div class="sync-status-row">
                                     <span>Branch</span>
@@ -699,6 +704,14 @@
                                 <div class="sync-status-row">
                                     <span>Commit</span>
                                     <strong id="maintenance-head">--</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Repo version</span>
+                                    <strong id="maintenance-repo-version">--</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Last success</span>
+                                    <strong id="maintenance-last-success">Never</strong>
                                 </div>
                             </div>
                             <div id="maintenance-summary" class="sync-summary">No maintenance action has run yet.</div>

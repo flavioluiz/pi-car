@@ -9,11 +9,13 @@ Expõe:
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
 import threading
 import time
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -26,9 +28,22 @@ def _isoformat(value: datetime | None) -> str | None:
     return value.isoformat() if value else None
 
 
+def _parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
+
+
 class MaintenanceService:
     def __init__(self):
         self.repo_dir = Path(__file__).resolve().parents[2]
+        self.version_file = self.repo_dir / 'VERSION'
+        self.readme_file = self.repo_dir / 'README.md'
+        self.state_file = self.repo_dir / '.maintenance_status.json'
+        self.startup_version = self._read_version()
         self._lock = threading.Lock()
         self._thread: threading.Thread | None = None
         self._status = {
@@ -43,23 +58,43 @@ class MaintenanceService:
             'repo_dir': str(self.repo_dir),
             'branch': self._current_branch(),
             'head': self._current_head(),
+            'version': self.startup_version,
+            'repo_version': self._read_version(),
         }
+        self._load_persisted_status()
 
     def _snapshot(self) -> dict:
         status = dict(self._status)
         for key in ('last_started_at', 'last_finished_at', 'last_success_at'):
             status[key] = _isoformat(status[key])
         status['git_available'] = shutil.which('git') is not None
+        status['version'] = self.startup_version
+        status['repo_version'] = self._read_version()
         return status
 
     def get_status(self) -> dict:
         with self._lock:
             return self._snapshot()
 
-    def start_action(self, action: str) -> dict:
-        action = (action or '').strip().lower()
-        if action not in {'update', 'restart'}:
+    def start_action(self, payload: str | dict | None) -> dict:
+        if isinstance(payload, dict):
+            action = (payload.get('action') or '').strip().lower()
+            target_version = (payload.get('version') or '').strip()
+        else:
+            action = (payload or '').strip().lower()
+            target_version = ''
+
+        if action not in {'update', 'restart', 'set-version'}:
             return {'accepted': False, 'message': 'Unknown maintenance action.'}
+
+        if action == 'set-version':
+            if not self._is_valid_version(target_version):
+                return {
+                    'accepted': False,
+                    'message': 'Version must follow semantic versioning, for example 1.2.3.',
+                    'version': self.startup_version,
+                    'repo_version': self._read_version(),
+                }
 
         with self._lock:
             if self._status['running']:
@@ -74,6 +109,7 @@ class MaintenanceService:
                     'last_summary': 'Maintenance tools are unavailable.',
                     'last_output': 'git is not installed on this system.',
                 })
+                self._persist_status()
                 status = self._snapshot()
                 status['accepted'] = False
                 status['message'] = 'git is not installed on this system.'
@@ -89,10 +125,13 @@ class MaintenanceService:
                 'last_output': '',
                 'branch': self._current_branch(),
                 'head': self._current_head(),
+                'version': self.startup_version,
+                'repo_version': self._read_version(),
             })
+            self._persist_status()
             self._thread = threading.Thread(
                 target=self._run_action,
-                kwargs={'action': action},
+                kwargs={'action': action, 'target_version': target_version},
                 daemon=True,
                 name=f'maintenance-{action}',
             )
@@ -102,7 +141,7 @@ class MaintenanceService:
             status['message'] = f'{action} started.'
             return status
 
-    def _run_action(self, *, action: str) -> None:
+    def _run_action(self, *, action: str, target_version: str = '') -> None:
         output = []
         error = None
         summary = ''
@@ -113,6 +152,9 @@ class MaintenanceService:
                 output.append(action_output)
             elif action == 'restart':
                 summary, action_output = self._schedule_restart()
+                output.append(action_output)
+            elif action == 'set-version':
+                summary, action_output = self._set_version(target_version)
                 output.append(action_output)
             else:
                 raise RuntimeError(f'Unsupported action: {action}')
@@ -131,9 +173,12 @@ class MaintenanceService:
                     'last_output': '\n\n'.join(chunk for chunk in output if chunk).strip(),
                     'branch': self._current_branch(),
                     'head': self._current_head(),
+                    'version': self.startup_version,
+                    'repo_version': self._read_version(),
                 })
                 if error is None:
                     self._status['last_success_at'] = finished_at
+                self._persist_status()
 
     def _run_update(self) -> tuple[str, str]:
         completed = subprocess.run(
@@ -192,6 +237,26 @@ subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
         )
         return 'Application restart scheduled.', output
 
+    def _set_version(self, version: str) -> tuple[str, str]:
+        current_version = self._read_version()
+        if current_version == version:
+            return (
+                f'Version is already {version}.',
+                f'No files changed.\nCurrent version: {version}',
+            )
+
+        self.version_file.write_text(f'{version}\n', encoding='utf-8')
+        readme_updated = self._sync_readme_badge(version)
+        output_lines = [
+            f'Updated VERSION from {current_version or "--"} to {version}.',
+            f'Wrote: {self.version_file}',
+        ]
+        if readme_updated:
+            output_lines.append(f'Updated README badge: {self.readme_file}')
+        else:
+            output_lines.append('README badge not changed.')
+        return f'Version updated to {version}.', '\n'.join(output_lines)
+
     def _current_branch(self) -> str:
         return self._git_read(['git', 'branch', '--show-current']) or 'detached'
 
@@ -209,6 +274,79 @@ subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
         if completed.returncode != 0:
             return ''
         return (completed.stdout or '').strip()
+
+    def _read_version(self) -> str:
+        if not self.version_file.exists():
+            return '--'
+        return self.version_file.read_text(encoding='utf-8').strip() or '--'
+
+    def _sync_readme_badge(self, version: str) -> bool:
+        if not self.readme_file.exists():
+            return False
+        original = self.readme_file.read_text(encoding='utf-8')
+        updated = re.sub(
+            r'version-[0-9]+\.[0-9]+\.[0-9]+-blue',
+            f'version-{version}-blue',
+            original,
+        )
+        if updated == original:
+            return False
+        self.readme_file.write_text(updated, encoding='utf-8')
+        return True
+
+    def _is_valid_version(self, value: str) -> bool:
+        return bool(re.fullmatch(r'\d+\.\d+\.\d+', value or ''))
+
+    def _load_persisted_status(self) -> None:
+        if not self.state_file.exists():
+            return
+
+        try:
+            persisted = json.loads(self.state_file.read_text(encoding='utf-8'))
+        except (OSError, json.JSONDecodeError):
+            return
+
+        for key in ('last_started_at', 'last_finished_at', 'last_success_at'):
+            persisted[key] = _parse_datetime(persisted.get(key))
+
+        allowed_keys = set(self._status.keys())
+        self._status.update({key: value for key, value in persisted.items() if key in allowed_keys})
+        self._status['branch'] = self._current_branch()
+        self._status['head'] = self._current_head()
+        self._status['version'] = self.startup_version
+        self._status['repo_version'] = self._read_version()
+
+        if self._status.get('running'):
+            now = _utc_now()
+            if self._status.get('last_action') == 'restart':
+                self._status.update({
+                    'running': False,
+                    'last_finished_at': self._status.get('last_finished_at') or now,
+                    'last_success_at': self._status.get('last_success_at') or now,
+                    'last_error': None,
+                    'last_summary': 'Application restart completed.',
+                    'last_output': self._status.get('last_output') or 'Restart completed after app relaunch.',
+                })
+            else:
+                self._status.update({
+                    'running': False,
+                    'last_finished_at': self._status.get('last_finished_at') or now,
+                    'last_error': self._status.get('last_error') or 'Process restarted before the maintenance action completed.',
+                    'last_summary': 'Previous maintenance action did not finish cleanly.',
+                })
+            self._persist_status()
+
+    def _persist_status(self) -> None:
+        payload = dict(self._status)
+        for key in ('last_started_at', 'last_finished_at', 'last_success_at'):
+            payload[key] = _isoformat(payload.get(key))
+        try:
+            self.state_file.write_text(
+                json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + '\n',
+                encoding='utf-8',
+            )
+        except OSError:
+            pass
 
 
 maintenance_service = MaintenanceService()
