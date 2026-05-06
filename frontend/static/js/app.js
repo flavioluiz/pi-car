@@ -366,17 +366,6 @@ function updateOBDDisplay(obdData) {
 
     setText('obd-inst-kml', formatOBDValue(inferred.instant_km_l, 1));
 
-    const consumptionValue = (direct.speed_kmh > 0 && inferred.instant_km_l != null)
-        ? inferred.instant_km_l
-        : inferred.selected_fuel_rate_l_h;
-    pushVehicleSample({
-        speed: direct.speed_kmh,
-        rpm: direct.rpm,
-        coolant: direct.coolant_temp_c,
-        consumption: consumptionValue,
-    });
-    drawAllSparklines();
-
     applyHealthHighlights({ direct, inferred, metadata, metrics: obdData.metrics || {} });
 
     const metrics = obdData.metrics || {};
@@ -2061,61 +2050,7 @@ setInterval(updateData, 1000);
     requestAnimationFrame(frame);
 })();
 
-// ============ VEHICLE SPARKLINES & HEALTH ============
-const VEHICLE_HISTORY_MAX = 60;
-const vehicleHistory = { speed: [], rpm: [], coolant: [], consumption: [] };
-
-function pushVehicleSample(sample) {
-    for (const key of Object.keys(vehicleHistory)) {
-        const v = sample[key];
-        vehicleHistory[key].push(typeof v === 'number' && !isNaN(v) ? v : null);
-        if (vehicleHistory[key].length > VEHICLE_HISTORY_MAX) {
-            vehicleHistory[key].shift();
-        }
-    }
-}
-
-function drawSparkline(canvas, series) {
-    if (!canvas || !canvas.isConnected) return;
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    if (!w || !h) return;
-    if (canvas.width !== w * dpr) {
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
-    }
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-
-    const data = series.filter(v => v !== null);
-    if (data.length < 2) return;
-    let min = Math.min(...data), max = Math.max(...data);
-    if (max - min < 1e-3) { min -= 1; max += 1; }
-    const pad = 2;
-    const css = getComputedStyle(document.documentElement);
-    const stroke = (css.getPropertyValue('--red') || '#e63946').trim() || '#e63946';
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    let started = false;
-    series.forEach((v, i) => {
-        if (v === null) return;
-        const x = (i / (series.length - 1)) * (w - pad * 2) + pad;
-        const y = h - pad - ((v - min) / (max - min)) * (h - pad * 2);
-        if (!started) { ctx.moveTo(x, y); started = true; }
-        else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-}
-
-function drawAllSparklines() {
-    document.querySelectorAll('.metric-spark').forEach(c => {
-        const key = c.dataset.series;
-        if (vehicleHistory[key]) drawSparkline(c, vehicleHistory[key]);
-    });
-}
-
+// ============ VEHICLE HEALTH ============
 function setHealth(el, level) {
     if (!el) return;
     el.classList.remove('health-warn', 'health-crit');
