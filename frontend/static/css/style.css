@@ -3216,24 +3216,27 @@ h2 {
         gap: 4px;
     }
     #vehicle-drive .card-header strong {
-        font-size: 0.78rem;
+        font-size: 0.86rem;
     }
     #vehicle-drive .card-header span {
-        font-size: 0.68rem;
+        font-size: 0.74rem;
     }
     #vehicle-drive .vehicle-gauges {
-        gap: 5px;
-        margin-top: 8px;
+        gap: 4px;
+        margin-top: 7px;
     }
     #vehicle-drive .vehicle-gauges .metric-box {
-        padding: 8px 10px;
+        padding: 7px 9px;
         border-radius: 12px;
+        gap: 4px;
     }
     #vehicle-drive .vehicle-gauges .metric-box.major strong {
-        font-size: 1.3rem;
+        font-size: 1.62rem;
+        line-height: 0.95;
     }
     #vehicle-drive .vehicle-gauges .metric-box span {
-        font-size: 0.68rem;
+        font-size: 0.74rem;
+        line-height: 1.05;
     }
     #vehicle-drive .vehicle-data-card {
         padding: 8px 10px;
@@ -3249,13 +3252,16 @@ h2 {
         min-height: 0;
     }
     #vehicle-drive .vehicle-data-grid .metric-box strong {
-        font-size: 0.92rem;
+        font-size: 1.02rem;
     }
     #vehicle-drive .vehicle-data-grid .metric-box span {
-        font-size: 0.6rem;
+        font-size: 0.68rem;
     }
     #vehicle-drive .card-header-inline {
         margin-bottom: 4px;
+    }
+    #vehicle-drive .card-header-inline .list-title {
+        font-size: 0.82rem;
     }
     .vehicle-controls-row {
         margin-top: 6px;
@@ -3263,8 +3269,24 @@ h2 {
     .vehicle-controls-row select,
     .vehicle-controls-row button {
         min-height: 28px;
-        font-size: 0.7rem;
+        font-size: 0.76rem;
         padding: 4px 8px;
+    }
+    #panel-vehicle .list-card .list-title,
+    #panel-vehicle .vehicle-section-title {
+        font-size: 0.82rem;
+        margin-bottom: 6px;
+    }
+    #panel-vehicle .stack-stats div {
+        padding: 10px;
+        gap: 4px;
+    }
+    #panel-vehicle .stack-stats strong {
+        font-size: 0.96rem;
+    }
+    #panel-vehicle .stack-stats span,
+    #panel-vehicle .vin-copy {
+        font-size: 0.72rem;
     }
     .pid-chip {
         font-size: 0.62rem;
