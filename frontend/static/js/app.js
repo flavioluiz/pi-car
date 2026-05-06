@@ -66,6 +66,17 @@ document.querySelectorAll('.vehicle-tabs .subtab').forEach(subtab => {
         subtab.classList.add('active');
         const target = document.getElementById(subtab.dataset.subtab);
         if (target) target.classList.add('active');
+        hideVehicleHelp();
+    });
+});
+
+document.querySelectorAll('.settings-tabs .subtab').forEach(subtab => {
+    subtab.addEventListener('click', () => {
+        document.querySelectorAll('.settings-tabs .subtab').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('#panel-settings .settings-panel').forEach(p => p.classList.remove('active'));
+        subtab.classList.add('active');
+        const target = document.getElementById(subtab.dataset.subtab);
+        if (target) target.classList.add('active');
     });
 });
 
@@ -80,6 +91,8 @@ const themeDescriptions = {
 };
 let mediaSyncStatus = null;
 let mediaSyncPoller = null;
+let maintenanceStatus = null;
+let maintenancePoller = null;
 
 function applyTheme(themeName, label) {
     document.body.dataset.theme = themeName;
@@ -175,6 +188,54 @@ function maybeAutoSyncMedia(reason = 'browser-online') {
         .catch(err => console.error('Error auto-syncing media:', err));
 }
 
+function updateMaintenanceStatus(status) {
+    maintenanceStatus = status;
+
+    const state = document.getElementById('maintenance-state');
+    const lastSuccess = document.getElementById('maintenance-last-success');
+    const branch = document.getElementById('maintenance-branch');
+    const head = document.getElementById('maintenance-head');
+    const summary = document.getElementById('maintenance-summary');
+    const output = document.getElementById('maintenance-output');
+    const updateButton = document.getElementById('maintenance-update-button');
+    const restartButton = document.getElementById('maintenance-restart-button');
+    if (!state || !lastSuccess || !branch || !head || !summary || !output || !updateButton || !restartButton) return;
+
+    state.textContent = status.running
+        ? `Running: ${status.last_action || 'action'}`
+        : status.last_error
+                ? 'Error'
+                : 'Idle';
+    lastSuccess.textContent = formatSyncDate(status.last_success_at);
+    branch.textContent = status.branch || '--';
+    head.textContent = status.head || '--';
+    summary.textContent = status.last_summary || 'No maintenance action has run yet.';
+    output.textContent = status.last_output || 'No maintenance logs yet.';
+
+    updateButton.disabled = Boolean(status.running) || status.git_available === false;
+    restartButton.disabled = Boolean(status.running);
+    updateButton.textContent = status.running && status.last_action === 'update' ? 'Updating...' : 'Update now';
+    restartButton.textContent = status.running && status.last_action === 'restart' ? 'Restarting...' : 'Restart app';
+}
+
+function fetchMaintenanceStatus() {
+    fetch('/api/system/maintenance')
+        .then(r => r.json())
+        .then(updateMaintenanceStatus)
+        .catch(err => console.error('Error loading maintenance status:', err));
+}
+
+function requestMaintenanceAction(action) {
+    fetch('/api/system/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+    })
+        .then(r => r.json())
+        .then(updateMaintenanceStatus)
+        .catch(err => console.error('Error starting maintenance action:', err));
+}
+
 // ============ CLOCK ============
 function updateClock() {
     const now = new Date();
@@ -233,6 +294,55 @@ function formatOBDValue(value, digits = 0) {
 function setText(id, text) {
     const element = document.getElementById(id);
     if (element) element.textContent = text;
+}
+
+let vehicleHelpTimer = null;
+
+function showVehicleHelp(title, body) {
+    const overlay = document.getElementById('vehicle-help-overlay');
+    const titleEl = document.getElementById('vehicle-help-title');
+    const bodyEl = document.getElementById('vehicle-help-body');
+    if (!overlay || !titleEl || !bodyEl) return;
+    titleEl.textContent = title || 'Vehicle data';
+    bodyEl.textContent = body || '';
+    overlay.hidden = false;
+    overlay.classList.add('visible');
+    clearTimeout(vehicleHelpTimer);
+    vehicleHelpTimer = setTimeout(hideVehicleHelp, 12000);
+}
+
+function hideVehicleHelp() {
+    const overlay = document.getElementById('vehicle-help-overlay');
+    if (!overlay) return;
+    overlay.hidden = true;
+    overlay.classList.remove('visible');
+    clearTimeout(vehicleHelpTimer);
+    vehicleHelpTimer = null;
+}
+
+function initVehicleHelp() {
+    const panel = document.getElementById('panel-vehicle');
+    const overlay = document.getElementById('vehicle-help-overlay');
+    if (!panel || !overlay) return;
+
+    panel.addEventListener('click', event => {
+        const trigger = event.target.closest('[data-help]');
+        if (trigger && panel.contains(trigger)) {
+            event.stopPropagation();
+            showVehicleHelp(trigger.dataset.helpTitle, trigger.dataset.help);
+            return;
+        }
+
+        if (!event.target.closest('.vehicle-help-card')) {
+            hideVehicleHelp();
+        }
+    });
+
+    document.addEventListener('click', event => {
+        if (!overlay.hidden && !event.target.closest('#panel-vehicle')) {
+            hideVehicleHelp();
+        }
+    });
 }
 
 function setWifiIndicator(state = 'disconnected') {
@@ -380,6 +490,10 @@ function updateOBDDisplay(obdData) {
     setText(
         'v-mil-status',
         direct.mil_on === true ? 'On' : direct.mil_on === false ? 'Off' : 'Waiting'
+    );
+    setText(
+        'v-mil-distance',
+        direct.distance_with_mil_km != null ? `${formatOBDValue(direct.distance_with_mil_km)} km` : '--'
     );
     setText('v-dtc-active', (direct.active_dtcs || []).join(', ') || 'None');
     setText('v-dtc-pending', (direct.pending_dtcs || []).join(', ') || 'None');
@@ -1907,6 +2021,11 @@ if (document.getElementById('media-sync-state')) {
     window.addEventListener('online', () => maybeAutoSyncMedia('browser-online'));
 }
 
+if (document.getElementById('maintenance-state')) {
+    fetchMaintenanceStatus();
+    maintenancePoller = setInterval(fetchMaintenanceStatus, 5000);
+}
+
 window.addEventListener('online', () => setWifiIndicator('disconnected'));
 window.addEventListener('offline', () => setWifiIndicator('disconnected'));
 
@@ -2113,14 +2232,4 @@ function decodeVIN(vin) {
     return VIN_WMI[wmi3] || VIN_WMI[wmi2] || null;
 }
 
-function copyVIN() {
-    const vin = document.getElementById('v-vin')?.textContent?.trim();
-    if (!vin || vin === '--') return;
-    navigator.clipboard?.writeText(vin).then(() => {
-        const btn = document.querySelector('.vin-copy');
-        if (!btn) return;
-        const original = btn.textContent;
-        btn.textContent = 'Copied';
-        setTimeout(() => { btn.textContent = original; }, 1200);
-    });
-}
+initVehicleHelp();

@@ -70,6 +70,7 @@ INITIAL_DATA: Dict[str, Any] = {
         'long_fuel_trim_b1_pct': None,
         'adapter_voltage_v': None,
         'mil_on': None,
+        'distance_with_mil_km': None,
         'active_dtcs': [],
         'pending_dtcs': [],
     },
@@ -379,6 +380,14 @@ class OBDService:
             status = _bytes_from_hex(self._command('0101', timeout=0.8), '4101', 4)
             if status:
                 direct['mil_on'] = bool(status[0] & 0x80)
+
+            distance_with_mil_km = self._parse_two_byte(
+                '0121',
+                '4121',
+                lambda a, b: (a * 256) + b,
+                timeout=0.8,
+            )
+            _set_valid(direct, 'distance_with_mil_km', distance_with_mil_km)
 
             active_response = self._command('03', timeout=0.9)
             pending_response = self._command('07', timeout=0.9)

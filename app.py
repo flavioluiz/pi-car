@@ -23,14 +23,17 @@ from flask import Flask, render_template, request
 import config
 
 
-def _parse_args() -> bool:
+def _parse_args():
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('--teste', '--test', action='store_true', dest='test_mode')
+    parser.add_argument('--port', type=int, default=None, help='Porta HTTP do servidor web')
     args, _ = parser.parse_known_args()
-    return bool(args.test_mode)
+    return args
 
 
-TEST_MODE = _parse_args()
+CLI_ARGS = _parse_args()
+TEST_MODE = bool(CLI_ARGS.test_mode)
+FLASK_PORT = CLI_ARGS.port if CLI_ARGS.port is not None else config.FLASK_PORT
 
 
 def _install_test_dependency_stubs():
@@ -445,6 +448,7 @@ def create_app():
                 'long_fuel_trim_b1_pct': round(random.uniform(-6, 6), 1),
                 'adapter_voltage_v': round(battery, 1),
                 'mil_on': False,
+                'distance_with_mil_km': 0,
                 'active_dtcs': [],
                 'pending_dtcs': [],
             })
@@ -565,7 +569,7 @@ def _start_real_services():
 
     print("")
     print("=" * 50)
-    print(f"Acesse: http://localhost:{config.FLASK_PORT}")
+    print(f"Acesse: http://localhost:{FLASK_PORT}")
     print("=" * 50)
     print("")
 
@@ -576,13 +580,13 @@ if __name__ == '__main__':
     else:
         print("")
         print("=" * 50)
-        print(f"Teste ativo: http://localhost:{config.FLASK_PORT}")
+        print(f"Teste ativo: http://localhost:{FLASK_PORT}")
         print("=" * 50)
         print("")
 
     app.run(
         host=config.FLASK_HOST,
-        port=config.FLASK_PORT,
+        port=FLASK_PORT,
         debug=config.FLASK_DEBUG,
         threaded=True
     )

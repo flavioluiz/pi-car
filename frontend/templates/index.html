@@ -336,43 +336,44 @@
                         <button class="subtab" data-subtab="vehicle-diagnostics">Diagnostics</button>
                         <button class="subtab" data-subtab="vehicle-id">About</button>
                     </div>
+                    <div class="vehicle-help-overlay" id="vehicle-help-overlay" hidden>
+                        <div class="vehicle-help-card" id="vehicle-help-card" role="status" aria-live="polite">
+                            <div class="vehicle-help-title" id="vehicle-help-title">Vehicle data</div>
+                            <div class="vehicle-help-body" id="vehicle-help-body">Tap a metric to see what it means.</div>
+                        </div>
+                    </div>
                     <div class="subpage active" id="vehicle-drive">
                         <section class="card vehicle-hero">
-                            <div class="card-header">
-                                <strong id="obd-vehicle-name">Citroen C3 Picasso 2013</strong>
-                                <span id="obd-connection-line">OBD-II aguardando dados</span>
-                            </div>
                             <div class="vehicle-alerts" id="obd-alerts"></div>
                             <div class="vehicle-gauges">
-                                <div class="metric-box major" id="box-speed"><strong id="obd-speed">--</strong><span>Speed km/h</span></div>
-                                <div class="metric-box major" id="box-rpm"><strong id="obd-rpm">--</strong><span>Engine rpm</span></div>
-                                <div class="metric-box major" id="box-coolant"><strong id="obd-coolant">--</strong><span>Coolant C</span></div>
-                                <div class="metric-box major" id="box-consumption"><strong id="obd-consumption">--</strong><span>Instant <span id="obd-consumption-unit">L/h</span> <em class="data-tag est">EST</em></span></div>
+                                <div class="metric-box major" id="box-speed" data-help-title="Speed" data-help="Vehicle speed reported by PID 010D. Typical range is 0 to around 180 km/h for this use case."><strong id="obd-speed">--</strong><span>Speed km/h</span></div>
+                                <div class="metric-box major" id="box-rpm" data-help-title="Engine rpm" data-help="Engine speed from PID 010C. Idle is usually around 700 to 900 rpm; normal driving often sits between 1500 and 3500 rpm."><strong id="obd-rpm">--</strong><span>Engine rpm</span></div>
+                                <div class="metric-box major" id="box-coolant" data-help-title="Coolant temperature" data-help="Engine coolant temperature from PID 0105. Warm engine is often near 85 to 100 C; persistent values above about 105 C deserve attention."><strong id="obd-coolant">--</strong><span>Coolant C</span></div>
+                                <div class="metric-box major" id="box-consumption" data-help-title="Instant consumption" data-help="Estimated instant fuel economy. With the car moving it is shown in km/L; when stationary it may switch to L/h. This value is estimated on this ECU, not read directly."><strong id="obd-consumption">--</strong><span>Instant <span id="obd-consumption-unit">L/h</span> <em class="data-tag est">EST</em></span></div>
                             </div>
                         </section>
 
                         <div class="vehicle-data-row">
                             <section class="card vehicle-data-card">
-                                <div class="card-header-inline"><div class="list-title">Live OBD</div><span class="data-tag live">LIVE</span></div>
                                 <div class="vehicle-data-grid">
-                                    <div class="metric-box" title="Calculated load (PID 0104)"><strong id="v-engine-load">--</strong><span>Load %</span></div>
-                                    <div class="metric-box" title="Throttle position (PID 0111)"><strong id="v-throttle">--</strong><span>Throttle %</span></div>
-                                    <div class="metric-box" title="Manifold pressure (PID 010B)"><strong id="v-map">--</strong><span>MAP kPa</span></div>
-                                    <div class="metric-box" title="Timing advance (PID 010E)"><strong id="v-timing">--</strong><span>Timing °</span></div>
-                                    <div class="metric-box" title="Intake air temperature (PID 010F)"><strong id="v-intake-temp">--</strong><span>IAT °C</span></div>
-                                    <div class="metric-box" title="Short-term fuel trim B1 (PID 0106)"><strong id="v-stft">--</strong><span>STFT %</span></div>
-                                    <div class="metric-box" title="Long-term fuel trim B1 (PID 0107)"><strong id="v-ltft">--</strong><span>LTFT %</span></div>
-                                    <div class="metric-box" title="Adapter voltage (ATRV)"><strong id="obd-voltage">--</strong><span>Battery V</span></div>
+                                    <div class="metric-box" data-help-title="Load" data-help="Calculated engine load from PID 0104. It is not pedal position; it is how much of the engine's available load is being used. Typical idle is low, wide-open throttle is high."><strong id="v-engine-load">--</strong><span>Load %</span></div>
+                                    <div class="metric-box" data-help-title="Throttle" data-help="Throttle position from PID 0111. Low at idle, higher when accelerating. On drive-by-wire cars it does not always track pedal position exactly."><strong id="v-throttle">--</strong><span>Throttle %</span></div>
+                                    <div class="metric-box" data-help-title="MAP" data-help="Manifold absolute pressure from PID 010B. Lower values usually mean high vacuum at light load; higher values mean heavier load and more open throttle."><strong id="v-map">--</strong><span>MAP kPa</span></div>
+                                    <div class="metric-box" data-help-title="Timing advance" data-help="Ignition timing advance from PID 010E, in crankshaft degrees. Positive values mean spark before top dead center; small negatives can appear at idle depending on strategy."><strong id="v-timing">--</strong><span>Timing °</span></div>
+                                    <div class="metric-box" data-help-title="IAT" data-help="Intake air temperature from PID 010F. Often rises in traffic or hot engine bays; lower is normal with cooler outside air and more airflow."><strong id="v-intake-temp">--</strong><span>IAT °C</span></div>
+                                    <div class="metric-box" data-help-title="STFT" data-help="Short-term fuel trim for bank 1 from PID 0106. Near 0% is normal; corrections beyond about plus or minus 10% may indicate mixture compensation."><strong id="v-stft">--</strong><span>STFT %</span></div>
+                                    <div class="metric-box" data-help-title="LTFT" data-help="Long-term fuel trim for bank 1 from PID 0107. This is the slower adaptation learned over time. Ideally it stays close to 0%; large offsets may indicate a persistent fueling issue."><strong id="v-ltft">--</strong><span>LTFT %</span></div>
+                                    <div class="metric-box" data-help-title="Battery voltage" data-help="Adapter voltage read via ATRV. With engine running, charging system voltage is often around 13.5 to 14.4 V; much lower can indicate weak charging."><strong id="obd-voltage">--</strong><span>Battery V</span></div>
                                 </div>
                             </section>
 
                             <section class="card vehicle-data-card">
                                 <div class="card-header-inline"><div class="list-title">Estimated</div><span class="data-tag est">EST</span></div>
                                 <div class="vehicle-data-grid two-col">
-                                    <div class="metric-box" title="Trip distance integrated from speed"><strong id="obd-trip-distance">--</strong><span>Trip km</span></div>
-                                    <div class="metric-box" title="Fuel consumed integrated from estimated rate"><strong id="obd-trip-fuel">--</strong><span>Fuel L</span></div>
-                                    <div class="metric-box" title="Trip average km/L"><strong id="obd-trip-average">--</strong><span>Avg km/L</span></div>
-                                    <div class="metric-box" title="Instant km/L from MAP+RPM+IAT"><strong id="obd-inst-kml">--</strong><span>Inst km/L</span></div>
+                                    <div class="metric-box" data-help-title="Trip distance" data-help="Distance integrated from vehicle speed since the trip was last reset."><strong id="obd-trip-distance">--</strong><span>Trip km</span></div>
+                                    <div class="metric-box" data-help-title="Trip fuel" data-help="Fuel consumed since trip reset, estimated from the fuel-rate model because this ECU does not provide direct fuel rate."><strong id="obd-trip-fuel">--</strong><span>Fuel L</span></div>
+                                    <div class="metric-box" data-help-title="Average km/L" data-help="Average fuel economy over the current trip. It becomes more stable as the trip distance grows."><strong id="obd-trip-average">--</strong><span>Avg km/L</span></div>
+                                    <div class="metric-box" data-help-title="Instant km/L" data-help="Estimated instant fuel economy derived from MAP, RPM and intake temperature. It is only meaningful when the vehicle is moving."><strong id="obd-inst-kml">--</strong><span>Inst km/L</span></div>
                                 </div>
                                 <div class="vehicle-controls-row">
                                     <select id="obd-fuel-select" onchange="setOBDFuel(this.value)">
@@ -389,21 +390,21 @@
                             <section class="card list-card vehicle-data-card">
                                 <div class="card-header-inline"><div class="list-title">Status</div><span class="data-tag live">LIVE</span></div>
                                 <div class="stack-stats">
-                                    <div><strong>MIL</strong><span id="v-mil-status">Waiting</span></div>
-                                    <div><strong>DTC active</strong><span id="v-dtc-active">None</span></div>
-                                    <div><strong>DTC pending</strong><span id="v-dtc-pending">None</span></div>
-                                    <div><strong>Battery</strong><span id="v-atrv">--</span></div>
-                                    <div><strong>Last sample</strong><span id="v-sample-time">--</span></div>
+                                    <div class="mil-row" data-help-title="MIL" data-help="Malfunction Indicator Lamp, the check-engine light. The second value shows how many kilometers the vehicle has run with the MIL on, from PID 0121."><strong>MIL</strong><span class="mil-values"><span id="v-mil-status">Waiting</span><span id="v-mil-distance">--</span></span></div>
+                                    <div data-help-title="Active DTCs" data-help="Diagnostic Trouble Codes currently active in the ECU, read from service 03."><strong>DTC active</strong><span id="v-dtc-active">None</span></div>
+                                    <div data-help-title="Pending DTCs" data-help="Pending trouble codes read from service 07. These may not have matured into confirmed active faults yet."><strong>DTC pending</strong><span id="v-dtc-pending">None</span></div>
+                                    <div data-help-title="Battery" data-help="Adapter voltage snapshot. With engine running, values around 13.5 to 14.4 V usually indicate normal alternator charging."><strong>Battery</strong><span id="v-atrv">--</span></div>
+                                    <div data-help-title="Last sample" data-help="Time of the latest processed OBD update. If it goes stale, communication may be delayed or interrupted."><strong>Last sample</strong><span id="v-sample-time">--</span></div>
                                 </div>
                             </section>
                             <section class="card list-card vehicle-data-card">
                                 <div class="list-title">Connection</div>
                                 <div class="stack-stats">
-                                    <div><strong>Adapter</strong><span id="v-adapter">--</span></div>
-                                    <div><strong>Port</strong><span id="v-port">--</span></div>
-                                    <div><strong>Baudrate</strong><span id="v-baud">--</span></div>
-                                    <div><strong>Protocol</strong><span id="v-proto">--</span></div>
-                                    <div><strong>Last command</strong><span id="v-last-cmd">--</span></div>
+                                    <div data-help-title="Adapter" data-help="Adapter identification returned by the ELM327 interface."><strong>Adapter</strong><span id="v-adapter">--</span></div>
+                                    <div data-help-title="Port" data-help="Serial device path currently used to talk to the OBD adapter."><strong>Port</strong><span id="v-port">--</span></div>
+                                    <div data-help-title="Baudrate" data-help="Serial speed used between the Raspberry Pi and the USB OBD adapter."><strong>Baudrate</strong><span id="v-baud">--</span></div>
+                                    <div data-help-title="Protocol" data-help="Vehicle OBD protocol detected by the adapter, such as ISO 15765-4 CAN."><strong>Protocol</strong><span id="v-proto">--</span></div>
+                                    <div data-help-title="Last command" data-help="Last OBD or adapter command that returned successfully. Useful for debugging stale data."><strong>Last command</strong><span id="v-last-cmd">--</span></div>
                                 </div>
                             </section>
                         </div>
@@ -412,10 +413,10 @@
                         <section class="card list-card vehicle-data-card">
                             <div class="list-title">About this vehicle</div>
                             <div class="stack-stats">
-                                <div><strong>Vehicle</strong><span id="v-vehicle-desc">--</span></div>
-                                <div><strong>VIN</strong><span class="vin-row"><span id="v-vin">--</span><button class="vin-copy" onclick="copyVIN()" title="Copy VIN">Copy</button></span></div>
-                                <div><strong>Manufacturer</strong><span id="v-vin-mfr">--</span></div>
-                                <div><strong>Fuel</strong><span id="v-fuel-info">--</span></div>
+                                <div data-help-title="Vehicle" data-help="Friendly vehicle description configured by the system or inferred from available metadata."><strong>Vehicle</strong><span id="v-vehicle-desc">--</span></div>
+                                <div data-help-title="VIN" data-help="Vehicle Identification Number reported by OBD service 0902. It is the chassis identifier for the vehicle."><strong>VIN</strong><span class="vin-row"><span id="v-vin">--</span></span></div>
+                                <div data-help-title="Manufacturer" data-help="Manufacturer inferred from the first characters of the VIN, also called the WMI."><strong>Manufacturer</strong><span id="v-vin-mfr">--</span></div>
+                                <div data-help-title="Fuel setting" data-help="Fuel currently selected for the estimation model. It changes the AFR and density used for estimated consumption."><strong>Fuel</strong><span id="v-fuel-info">--</span></div>
                             </div>
                             <div class="vehicle-section-title">Supported PIDs</div>
                             <div class="pid-chips" id="v-supported-pids"></div>
@@ -598,39 +599,48 @@
                             <h1>Settings</h1>
                         </div>
                     </div>
-                    <div class="theme-settings-grid">
-                        <section class="card theme-group">
-                            <div class="list-title">Themes</div>
-                            <div class="theme-grid">
-                                <button class="theme-card active" data-theme="picasso-red" data-theme-label="PiCASSO Red">
-                                    <span class="theme-swatch swatch-red"></span>
-                                    <strong>PiCASSO Red</strong>
-                                    <span>Default cockpit</span>
-                                </button>
-                                <button class="theme-card" data-theme="signal-cyan" data-theme-label="Signal Cyan">
-                                    <span class="theme-swatch swatch-cyan"></span>
-                                    <strong>Signal Cyan</strong>
-                                    <span>Cooler telemetry look</span>
-                                </button>
-                                <button class="theme-card" data-theme="amber-dusk" data-theme-label="Amber Dusk">
-                                    <span class="theme-swatch swatch-amber"></span>
-                                    <strong>Amber Dusk</strong>
-                                    <span>Warmer night panel</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section class="card theme-preview-card">
-                            <div class="list-title">Current Theme</div>
-                            <div class="theme-preview">
-                                <strong id="theme-preview-name">PiCASSO Red</strong>
-                                <span id="theme-preview-copy">Default cockpit</span>
-                                <div class="theme-preview-bars">
-                                    <i></i>
-                                    <i></i>
-                                    <i></i>
+                    <div class="subtabs settings-tabs">
+                        <button class="subtab settings-tab active" data-subtab="settings-theme">Theme</button>
+                        <button class="subtab settings-tab" data-subtab="settings-media-sync">Media Sync</button>
+                        <button class="subtab settings-tab" data-subtab="settings-system">System</button>
+                    </div>
+                    <div class="subpage settings-panel active" id="settings-theme">
+                        <div class="theme-settings-grid">
+                            <section class="card theme-group">
+                                <div class="list-title">Themes</div>
+                                <div class="theme-grid">
+                                    <button class="theme-card active" data-theme="picasso-red" data-theme-label="PiCASSO Red">
+                                        <span class="theme-swatch swatch-red"></span>
+                                        <strong>PiCASSO Red</strong>
+                                        <span>Default cockpit</span>
+                                    </button>
+                                    <button class="theme-card" data-theme="signal-cyan" data-theme-label="Signal Cyan">
+                                        <span class="theme-swatch swatch-cyan"></span>
+                                        <strong>Signal Cyan</strong>
+                                        <span>Cooler telemetry look</span>
+                                    </button>
+                                    <button class="theme-card" data-theme="amber-dusk" data-theme-label="Amber Dusk">
+                                        <span class="theme-swatch swatch-amber"></span>
+                                        <strong>Amber Dusk</strong>
+                                        <span>Warmer night panel</span>
+                                    </button>
                                 </div>
-                            </div>
-                        </section>
+                            </section>
+                            <section class="card theme-preview-card">
+                                <div class="list-title">Current Theme</div>
+                                <div class="theme-preview">
+                                    <strong id="theme-preview-name">PiCASSO Red</strong>
+                                    <span id="theme-preview-copy">Default cockpit</span>
+                                    <div class="theme-preview-bars">
+                                        <i></i>
+                                        <i></i>
+                                        <i></i>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="subpage settings-panel" id="settings-media-sync">
                         <section class="card sync-settings-card">
                             <div class="sync-settings-head">
                                 <div>
@@ -659,6 +669,40 @@
                             </div>
                             <div id="media-sync-summary" class="sync-summary">Waiting for first sync.</div>
                             <pre id="media-sync-output" class="sync-output">No sync logs yet.</pre>
+                        </section>
+                    </div>
+                    <div class="subpage settings-panel" id="settings-system">
+                        <section class="card sync-settings-card">
+                            <div class="sync-settings-head">
+                                <div>
+                                    <div class="list-title">Software Update</div>
+                                    <p class="sync-settings-copy">Run `git pull` on this repository and restart the current app process when needed.</p>
+                                </div>
+                                <div class="settings-action-row">
+                                    <button id="maintenance-update-button" class="sync-button" type="button" onclick="requestMaintenanceAction('update')">Update now</button>
+                                    <button id="maintenance-restart-button" class="sync-button secondary" type="button" onclick="requestMaintenanceAction('restart')">Restart app</button>
+                                </div>
+                            </div>
+                            <div class="sync-status-grid">
+                                <div class="sync-status-row">
+                                    <span>Status</span>
+                                    <strong id="maintenance-state">Idle</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Last success</span>
+                                    <strong id="maintenance-last-success">Never</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Branch</span>
+                                    <strong id="maintenance-branch">main</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Commit</span>
+                                    <strong id="maintenance-head">--</strong>
+                                </div>
+                            </div>
+                            <div id="maintenance-summary" class="sync-summary">No maintenance action has run yet.</div>
+                            <pre id="maintenance-output" class="sync-output">No maintenance logs yet.</pre>
                         </section>
                     </div>
                 </section>
