@@ -93,6 +93,8 @@ let mediaSyncStatus = null;
 let mediaSyncPoller = null;
 let maintenanceStatus = null;
 let maintenancePoller = null;
+let restartReconnectPoller = null;
+let restartReconnectStartedAt = null;
 
 function applyTheme(themeName, label) {
     document.body.dataset.theme = themeName;
@@ -218,11 +220,52 @@ function updateMaintenanceStatus(status) {
     restartButton.textContent = status.running && status.last_action === 'restart' ? 'Restarting...' : 'Restart app';
 }
 
+function startRestartReconnect() {
+    if (restartReconnectPoller !== null) return;
+
+    restartReconnectStartedAt = Date.now();
+    const state = document.getElementById('maintenance-state');
+    const summary = document.getElementById('maintenance-summary');
+    const output = document.getElementById('maintenance-output');
+    const updateButton = document.getElementById('maintenance-update-button');
+    const restartButton = document.getElementById('maintenance-restart-button');
+
+    if (state) state.textContent = 'Restarting...';
+    if (summary) summary.textContent = 'Waiting for the server to come back online.';
+    if (output) output.textContent = 'Restart requested. Reconnecting to the backend and reloading this page automatically.';
+    if (updateButton) updateButton.disabled = true;
+    if (restartButton) {
+        restartButton.disabled = true;
+        restartButton.textContent = 'Restarting...';
+    }
+
+    const checkServer = () => {
+        fetch('/api/status', { cache: 'no-store' })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                window.location.reload();
+            })
+            .catch(() => {
+                const elapsedSeconds = Math.floor((Date.now() - restartReconnectStartedAt) / 1000);
+                if (summary && elapsedSeconds >= 15) {
+                    summary.textContent = `Still waiting for the server to return (${elapsedSeconds}s).`;
+                }
+            });
+    };
+
+    restartReconnectPoller = setInterval(checkServer, 1000);
+    window.setTimeout(checkServer, 700);
+}
+
 function fetchMaintenanceStatus() {
     fetch('/api/system/maintenance')
         .then(r => r.json())
         .then(updateMaintenanceStatus)
-        .catch(err => console.error('Error loading maintenance status:', err));
+        .catch(err => {
+            if (restartReconnectPoller === null) {
+                console.error('Error loading maintenance status:', err);
+            }
+        });
 }
 
 function requestMaintenanceAction(action) {
@@ -232,7 +275,12 @@ function requestMaintenanceAction(action) {
         body: JSON.stringify({ action })
     })
         .then(r => r.json())
-        .then(updateMaintenanceStatus)
+        .then(status => {
+            updateMaintenanceStatus(status);
+            if (action === 'restart' && status.accepted) {
+                startRestartReconnect();
+            }
+        })
         .catch(err => console.error('Error starting maintenance action:', err));
 }
 

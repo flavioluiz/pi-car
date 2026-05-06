@@ -153,15 +153,43 @@ class MaintenanceService:
         return 'Update completed successfully.', combined
 
     def _schedule_restart(self) -> tuple[str, str]:
+        parent_pid = os.getpid()
         command_line = [sys.executable, *sys.argv]
-        output = f"Restart scheduled.\nExec: {' '.join(command_line)}"
+        helper_code = f"""
+import os
+import subprocess
+import time
 
-        def _restart():
-            time.sleep(1.0)
-            os.chdir(self.repo_dir)
-            os.execv(sys.executable, command_line)
+parent_pid = {parent_pid!r}
+cwd = {str(self.repo_dir)!r}
+cmd = {command_line!r}
 
-        threading.Thread(target=_restart, daemon=True, name='app-restart').start()
+while True:
+    try:
+        os.kill(parent_pid, 0)
+    except OSError:
+        break
+    time.sleep(0.2)
+
+subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
+"""
+
+        subprocess.Popen(
+            [sys.executable, '-c', helper_code],
+            cwd=self.repo_dir,
+            start_new_session=True,
+        )
+
+        def _shutdown_current():
+            time.sleep(0.5)
+            os._exit(0)
+
+        threading.Thread(target=_shutdown_current, daemon=True, name='app-restart-exit').start()
+        output = (
+            "Restart scheduled.\n"
+            f"Current PID: {parent_pid}\n"
+            f"Exec after exit: {' '.join(command_line)}"
+        )
         return 'Application restart scheduled.', output
 
     def _current_branch(self) -> str:
