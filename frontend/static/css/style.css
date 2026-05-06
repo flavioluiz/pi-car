@@ -3156,6 +3156,10 @@ h2 {
     z-index: 20;
 }
 
+.vehicle-help-overlay[hidden] {
+    display: none;
+}
+
 .vehicle-help-card {
     max-width: 560px;
     border: 1px solid var(--line);

@@ -360,7 +360,7 @@ function showVehicleHelp(title, body) {
     overlay.hidden = false;
     overlay.classList.add('visible');
     clearTimeout(vehicleHelpTimer);
-    vehicleHelpTimer = setTimeout(hideVehicleHelp, 12000);
+    vehicleHelpTimer = setTimeout(hideVehicleHelp, 5000);
 }
 
 function hideVehicleHelp() {
