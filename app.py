@@ -417,6 +417,9 @@ def _install_test_dependency_stubs():
         def seekcur(self, position):
             fake_music_state['elapsed'] = max(0.0, float(position))
 
+        def update(self):
+            return None
+
         def close(self):
             return None
 
