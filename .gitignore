@@ -8,3 +8,7 @@ __pycache__/
 experiments/*/venv/
 experiments/*/*.log
 experiments/*/output/
+
+# Runtime telemetry logs
+telemetry/
+.obd_logger_status.json

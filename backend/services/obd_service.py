@@ -36,6 +36,9 @@ PID_INFO = {
     'TIMING_ADVANCE': {'label': 'Timing', 'unit': 'deg'},
     'SHORT_FUEL_TRIM_1': {'label': 'STFT B1', 'unit': '%'},
     'LONG_FUEL_TRIM_1': {'label': 'LTFT B1', 'unit': '%'},
+    'O2_B1S1_VOLTAGE': {'label': 'O2 B1S1', 'unit': 'V'},
+    'O2_B1S1_TRIM': {'label': 'O2 B1S1 STFT', 'unit': '%'},
+    'O2_B1S2_VOLTAGE': {'label': 'O2 B1S2', 'unit': 'V'},
     'ELM_VOLTAGE': {'label': 'Battery', 'unit': 'V'},
     'FUEL_RATE_GASOLINE_E27': {'label': 'Fuel E27', 'unit': 'L/h'},
     'FUEL_RATE_ETHANOL': {'label': 'Fuel EtOH', 'unit': 'L/h'},
@@ -68,6 +71,14 @@ INITIAL_DATA: Dict[str, Any] = {
         'timing_advance_deg': None,
         'short_fuel_trim_b1_pct': None,
         'long_fuel_trim_b1_pct': None,
+        'fuel_system_status_1': None,
+        'fuel_system_status_2': None,
+        'secondary_air_status': None,
+        'o2_sensors_present': [],
+        'o2_b1s1_voltage_v': None,
+        'o2_b1s1_stft_pct': None,
+        'o2_b1s2_voltage_v': None,
+        'obd_standard': None,
         'adapter_voltage_v': None,
         'mil_on': None,
         'distance_with_mil_km': None,
@@ -149,6 +160,68 @@ def _set_valid(target: Dict[str, Any], key: str, value: Any) -> None:
         target[key] = value
 
 
+def _decode_fuel_system_status(value: int) -> Optional[str]:
+    mapping = {
+        0x00: 'not_supported',
+        0x01: 'open_loop_insufficient_temp',
+        0x02: 'closed_loop_o2_feedback',
+        0x04: 'open_loop_engine_load_or_decel',
+        0x08: 'open_loop_system_failure',
+        0x10: 'closed_loop_fault_detected',
+    }
+    return mapping.get(value, f'unknown_0x{value:02X}')
+
+
+def _decode_secondary_air_status(value: int) -> Optional[str]:
+    mapping = {
+        0x01: 'upstream',
+        0x02: 'downstream_of_catalyst',
+        0x04: 'outside_atmosphere_or_off',
+        0x08: 'pump_commanded_on_diagnostic',
+    }
+    return mapping.get(value, f'unknown_0x{value:02X}')
+
+
+def _decode_o2_sensors_present(value: int) -> List[str]:
+    sensors = []
+    if value & 0x01:
+        sensors.append('B1S1')
+    if value & 0x02:
+        sensors.append('B1S2')
+    if value & 0x04:
+        sensors.append('B1S3')
+    if value & 0x08:
+        sensors.append('B1S4')
+    if value & 0x10:
+        sensors.append('B2S1')
+    if value & 0x20:
+        sensors.append('B2S2')
+    if value & 0x40:
+        sensors.append('B2S3')
+    if value & 0x80:
+        sensors.append('B2S4')
+    return sensors
+
+
+def _decode_obd_standard(value: int) -> Optional[str]:
+    mapping = {
+        0x01: 'obd_ii_carb',
+        0x02: 'obd_epa',
+        0x03: 'obd_and_obd_ii',
+        0x04: 'obd_i',
+        0x05: 'not_obd_compliant',
+        0x06: 'eobd',
+        0x07: 'eobd_and_obd_ii',
+        0x08: 'eobd_and_obd',
+        0x09: 'eobd_obd_obd_ii',
+        0x0A: 'jobd',
+        0x0B: 'jobd_and_obd_ii',
+        0x0C: 'jobd_and_eobd',
+        0x0D: 'jobd_eobd_obd_ii',
+    }
+    return mapping.get(value, f'unknown_0x{value:02X}')
+
+
 class OBDService:
     """Persistent ELM327 monitor for the vehicle dashboard."""
 
@@ -168,6 +241,7 @@ class OBDService:
         self._trip_distance_km = 0.0
         self._last_medium_poll_at = 0.0
         self._last_slow_poll_at = 0.0
+        self._last_extended_poll_at = 0.0
         self._last_dynamic_pid_at = 0.0
         self._last_dynamic_sample_time: Optional[str] = None
         self._last_successful_command: Optional[str] = None
@@ -314,6 +388,8 @@ class OBDService:
             0x0E: 'TIMING_ADVANCE',
             0x0F: 'INTAKE_TEMP',
             0x11: 'THROTTLE_POS',
+            0x12: 'SECONDARY_AIR_STATUS',
+            0x13: 'O2_SENSORS_PRESENT',
             0x14: 'O2_B1S1',
             0x15: 'O2_B1S2',
             0x1C: 'OBD_STANDARD',
@@ -375,6 +451,35 @@ class OBDService:
             if voltage_match:
                 direct['adapter_voltage_v'] = float(voltage_match.group(1))
             self._last_medium_poll_at = now
+
+        if now - self._last_extended_poll_at >= 5:
+            fuel_status = _bytes_from_hex(self._command('0103', timeout=0.8), '4103', 2)
+            if fuel_status:
+                direct['fuel_system_status_1'] = _decode_fuel_system_status(fuel_status[0])
+                direct['fuel_system_status_2'] = _decode_fuel_system_status(fuel_status[1])
+
+            secondary_air = _bytes_from_hex(self._command('0112', timeout=0.8), '4112', 1)
+            if secondary_air:
+                direct['secondary_air_status'] = _decode_secondary_air_status(secondary_air[0])
+
+            o2_present = _bytes_from_hex(self._command('0113', timeout=0.8), '4113', 1)
+            if o2_present:
+                direct['o2_sensors_present'] = _decode_o2_sensors_present(o2_present[0])
+
+            o2_b1s1 = _bytes_from_hex(self._command('0114', timeout=0.8), '4114', 2)
+            if o2_b1s1:
+                direct['o2_b1s1_voltage_v'] = o2_b1s1[0] / 200
+                direct['o2_b1s1_stft_pct'] = (o2_b1s1[1] - 128) * 100 / 128
+
+            o2_b1s2 = _bytes_from_hex(self._command('0115', timeout=0.8), '4115', 2)
+            if o2_b1s2:
+                direct['o2_b1s2_voltage_v'] = o2_b1s2[0] / 200
+
+            obd_standard = _bytes_from_hex(self._command('011C', timeout=0.8), '411C', 1)
+            if obd_standard:
+                direct['obd_standard'] = _decode_obd_standard(obd_standard[0])
+
+            self._last_extended_poll_at = now
 
         if now - self._last_slow_poll_at >= 30:
             status = _bytes_from_hex(self._command('0101', timeout=0.8), '4101', 4)
@@ -489,6 +594,9 @@ class OBDService:
             'TIMING_ADVANCE': direct.get('timing_advance_deg'),
             'SHORT_FUEL_TRIM_1': direct.get('short_fuel_trim_b1_pct'),
             'LONG_FUEL_TRIM_1': direct.get('long_fuel_trim_b1_pct'),
+            'O2_B1S1_VOLTAGE': direct.get('o2_b1s1_voltage_v'),
+            'O2_B1S1_TRIM': direct.get('o2_b1s1_stft_pct'),
+            'O2_B1S2_VOLTAGE': direct.get('o2_b1s2_voltage_v'),
             'ELM_VOLTAGE': direct.get('adapter_voltage_v'),
             'FUEL_RATE_GASOLINE_E27': inferred.get('fuel_rate_l_h_gasoline_e27'),
             'FUEL_RATE_ETHANOL': inferred.get('fuel_rate_l_h_ethanol'),
@@ -519,6 +627,7 @@ class OBDService:
                 init = self._initialize_elm()
                 self._last_medium_poll_at = 0.0
                 self._last_slow_poll_at = 0.0
+                self._last_extended_poll_at = 0.0
                 self._last_dynamic_pid_at = time.monotonic()
                 self._last_dynamic_sample_time = None
                 self._last_successful_command = None

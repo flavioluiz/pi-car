@@ -1525,7 +1525,7 @@ h2 {
 }
 
 #panel-settings .settings-tabs {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 #panel-settings .settings-panel.active {

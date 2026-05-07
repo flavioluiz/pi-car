@@ -15,6 +15,8 @@ import argparse
 import copy
 import random
 import sys
+import threading
+import time
 import types
 from datetime import datetime, timezone
 
@@ -34,6 +36,151 @@ def _parse_args():
 CLI_ARGS = _parse_args()
 TEST_MODE = bool(CLI_ARGS.test_mode)
 FLASK_PORT = CLI_ARGS.port if CLI_ARGS.port is not None else config.FLASK_PORT
+
+
+def _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data):
+    gps_data.update({
+        'lat': -23.200000 + random.uniform(-0.01, 0.01),
+        'lon': -45.900000 + random.uniform(-0.01, 0.01),
+        'speed': random.uniform(0, 88),
+        'altitude': 560 + random.uniform(-15, 15),
+        'satellites': random.randint(6, 14),
+        'connected': True,
+    })
+
+    direct = obd_data['direct']
+    inferred = obd_data['inferred']
+    connection = obd_data['connection']
+    metadata = obd_data['metadata']
+
+    speed = random.uniform(0, 118)
+    rpm = random.uniform(700, 3900)
+    coolant = random.uniform(82, 96)
+    battery = random.uniform(13.2, 14.4)
+    instant = random.uniform(7.5, 15.5)
+    sample_time = datetime.now(timezone.utc).isoformat()
+
+    direct.update({
+        'rpm': round(rpm, 0),
+        'speed_kmh': round(speed, 0),
+        'coolant_temp_c': round(coolant, 0),
+        'intake_temp_c': round(26 + random.uniform(-3, 8), 0),
+        'map_kpa': round(random.uniform(25, 75), 0),
+        'engine_load_pct': round(random.uniform(18, 74), 0),
+        'throttle_pct': round(random.uniform(6, 64), 0),
+        'timing_advance_deg': round(random.uniform(2, 20), 1),
+        'short_fuel_trim_b1_pct': round(random.uniform(-8, 8), 1),
+        'long_fuel_trim_b1_pct': round(random.uniform(-6, 6), 1),
+        'fuel_system_status_1': 'closed_loop_o2_feedback',
+        'fuel_system_status_2': 'not_supported',
+        'secondary_air_status': 'outside_atmosphere_or_off',
+        'o2_sensors_present': ['B1S1', 'B1S2'],
+        'o2_b1s1_voltage_v': round(random.uniform(0.05, 0.9), 3),
+        'o2_b1s1_stft_pct': round(random.uniform(-8, 8), 1),
+        'o2_b1s2_voltage_v': round(random.uniform(0.05, 0.9), 3),
+        'obd_standard': 'eobd',
+        'adapter_voltage_v': round(battery, 1),
+        'mil_on': False,
+        'distance_with_mil_km': 0,
+        'active_dtcs': [],
+        'pending_dtcs': [],
+    })
+
+    inferred.update({
+        'engine_on': True,
+        'stationary': speed < 1,
+        'fuel_rate_l_h_gasoline_e27': round(random.uniform(0.7, 1.8), 2),
+        'fuel_rate_l_h_ethanol': round(random.uniform(0.9, 2.2), 2),
+        'selected_fuel_rate_l_h': round(random.uniform(0.7, 1.8), 2),
+        'instant_km_l': round(instant, 1),
+        'instant_l_100km': round(100 / instant, 1),
+        'trip_consumed_l': round(inferred.get('trip_consumed_l', 0.0) + random.uniform(0.01, 0.04), 3),
+        'trip_distance_km': round(inferred.get('trip_distance_km', 0.0) + speed / 3600, 2),
+        'trip_average_km_l': round(random.uniform(8.8, 14.5), 1),
+        'coolant_alert': False,
+        'battery_alert': False,
+    })
+
+    connection.update({
+        'connected': True,
+        'port': connection.get('port') or '/dev/ttyUSB0',
+        'stable_port': connection.get('stable_port') or '/dev/ttyUSB0',
+        'fallback_port': connection.get('fallback_port') or '/dev/ttyUSB0',
+        'baudrate': connection.get('baudrate') or 38400,
+        'adapter': connection.get('adapter') or 'ELM327 TEST',
+        'protocol': connection.get('protocol') or 'AUTO',
+        'ecu_ready': True,
+    })
+
+    metadata.update({
+        'vehicle': metadata.get('vehicle') or 'PiCASSO Test Vehicle',
+        'vin': 'TESTVIN123456789',
+        'sample_time': sample_time,
+        'last_dynamic_sample_time': sample_time,
+        'dynamic_stale': False,
+        'dynamic_stale_age_s': 0.0,
+        'last_successful_command': 'TEST',
+    })
+
+    obd_data['connected'] = True
+    obd_data['error'] = None
+    obd_data['supported_commands'] = [
+        'STATUS', 'FUEL_STATUS', 'ENGINE_LOAD', 'COOLANT_TEMP', 'SHORT_FUEL_TRIM_1',
+        'LONG_FUEL_TRIM_1', 'INTAKE_PRESSURE', 'RPM', 'SPEED', 'TIMING_ADVANCE',
+        'INTAKE_TEMP', 'THROTTLE_POS', 'SECONDARY_AIR_STATUS', 'O2_SENSORS_PRESENT',
+        'O2_B1S1', 'O2_B1S2', 'OBD_STANDARD', 'DISTANCE_WITH_MIL',
+    ]
+    obd_data['metrics'] = {
+        'RPM': {'value': direct['rpm'], 'label': 'RPM', 'unit': 'rpm'},
+        'SPEED': {'value': direct['speed_kmh'], 'label': 'Speed', 'unit': 'km/h'},
+        'COOLANT_TEMP': {'value': direct['coolant_temp_c'], 'label': 'Coolant', 'unit': 'C'},
+        'INTAKE_TEMP': {'value': direct['intake_temp_c'], 'label': 'Intake', 'unit': 'C'},
+        'INTAKE_PRESSURE': {'value': direct['map_kpa'], 'label': 'MAP', 'unit': 'kPa'},
+        'ENGINE_LOAD': {'value': direct['engine_load_pct'], 'label': 'Load', 'unit': '%'},
+        'THROTTLE_POS': {'value': direct['throttle_pct'], 'label': 'Throttle', 'unit': '%'},
+        'TIMING_ADVANCE': {'value': direct['timing_advance_deg'], 'label': 'Timing', 'unit': 'deg'},
+        'SHORT_FUEL_TRIM_1': {'value': direct['short_fuel_trim_b1_pct'], 'label': 'STFT B1', 'unit': '%'},
+        'LONG_FUEL_TRIM_1': {'value': direct['long_fuel_trim_b1_pct'], 'label': 'LTFT B1', 'unit': '%'},
+        'O2_B1S1_VOLTAGE': {'value': direct['o2_b1s1_voltage_v'], 'label': 'O2 B1S1', 'unit': 'V'},
+        'O2_B1S1_TRIM': {'value': direct['o2_b1s1_stft_pct'], 'label': 'O2 B1S1 STFT', 'unit': '%'},
+        'O2_B1S2_VOLTAGE': {'value': direct['o2_b1s2_voltage_v'], 'label': 'O2 B1S2', 'unit': 'V'},
+        'ELM_VOLTAGE': {'value': direct['adapter_voltage_v'], 'label': 'Battery', 'unit': 'V'},
+        'FUEL_RATE_GASOLINE_E27': {'value': inferred['fuel_rate_l_h_gasoline_e27'], 'label': 'Fuel E27', 'unit': 'L/h'},
+        'FUEL_RATE_ETHANOL': {'value': inferred['fuel_rate_l_h_ethanol'], 'label': 'Fuel EtOH', 'unit': 'L/h'},
+        'INSTANT_KM_L': {'value': inferred['instant_km_l'], 'label': 'Instant', 'unit': 'km/L'},
+        'TRIP_AVERAGE_KM_L': {'value': inferred['trip_average_km_l'], 'label': 'Trip Avg', 'unit': 'km/L'},
+    }
+
+    radio_data.update({
+        'connected': True,
+        'playing': random.choice([True, False]),
+        'frequency': random.choice([88.3, 91.1, 95.7, 97.5, 100.1, 102.7]),
+        'mode': random.choice(['FM', 'AM']),
+        'volume': random.randint(35, 92),
+        'squelch': 0,
+        'gain': 'auto',
+        'sample_rate': 2.4,
+        'signal_strength': random.uniform(-92, -38),
+        'error': None,
+    })
+
+    wifi_data.update({
+        'connected': True,
+        'state': 'connected',
+        'ssid': 'PiCASSO Test AP',
+        'interface': 'wlan0',
+        'source': 'test-mode',
+        'last_checked_at': sample_time,
+    })
+
+
+def _start_test_telemetry_loop(gps_data, obd_data, radio_data, wifi_data):
+    def _run():
+        while True:
+            _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data)
+            time.sleep(max(0.2, float(getattr(config, 'OBD_POLL_INTERVAL', 0.8))))
+
+    threading.Thread(target=_run, daemon=True, name='test-telemetry').start()
 
 
 def _install_test_dependency_stubs():
@@ -335,6 +482,7 @@ def create_app():
 
     if TEST_MODE:
         from backend.services import mpd_service as mpd_service_module
+        from backend.services.obd_logger_service import obd_logger_service
         from backend.services.obd_service import OBDService
         from backend.services.network_service import network_service
         from backend.services.rtlsdr_service import RTLSDRService
@@ -409,127 +557,17 @@ def create_app():
         set_obd_service(FakeOBDService())
         set_rtlsdr_service(FakeRTLSDRService())
         network_service.get_wifi_status = lambda force=False: copy.deepcopy(wifi_data)
+        _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data)
+        _start_test_telemetry_loop(gps_data, obd_data, radio_data, wifi_data)
+        from backend.services.obd_logger_service import obd_logger_service
+        obd_logger_service.start()
+        obd_logger_service.start()
 
         @app.before_request
         def _test_tick():
             if not request.path.startswith('/api/'):
                 return None
-
-            gps_data.update({
-                'lat': -23.200000 + random.uniform(-0.01, 0.01),
-                'lon': -45.900000 + random.uniform(-0.01, 0.01),
-                'speed': random.uniform(0, 88),
-                'altitude': 560 + random.uniform(-15, 15),
-                'satellites': random.randint(6, 14),
-                'connected': True,
-            })
-
-            direct = obd_data['direct']
-            inferred = obd_data['inferred']
-            connection = obd_data['connection']
-            metadata = obd_data['metadata']
-
-            speed = random.uniform(0, 118)
-            rpm = random.uniform(700, 3900)
-            coolant = random.uniform(82, 96)
-            battery = random.uniform(13.2, 14.4)
-            instant = random.uniform(7.5, 15.5)
-
-            direct.update({
-                'rpm': round(rpm, 0),
-                'speed_kmh': round(speed, 0),
-                'coolant_temp_c': round(coolant, 0),
-                'intake_temp_c': round(26 + random.uniform(-3, 8), 0),
-                'map_kpa': round(random.uniform(25, 75), 0),
-                'engine_load_pct': round(random.uniform(18, 74), 0),
-                'throttle_pct': round(random.uniform(6, 64), 0),
-                'timing_advance_deg': round(random.uniform(2, 20), 1),
-                'short_fuel_trim_b1_pct': round(random.uniform(-8, 8), 1),
-                'long_fuel_trim_b1_pct': round(random.uniform(-6, 6), 1),
-                'adapter_voltage_v': round(battery, 1),
-                'mil_on': False,
-                'distance_with_mil_km': 0,
-                'active_dtcs': [],
-                'pending_dtcs': [],
-            })
-
-            inferred.update({
-                'engine_on': True,
-                'stationary': speed < 1,
-                'fuel_rate_l_h_gasoline_e27': round(random.uniform(0.7, 1.8), 2),
-                'fuel_rate_l_h_ethanol': round(random.uniform(0.9, 2.2), 2),
-                'selected_fuel_rate_l_h': round(random.uniform(0.7, 1.8), 2),
-                'instant_km_l': round(instant, 1),
-                'instant_l_100km': round(100 / instant, 1),
-                'trip_consumed_l': round(inferred.get('trip_consumed_l', 0.0) + random.uniform(0.01, 0.04), 3),
-                'trip_distance_km': round(inferred.get('trip_distance_km', 0.0) + speed / 3600, 2),
-                'trip_average_km_l': round(random.uniform(8.8, 14.5), 1),
-                'coolant_alert': False,
-                'battery_alert': False,
-            })
-
-            connection.update({
-                'connected': True,
-                'port': connection.get('port') or '/dev/ttyUSB0',
-                'stable_port': connection.get('stable_port') or '/dev/ttyUSB0',
-                'fallback_port': connection.get('fallback_port') or '/dev/ttyUSB0',
-                'baudrate': connection.get('baudrate') or 38400,
-                'adapter': connection.get('adapter') or 'ELM327 TEST',
-                'protocol': connection.get('protocol') or 'AUTO',
-                'ecu_ready': True,
-            })
-
-            metadata.update({
-                'vehicle': metadata.get('vehicle') or 'PiCASSO Test Vehicle',
-                'vin': 'TESTVIN123456789',
-                'sample_time': datetime.now(timezone.utc).isoformat(),
-                'last_dynamic_sample_time': datetime.now(timezone.utc).isoformat(),
-                'dynamic_stale': False,
-                'dynamic_stale_age_s': 0.0,
-                'last_successful_command': 'TEST',
-            })
-
-            obd_data['connected'] = True
-            obd_data['error'] = None
-            obd_data['metrics'] = {
-                'RPM': {'value': direct['rpm'], 'label': 'RPM', 'unit': 'rpm'},
-                'SPEED': {'value': direct['speed_kmh'], 'label': 'Speed', 'unit': 'km/h'},
-                'COOLANT_TEMP': {'value': direct['coolant_temp_c'], 'label': 'Coolant', 'unit': 'C'},
-                'INTAKE_TEMP': {'value': direct['intake_temp_c'], 'label': 'Intake', 'unit': 'C'},
-                'INTAKE_PRESSURE': {'value': direct['map_kpa'], 'label': 'MAP', 'unit': 'kPa'},
-                'ENGINE_LOAD': {'value': direct['engine_load_pct'], 'label': 'Load', 'unit': '%'},
-                'THROTTLE_POS': {'value': direct['throttle_pct'], 'label': 'Throttle', 'unit': '%'},
-                'TIMING_ADVANCE': {'value': direct['timing_advance_deg'], 'label': 'Timing', 'unit': 'deg'},
-                'SHORT_FUEL_TRIM_1': {'value': direct['short_fuel_trim_b1_pct'], 'label': 'STFT B1', 'unit': '%'},
-                'LONG_FUEL_TRIM_1': {'value': direct['long_fuel_trim_b1_pct'], 'label': 'LTFT B1', 'unit': '%'},
-                'ELM_VOLTAGE': {'value': direct['adapter_voltage_v'], 'label': 'Battery', 'unit': 'V'},
-                'FUEL_RATE_GASOLINE_E27': {'value': inferred['fuel_rate_l_h_gasoline_e27'], 'label': 'Fuel E27', 'unit': 'L/h'},
-                'FUEL_RATE_ETHANOL': {'value': inferred['fuel_rate_l_h_ethanol'], 'label': 'Fuel EtOH', 'unit': 'L/h'},
-                'INSTANT_KM_L': {'value': inferred['instant_km_l'], 'label': 'Instant', 'unit': 'km/L'},
-                'TRIP_AVERAGE_KM_L': {'value': inferred['trip_average_km_l'], 'label': 'Trip Avg', 'unit': 'km/L'},
-            }
-
-            radio_data.update({
-                'connected': True,
-                'playing': random.choice([True, False]),
-                'frequency': random.choice([88.3, 91.1, 95.7, 97.5, 100.1, 102.7]),
-                'mode': random.choice(['FM', 'AM']),
-                'volume': random.randint(35, 92),
-                'squelch': 0,
-                'gain': 'auto',
-                'sample_rate': 2.4,
-                'signal_strength': random.uniform(-92, -38),
-                'error': None,
-            })
-
-            wifi_data.update({
-                'connected': True,
-                'state': 'connected',
-                'ssid': 'PiCASSO Test AP',
-                'interface': 'wlan0',
-                'source': 'test-mode',
-                'last_checked_at': datetime.now(timezone.utc).isoformat(),
-            })
+            _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data)
 
             return None
 
@@ -550,6 +588,7 @@ def _start_real_services():
     print("Iniciando Central Multimidia...")
 
     from backend.services import GPSService, get_obd_service, get_rtlsdr_service
+    from backend.services.obd_logger_service import obd_logger_service
 
     gps_service = GPSService()
     gps_service.start()
@@ -558,6 +597,8 @@ def _start_real_services():
     obd_service = get_obd_service()
     if obd_service.start():
         print("OBD thread started")
+        obd_logger_service.start()
+        print("OBD logger thread started")
     else:
         print(f"OBD not available (check USB connection at {config.OBD_DEVICE} or {config.OBD_FALLBACK_DEVICE})")
 

@@ -93,6 +93,7 @@ let mediaSyncStatus = null;
 let mediaSyncPoller = null;
 let maintenanceStatus = null;
 let maintenancePoller = null;
+let obdLoggerStatus = null;
 let restartReconnectPoller = null;
 let restartReconnectStartedAt = null;
 
@@ -188,6 +189,74 @@ function maybeAutoSyncMedia(reason = 'browser-online') {
         .then(r => r.json())
         .then(updateMediaSyncStatus)
         .catch(err => console.error('Error auto-syncing media:', err));
+}
+
+function updateOBDLoggerStatus(status) {
+    obdLoggerStatus = status;
+
+    const enabled = document.getElementById('obd-logger-enabled');
+    const state = document.getElementById('obd-logger-state');
+    const session = document.getElementById('obd-logger-session');
+    const file = document.getElementById('obd-logger-file');
+    const localDir = document.getElementById('obd-logger-local-dir');
+    const lastSuccess = document.getElementById('obd-logger-last-success');
+    const summary = document.getElementById('obd-logger-summary');
+    const output = document.getElementById('obd-logger-output');
+    const toggleButton = document.getElementById('obd-logger-toggle-button');
+    const syncButton = document.getElementById('obd-logger-sync-button');
+    if (!enabled || !state || !session || !file || !localDir || !lastSuccess || !summary || !output || !toggleButton || !syncButton) return;
+
+    enabled.textContent = status.enabled ? 'Yes' : 'No';
+    state.textContent = !status.enabled
+        ? 'Disabled'
+        : status.sync_running
+            ? 'Syncing'
+            : status.running
+                ? 'Active'
+                : status.last_sync_error
+                    ? 'Error'
+                    : 'Idle';
+    session.textContent = status.current_session_id || 'None';
+    file.textContent = status.last_file || '--';
+    localDir.textContent = status.local_dir || 'telemetry/obd';
+    lastSuccess.textContent = formatSyncDate(status.last_sync_success_at);
+    summary.textContent = status.enabled
+        ? (status.last_sync_summary || 'No logger information available.')
+        : 'Logger disabled. No OBD snapshots will be written or synced.';
+    output.textContent = status.last_sync_output || 'No logger logs yet.';
+    toggleButton.textContent = status.enabled ? 'Disable logger' : 'Enable logger';
+    syncButton.disabled = !status.enabled || Boolean(status.sync_running) || status.configured === false;
+    syncButton.textContent = status.sync_running ? 'Syncing...' : 'Sync now';
+}
+
+function fetchOBDLoggerStatus() {
+    fetch('/api/obd/logger')
+        .then(r => r.json())
+        .then(updateOBDLoggerStatus)
+        .catch(err => console.error('Error loading OBD logger status:', err));
+}
+
+function requestOBDLoggerSync(force = true, reason = 'manual') {
+    fetch('/api/obd/logger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force, reason })
+    })
+        .then(r => r.json())
+        .then(updateOBDLoggerStatus)
+        .catch(err => console.error('Error starting OBD logger sync:', err));
+}
+
+function toggleOBDLogger() {
+    const nextEnabled = !(obdLoggerStatus && obdLoggerStatus.enabled);
+    fetch('/api/obd/logger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: nextEnabled })
+    })
+        .then(r => r.json())
+        .then(updateOBDLoggerStatus)
+        .catch(err => console.error('Error updating OBD logger setting:', err));
 }
 
 function updateMaintenanceStatus(status) {
@@ -2076,6 +2145,11 @@ if (document.getElementById('media-sync-state')) {
 if (document.getElementById('maintenance-state')) {
     fetchMaintenanceStatus();
     maintenancePoller = setInterval(fetchMaintenanceStatus, 5000);
+}
+
+if (document.getElementById('obd-logger-state')) {
+    fetchOBDLoggerStatus();
+    setInterval(fetchOBDLoggerStatus, 5000);
 }
 
 window.addEventListener('online', () => setWifiIndicator('disconnected'));

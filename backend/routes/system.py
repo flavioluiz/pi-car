@@ -13,6 +13,7 @@ from backend.services.rtlsdr_service import radio_data
 from backend.services.network_service import network_service
 from backend.services.media_sync import media_sync_service
 from backend.services.maintenance_service import maintenance_service
+from backend.services.obd_logger_service import obd_logger_service
 
 system_bp = Blueprint('system', __name__)
 mpd_service = MPDService()  # Usado para status e rotas de compatibilidade
@@ -98,5 +99,23 @@ def api_system_maintenance():
 
     payload = request.get_json(silent=True) or {}
     result = maintenance_service.start_action(payload)
+    status_code = 202 if result.get('accepted') else 200
+    return jsonify(result), status_code
+
+
+@system_bp.route('/obd/logger', methods=['GET', 'POST'])
+def api_obd_logger():
+    """Consulta status ou dispara sincronizacao do logger OBD."""
+    if request.method == 'GET':
+        return jsonify(obd_logger_service.get_status())
+
+    payload = request.get_json(silent=True) or {}
+    if 'enabled' in payload:
+        return jsonify(obd_logger_service.update_settings(payload))
+
+    result = obd_logger_service.start_sync(
+        force=bool(payload.get('force')),
+        reason=(payload.get('reason') or 'manual').strip() or 'manual',
+    )
     status_code = 202 if result.get('accepted') else 200
     return jsonify(result), status_code
