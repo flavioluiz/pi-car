@@ -2244,10 +2244,22 @@ h2 {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    #radio-content {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+    }
+
+    #radio-presets.subpage.active,
+    #radio-favorites.subpage.active {
+        display: grid;
+        min-height: 0;
+    }
+
     #radio-presets .tile-card,
     #radio-favorites .list-card {
         overflow-y: auto;
-        max-height: calc(100vh - 190px);
+        min-height: 0;
     }
 
     #panel-vehicle .subtabs {
