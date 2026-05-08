@@ -450,11 +450,15 @@
                     </div>
 
                     <div class="subpage radio-panel active" id="radio-tuner">
-                        <div class="two-column">
-                            <section class="card tuner-card">
-                                <div class="radio-mode-line" id="radio-mode">FM</div>
-                                <div class="radio-frequency-large"><span id="radio-freq">99.5</span> <small>MHz</small></div>
-                                <div class="signal-meter radio-signal">
+                        <section class="card tuner-card">
+
+                            <!-- Row 1: frequency + signal -->
+                            <div class="tuner-top-row">
+                                <div class="tuner-freq-block">
+                                    <span class="tuner-mode-badge" id="radio-mode">FM</span>
+                                    <div class="radio-frequency-large"><span id="radio-freq">99.5</span> <small>MHz</small></div>
+                                </div>
+                                <div class="tuner-signal-block">
                                     <div class="signal-bars" id="signal-bars">
                                         <div class="signal-bar"></div>
                                         <div class="signal-bar"></div>
@@ -462,45 +466,48 @@
                                         <div class="signal-bar"></div>
                                         <div class="signal-bar"></div>
                                     </div>
-                                    <span id="signal-dbm">-100 dBm</span>
+                                    <span class="signal-dbm-label" id="signal-dbm">— dBm</span>
                                 </div>
-                                <div class="tuner-actions radio-tuning">
-                                    <button onclick="radioTuneStep(-1)">-1.0</button>
-                                    <button onclick="radioTuneStep(-0.1)">-0.1</button>
-                                    <div class="search-row tune-display">
-                                        <input type="number" id="freq-input" step="0.1" min="24" max="1800" value="99.5">
-                                        <button onclick="radioTuneManual()">Go</button>
-                                    </div>
-                                    <button onclick="radioTuneStep(0.1)">+0.1</button>
-                                    <button onclick="radioTuneStep(1)">+1.0</button>
+                            </div>
+
+                            <!-- Row 2: frequency tuning -->
+                            <div class="tuner-tune-row">
+                                <button class="tune-step-btn" onclick="radioTuneStep(-1)">&#8592;&#8592; 1</button>
+                                <button class="tune-step-btn" onclick="radioTuneStep(-0.1)">&#8592; 0.1</button>
+                                <div class="search-row tune-display">
+                                    <input type="number" id="freq-input" step="0.1" min="24" max="1800" value="99.5">
+                                    <button onclick="radioTuneManual()">Go</button>
                                 </div>
-                                <div class="tuner-actions radio-controls">
-                                    <button class="mini-control mode-select active" id="mode-fm" onclick="radioSetMode('FM')">FM</button>
-                                    <button class="mini-control mode-select" id="mode-am" onclick="radioSetMode('AM')">AM</button>
-                                    <button class="primary mini-control radio-play-btn" id="radio-play-btn" onclick="radioTogglePlay()"><span id="radio-play-icon">&#9654;</span></button>
-                                    <div class="mini-volume radio-volume">
-                                        <button onclick="radioVolumeDown()">-</button>
-                                        <span class="vol-display" id="radio-vol">80%</span>
-                                        <button onclick="radioVolumeUp()">+</button>
-                                    </div>
+                                <button class="tune-step-btn" onclick="radioTuneStep(0.1)">0.1 &#8594;</button>
+                                <button class="tune-step-btn" onclick="radioTuneStep(1)">1 &#8594;&#8594;</button>
+                            </div>
+
+                            <!-- Row 3: mode + play + volume -->
+                            <div class="tuner-controls-row">
+                                <div class="tuner-mode-group">
+                                    <button class="mode-select active" id="mode-fm" onclick="radioSetMode('FM')">FM</button>
+                                    <button class="mode-select" id="mode-am" onclick="radioSetMode('AM')">AM</button>
                                 </div>
-                                <div class="preset-strip">
-                                    <button onclick="radioTune(97.5, 'FM')">97.5 FM</button>
-                                    <button onclick="radioTune(95.7, 'FM')">95.7 FM</button>
-                                    <button onclick="radioTune(118.5, 'AM')">SBSJ TWR</button>
-                                    <button onclick="radioAddFavorite()">+ Favorite</button>
+                                <button class="tuner-play-btn radio-play-btn" id="radio-play-btn" onclick="radioTogglePlay()">
+                                    <span id="radio-play-icon">&#9654;</span>
+                                    <span id="radio-play-label">Play</span>
+                                </button>
+                                <div class="tuner-volume-group radio-volume">
+                                    <button onclick="radioVolumeDown()">&#8722;</button>
+                                    <span class="vol-display" id="radio-vol">80%</span>
+                                    <button onclick="radioVolumeUp()">+</button>
                                 </div>
-                            </section>
-                            <section class="card side-stats">
-                                <div class="list-title">Session</div>
-                                <div class="stack-stats">
-                                    <div><strong>Signal</strong><span id="stat-signal">-- dBm</span></div>
-                                    <div><strong>Mode</strong><span id="stat-mode">FM</span></div>
-                                    <div><strong>Volume</strong><span id="stat-vol">80%</span></div>
-                                    <div><strong>Status</strong><span id="stat-radio-status">Idle</span></div>
-                                </div>
-                            </section>
-                        </div>
+                            </div>
+
+                            <!-- Row 4: presets -->
+                            <div class="preset-strip">
+                                <button onclick="radioTune(97.5, 'FM')">97.5 FM</button>
+                                <button onclick="radioTune(95.7, 'FM')">95.7 FM</button>
+                                <button onclick="radioTune(118.5, 'AM')">SBSJ TWR</button>
+                                <button onclick="radioAddFavorite()">+ Favorite</button>
+                            </div>
+
+                        </section>
                     </div>
 
                     <div class="subpage radio-panel" id="radio-spectrum">

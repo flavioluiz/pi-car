@@ -1411,12 +1411,15 @@ function updateRadioDisplay(radioData) {
         // Update play button
         const playBtn = document.getElementById('radio-play-btn');
         const playIcon = document.getElementById('radio-play-icon');
+        const playLabel = document.getElementById('radio-play-label');
         if (currentRadioPlaying) {
             playBtn.classList.add('playing');
-            playIcon.innerHTML = '&#9632;'; // Stop symbol
+            playIcon.innerHTML = '&#9632;';
+            if (playLabel) playLabel.textContent = 'Stop';
         } else {
             playBtn.classList.remove('playing');
-            playIcon.innerHTML = '&#9654;'; // Play symbol
+            playIcon.innerHTML = '&#9654;';
+            if (playLabel) playLabel.textContent = 'Play';
         }
 
         // Update volume display
