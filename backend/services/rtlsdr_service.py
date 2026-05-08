@@ -49,7 +49,7 @@ AIRPORT_PRESETS: Dict[str, Dict[str, Any]] = {
         'name': 'Sao Jose dos Campos',
         'icao': 'SBSJ',
         'frequencies': [
-            {'freq': 118.500, 'label': 'Torre (TWR)', 'mode': 'AM'},
+            {'freq': 118.500, 'label': 'Torre São José (TWR)', 'mode': 'AM'},
             {'freq': 119.250, 'label': 'Aproximacao (APP)', 'mode': 'AM'},
             {'freq': 129.050, 'label': 'Aproximacao (APP) Alt', 'mode': 'AM'},
             {'freq': 121.900, 'label': 'Solo (GND)', 'mode': 'AM'},
@@ -68,18 +68,18 @@ AIRPORT_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# FM stations - Sao Jose dos Campos region
+# FM stations - Sao Jose dos Campos / Vale do Paraíba region
 FM_PRESETS: List[Dict[str, Any]] = [
-    {'freq': 88.3, 'label': 'Band News', 'mode': 'FM'},
-    {'freq': 91.1, 'label': 'Metropolitana', 'mode': 'FM'},
-    {'freq': 93.5, 'label': 'Band FM Vale', 'mode': 'FM'},
-    {'freq': 95.7, 'label': 'Jovem Pan', 'mode': 'FM'},
-    {'freq': 97.5, 'label': 'Nativa FM', 'mode': 'FM'},
-    {'freq': 98.3, 'label': 'FM Vale', 'mode': 'FM'},
-    {'freq': 100.1, 'label': 'Gospel FM', 'mode': 'FM'},
-    {'freq': 102.7, 'label': 'Difusora', 'mode': 'FM'},
-    {'freq': 105.5, 'label': 'Transamérica', 'mode': 'FM'},
-    {'freq': 107.1, 'label': 'Mix FM', 'mode': 'FM'},
+    {'freq': 89.3,  'label': 'Antena 1',        'genre': 'Pop/Adulto',          'mode': 'FM'},
+    {'freq': 90.3,  'label': 'Ótima FM',         'genre': 'Popular/Hits',        'mode': 'FM'},
+    {'freq': 91.5,  'label': 'Novabrasil FM',    'genre': 'MPB/Adulto',          'mode': 'FM'},
+    {'freq': 93.1,  'label': 'Onda FM',          'genre': 'Variedades',          'mode': 'FM'},
+    {'freq': 94.3,  'label': 'Jovem Pan FM',     'genre': 'Pop/Jovem',           'mode': 'FM'},
+    {'freq': 97.5,  'label': 'Nativa FM',        'genre': 'Popular/Sertanejo',   'mode': 'FM'},
+    {'freq': 101.3, 'label': 'Rádio Novo Tempo', 'genre': 'Gospel',              'mode': 'FM'},
+    {'freq': 102.9, 'label': 'Band Vale FM',     'genre': 'Popular/Notícias',    'mode': 'FM'},
+    {'freq': 103.9, 'label': 'Stereo Vale FM',   'genre': 'Adulto/Pop',          'mode': 'FM'},
+    {'freq': 107.9, 'label': 'Cultural FM',      'genre': 'Comunitária',         'mode': 'FM'},
 ]
 
 

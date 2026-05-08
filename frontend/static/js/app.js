@@ -1559,9 +1559,12 @@ function loadRadioPresets() {
             if (data.fm && data.fm.length > 0) {
                 fmList.innerHTML = data.fm.map(p => `
                     <div class="preset-item" onclick="radioTune(${p.freq}, '${p.mode}')">
-                        <div class="freq">${p.freq.toFixed(1)}</div>
-                        <div class="label">${p.label}</div>
-                        <div class="mode-badge">${p.mode}</div>
+                        <div class="preset-top">
+                            <span class="preset-freq">${p.freq.toFixed(1)}</span>
+                            <span class="preset-mode-tag">${p.mode}</span>
+                        </div>
+                        <div class="preset-name">${p.label}</div>
+                        ${p.genre ? `<div class="preset-genre">${p.genre}</div>` : ''}
                     </div>
                 `).join('');
             }
@@ -1571,9 +1574,11 @@ function loadRadioPresets() {
                 const sbsjList = document.getElementById('airport-presets-sbsj');
                 sbsjList.innerHTML = data.airports.SBSJ.frequencies.map(p => `
                     <div class="preset-item" onclick="radioTune(${p.freq}, '${p.mode}')">
-                        <div class="freq">${p.freq.toFixed(3)}</div>
-                        <div class="label">${p.label}</div>
-                        <div class="mode-badge">${p.mode}</div>
+                        <div class="preset-top">
+                            <span class="preset-freq">${p.freq.toFixed(3)}</span>
+                            <span class="preset-mode-tag">${p.mode}</span>
+                        </div>
+                        <div class="preset-name">${p.label}</div>
                     </div>
                 `).join('');
             }
@@ -1583,9 +1588,11 @@ function loadRadioPresets() {
                 const sbgrList = document.getElementById('airport-presets-sbgr');
                 sbgrList.innerHTML = data.airports.SBGR.frequencies.map(p => `
                     <div class="preset-item" onclick="radioTune(${p.freq}, '${p.mode}')">
-                        <div class="freq">${p.freq.toFixed(3)}</div>
-                        <div class="label">${p.label}</div>
-                        <div class="mode-badge">${p.mode}</div>
+                        <div class="preset-top">
+                            <span class="preset-freq">${p.freq.toFixed(3)}</span>
+                            <span class="preset-mode-tag">${p.mode}</span>
+                        </div>
+                        <div class="preset-name">${p.label}</div>
                     </div>
                 `).join('');
             }

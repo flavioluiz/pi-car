@@ -3888,3 +3888,73 @@ h2 {
     }
     .music-visualizer { min-height: 80px; }
 }
+
+/* ── Preset items ─────────────────────────────────────────── */
+
+#fm-presets,
+#airport-presets-sbsj,
+#airport-presets-sbgr {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.preset-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.preset-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.preset-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.preset-freq {
+    font-family: "Michroma", sans-serif;
+    font-size: 1rem;
+    color: var(--fg);
+}
+
+.preset-mode-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    background: rgba(180, 30, 50, 0.15);
+    border: 1px solid rgba(180, 30, 50, 0.3);
+    border-radius: 4px;
+    padding: 1px 5px;
+    flex-shrink: 0;
+}
+
+.preset-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.preset-genre {
+    font-size: 0.72rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
