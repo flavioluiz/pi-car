@@ -2244,6 +2244,12 @@ h2 {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    #radio-presets .tile-card,
+    #radio-favorites .list-card {
+        overflow-y: auto;
+        max-height: calc(100vh - 190px);
+    }
+
     #panel-vehicle .subtabs {
         grid-template-columns: repeat(6, minmax(0, 1fr));
     }
