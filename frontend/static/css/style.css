@@ -2253,11 +2253,25 @@ h2 {
     #radio-presets.subpage.active,
     #radio-favorites.subpage.active {
         display: grid;
+        grid-template-rows: 1fr;
         min-height: 0;
     }
 
-    #radio-presets .tile-card,
+    /* tile-card scrolls its own content */
+    #radio-presets .tile-card {
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    /* list-card splits header / scrollable list */
     #radio-favorites .list-card {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #radio-favorites .favorites-list {
         overflow-y: auto;
         min-height: 0;
     }
