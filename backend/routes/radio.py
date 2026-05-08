@@ -279,6 +279,29 @@ def radio_favorites_clear():
         return jsonify({'error': 'failed to save favorites'}), 500
 
 
+@radio_bp.route('/favorites/<int:index>/move', methods=['POST'])
+def radio_favorites_move(index):
+    """Move um favorito uma posicao para cima ou para baixo."""
+    direction = request.json.get('direction')  # 'up' or 'down'
+    data = _load_favorites()
+    favs = data['favorites']
+
+    if index < 0 or index >= len(favs):
+        return jsonify({'error': 'invalid index'}), 404
+
+    if direction == 'up' and index > 0:
+        favs[index], favs[index - 1] = favs[index - 1], favs[index]
+    elif direction == 'down' and index < len(favs) - 1:
+        favs[index], favs[index + 1] = favs[index + 1], favs[index]
+    else:
+        return jsonify({'error': 'cannot move in that direction'}), 400
+
+    if _save_favorites(data):
+        return jsonify({'success': True, 'favorites': favs})
+    else:
+        return jsonify({'error': 'failed to save favorites'}), 500
+
+
 @radio_bp.route('/play', methods=['POST'])
 def radio_play():
     """Inicia a reproducao do radio."""

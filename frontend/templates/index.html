@@ -499,13 +499,9 @@
                                 </div>
                             </div>
 
-                            <!-- Row 4: presets -->
-                            <div class="preset-strip">
-                                <button onclick="radioTune(90.3, 'FM')">90.3 Ótima</button>
-                                <button onclick="radioTune(94.3, 'FM')">94.3 Jovem Pan</button>
-                                <button onclick="radioTune(97.5, 'FM')">97.5 Nativa</button>
-                                <button onclick="radioTune(118.5, 'AM')">118.5 TWR</button>
-                                <button onclick="radioAddFavorite()">+ Favorito</button>
+                            <!-- Row 4: top favorites + add button -->
+                            <div class="preset-strip" id="tuner-favorites-strip">
+                                <button onclick="radioOpenAddFavorite()">&#9733; + Favorite</button>
                             </div>
 
                         </section>
@@ -586,10 +582,11 @@
                         <section class="card list-card">
                             <div class="card-header">
                                 <strong>Favorites</strong>
+                                <span class="muted fav-hint">Top 5 shown in Tuner</span>
                                 <button onclick="radioClearFavorites()">Clear All</button>
                             </div>
-                            <div class="list-table preset-list" id="favorites-list">
-                                <div class="empty-message">No favorites yet. Tune to a frequency and tap "+ FAV"</div>
+                            <div class="favorites-list" id="favorites-list">
+                                <div class="empty-message">No favorites yet. Tune to a frequency and tap "+ Favorite".</div>
                             </div>
                         </section>
                     </div>
@@ -767,6 +764,22 @@
                 </section>
             </main>
         </section>
+    </div>
+
+    <!-- Favorite name modal -->
+    <div id="fav-modal" class="fav-modal-overlay hidden" onclick="favModalOverlayClick(event)">
+        <div class="fav-modal">
+            <div class="fav-modal-header">
+                <span id="fav-modal-freq-label">— MHz</span>
+                <span class="muted">Favorite name</span>
+            </div>
+            <input type="text" id="fav-name-input" class="fav-name-input" placeholder="e.g. Nativa FM" readonly>
+            <div id="fav-keyboard" class="fav-keyboard"></div>
+            <div class="fav-modal-actions">
+                <button class="fav-cancel-btn" onclick="favModalClose()">Cancel</button>
+                <button class="fav-save-btn" onclick="favModalSave()">&#9733; Save</button>
+            </div>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

@@ -1565,6 +1565,8 @@ function loadRadioPresets() {
                         </div>
                         <div class="preset-name">${p.label}</div>
                         ${p.genre ? `<div class="preset-genre">${p.genre}</div>` : ''}
+                        <button class="preset-fav-btn" title="Add to favorites"
+                            onclick="radioAddFavoriteFromPreset(${p.freq}, '${p.mode}', '${p.label.replace(/'/g,"\\'")}', event)">&#9733;</button>
                     </div>
                 `).join('');
             }
@@ -1579,6 +1581,8 @@ function loadRadioPresets() {
                             <span class="preset-mode-tag">${p.mode}</span>
                         </div>
                         <div class="preset-name">${p.label}</div>
+                        <button class="preset-fav-btn" title="Add to favorites"
+                            onclick="radioAddFavoriteFromPreset(${p.freq}, '${p.mode}', '${p.label.replace(/'/g,"\\'")}', event)">&#9733;</button>
                     </div>
                 `).join('');
             }
@@ -1593,6 +1597,8 @@ function loadRadioPresets() {
                             <span class="preset-mode-tag">${p.mode}</span>
                         </div>
                         <div class="preset-name">${p.label}</div>
+                        <button class="preset-fav-btn" title="Add to favorites"
+                            onclick="radioAddFavoriteFromPreset(${p.freq}, '${p.mode}', '${p.label.replace(/'/g,"\\'")}', event)">&#9733;</button>
                     </div>
                 `).join('');
             }
@@ -1600,52 +1606,125 @@ function loadRadioPresets() {
         .catch(err => console.error('Error loading presets:', err));
 }
 
-// Load favorites
+// Load favorites list (Favorites tab)
 function loadRadioFavorites() {
     fetch('/api/radio/favorites')
         .then(r => r.json())
         .then(data => {
             const list = document.getElementById('favorites-list');
             if (!data.favorites || data.favorites.length === 0) {
-                list.innerHTML = '<div class="empty-message">No favorites yet. Tune to a frequency and tap "+ FAV"</div>';
+                list.innerHTML = '<div class="empty-message">No favorites yet. Tune to a frequency and tap "+ Favorite".</div>';
+                loadTunerFavoriteStrip([]);
                 return;
             }
-
-            list.innerHTML = data.favorites.map((fav, i) => `
-                <div class="favorite-item" onclick="radioTune(${fav.freq}, '${fav.mode}')">
+            const favs = data.favorites;
+            list.innerHTML = favs.map((fav, i) => `
+                <div class="favorite-item ${i < 5 ? 'fav-top5' : ''}" onclick="radioTune(${fav.freq}, '${fav.mode}')">
+                    <div class="fav-rank">${i < 5 ? i + 1 : '—'}</div>
                     <div class="favorite-info">
-                        <span class="favorite-freq">${fav.freq.toFixed(3)}</span>
+                        <span class="favorite-freq">${fav.freq.toFixed(1)}</span>
+                        <span class="fav-mode-tag">${fav.mode}</span>
                         <span class="favorite-name">${fav.name || ''}</span>
-                        <span class="favorite-mode">${fav.mode}</span>
                     </div>
-                    <button class="favorite-remove" onclick="event.stopPropagation(); radioRemoveFavorite(${i})">&#10005;</button>
+                    <div class="fav-actions">
+                        <button class="fav-move-btn" onclick="event.stopPropagation(); radioMoveFavorite(${i}, 'up')" ${i === 0 ? 'disabled' : ''}>&#9650;</button>
+                        <button class="fav-move-btn" onclick="event.stopPropagation(); radioMoveFavorite(${i}, 'down')" ${i === favs.length - 1 ? 'disabled' : ''}>&#9660;</button>
+                        <button class="favorite-remove" onclick="event.stopPropagation(); radioRemoveFavorite(${i})">&#10005;</button>
+                    </div>
                 </div>
             `).join('');
+            loadTunerFavoriteStrip(favs);
         })
         .catch(err => console.error('Error loading favorites:', err));
 }
 
-// Add current frequency to favorites
-function radioAddFavorite() {
-    const name = prompt('Name for this favorite (optional):') || '';
+// Render top-5 favorites in the Tuner preset strip
+function loadTunerFavoriteStrip(favs) {
+    const strip = document.getElementById('tuner-favorites-strip');
+    if (!strip) return;
+    const top5 = favs.slice(0, 5).map(fav =>
+        `<button onclick="radioTune(${fav.freq}, '${fav.mode}')">${fav.freq.toFixed(1)} ${fav.name || fav.mode}</button>`
+    ).join('');
+    strip.innerHTML = top5 + `<button onclick="radioOpenAddFavorite()">&#9733; + Favorite</button>`;
+}
 
+// Open add-favorite modal with virtual keyboard
+function radioOpenAddFavorite() {
+    document.getElementById('fav-modal-freq-label').textContent =
+        `${currentRadioFreq.toFixed(1)} MHz ${currentRadioMode}`;
+    document.getElementById('fav-name-input').value = '';
+    buildFavKeyboard();
+    document.getElementById('fav-modal').classList.remove('hidden');
+}
+
+function favModalClose() {
+    document.getElementById('fav-modal').classList.add('hidden');
+}
+
+function favModalOverlayClick(e) {
+    if (e.target === document.getElementById('fav-modal')) favModalClose();
+}
+
+function favModalSave() {
+    const name = document.getElementById('fav-name-input').value.trim();
     fetch('/api/radio/favorites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            freq: currentRadioFreq,
-            mode: currentRadioMode,
-            name: name
-        })
+        body: JSON.stringify({ freq: currentRadioFreq, mode: currentRadioMode, name })
     })
         .then(r => r.json())
         .then(result => {
-            if (result.success) {
-                alert('Added to favorites!');
-            } else if (result.error) {
-                alert(result.error);
-            }
+            favModalClose();
+            if (!result.error) loadTunerFavoriteStrip(result.favorites || []);
         })
+        .catch(err => console.error('Error adding favorite:', err));
+}
+
+// Build the in-modal keyboard
+function buildFavKeyboard() {
+    const container = document.getElementById('fav-keyboard');
+    if (!container || container.dataset.built) return;
+    const rows = [
+        ['1','2','3','4','5','6','7','8','9','0'],
+        ['Q','W','E','R','T','Y','U','I','O','P'],
+        ['A','S','D','F','G','H','J','K','L'],
+        ['Z','X','C','V','B','N','M',' ']
+    ];
+    container.innerHTML = rows.map(row =>
+        `<div class="fav-kbd-row">${row.map(k =>
+            k === ' '
+                ? `<button class="fav-kbd-key fav-kbd-space" onclick="favKeyPress(' ')">SPACE</button>`
+                : `<button class="fav-kbd-key" onclick="favKeyPress('${k}')">${k}</button>`
+        ).join('')}</div>`
+    ).join('') + `<div class="fav-kbd-row">
+        <button class="fav-kbd-key fav-kbd-special" onclick="favKeyBackspace()">&#9003;</button>
+        <button class="fav-kbd-key fav-kbd-special" onclick="favKeyClear()">CLEAR</button>
+    </div>`;
+    container.dataset.built = '1';
+}
+
+function favKeyPress(k) {
+    const inp = document.getElementById('fav-name-input');
+    inp.value += k;
+}
+function favKeyBackspace() {
+    const inp = document.getElementById('fav-name-input');
+    inp.value = inp.value.slice(0, -1);
+}
+function favKeyClear() {
+    document.getElementById('fav-name-input').value = '';
+}
+
+// Add favorite directly from a preset card
+function radioAddFavoriteFromPreset(freq, mode, name, e) {
+    e.stopPropagation();
+    fetch('/api/radio/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ freq, mode, name })
+    })
+        .then(r => r.json())
+        .then(result => { if (!result.error) loadTunerFavoriteStrip(result.favorites || []); })
         .catch(err => console.error('Error adding favorite:', err));
 }
 
@@ -1657,14 +1736,24 @@ function radioRemoveFavorite(index) {
         .catch(err => console.error('Error removing favorite:', err));
 }
 
+// Move favorite up or down
+function radioMoveFavorite(index, direction) {
+    fetch(`/api/radio/favorites/${index}/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ direction })
+    })
+        .then(r => r.json())
+        .then(() => loadRadioFavorites())
+        .catch(err => console.error('Error moving favorite:', err));
+}
+
 // Clear all favorites
 function radioClearFavorites() {
-    if (confirm('Remove all favorites?')) {
-        fetch('/api/radio/favorites/clear', { method: 'POST' })
-            .then(r => r.json())
-            .then(() => loadRadioFavorites())
-            .catch(err => console.error('Error clearing favorites:', err));
-    }
+    fetch('/api/radio/favorites/clear', { method: 'POST' })
+        .then(r => r.json())
+        .then(() => loadRadioFavorites())
+        .catch(err => console.error('Error clearing favorites:', err));
 }
 
 // ============ SPECTROGRAM (WATERFALL) ============
@@ -2140,9 +2229,10 @@ updateData = function() {
         .catch(err => console.error('Error updating:', err));
 };
 
-// Load presets on page load if radio panel exists
+// Load presets and populate tuner favorite strip on page load
 if (document.getElementById('fm-presets')) {
     loadRadioPresets();
+    loadRadioFavorites();
 }
 
 if (document.getElementById('media-sync-state')) {
