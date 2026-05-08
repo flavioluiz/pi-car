@@ -291,6 +291,50 @@ select {
     margin-bottom: 10px;
 }
 
+#panel-radio.active {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#radio-content {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#panel-radio .radio-panel.active {
+    min-height: 0;
+    overflow: hidden;
+}
+
+#radio-presets.subpage.active,
+#radio-favorites.subpage.active {
+    display: grid;
+    grid-template-rows: 1fr;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#radio-presets .tile-card {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#radio-favorites .list-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#radio-favorites .favorites-list {
+    min-height: 0;
+    overflow-y: auto;
+}
+
 .eyebrow {
     display: block;
     margin-bottom: 8px;
