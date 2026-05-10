@@ -1391,7 +1391,7 @@ function updateRadioDisplay(radioData) {
 
     // Show/hide connected content
     if (radioData.connected) {
-        document.getElementById('radio-content').style.display = 'block';
+        document.getElementById('radio-content').style.display = '';
         document.getElementById('radio-disconnected').style.display = 'none';
 
         // Update display
