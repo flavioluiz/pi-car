@@ -301,19 +301,13 @@ select {
 #radio-content {
     display: flex;
     flex-direction: column;
+    grid-row: 2;
     min-height: 0;
     overflow: hidden;
 }
 
 #panel-radio .radio-panel.active {
-    min-height: 0;
-    overflow: hidden;
-}
-
-#radio-presets.subpage.active,
-#radio-favorites.subpage.active {
-    display: flex;
-    flex-direction: column;
+    flex: 1;
     min-height: 0;
     overflow: hidden;
 }
@@ -2298,14 +2292,14 @@ h2 {
     #radio-content {
         display: flex;
         flex-direction: column;
+        grid-row: 2;
         min-height: 0;
     }
 
-    #radio-presets.subpage.active,
-    #radio-favorites.subpage.active {
-        display: flex;
-        flex-direction: column;
+    #panel-radio .radio-panel.active {
+        flex: 1;
         min-height: 0;
+        overflow: hidden;
     }
 
     #radio-presets .tile-card {
