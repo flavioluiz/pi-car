@@ -299,9 +299,8 @@ select {
 }
 
 #radio-content {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    grid-row: 2;
+    display: flex;
+    flex-direction: column;
     min-height: 0;
     overflow: hidden;
 }
@@ -313,26 +312,31 @@ select {
 
 #radio-presets.subpage.active,
 #radio-favorites.subpage.active {
-    display: grid;
-    grid-template-rows: 1fr;
+    display: flex;
+    flex-direction: column;
     min-height: 0;
     overflow: hidden;
 }
 
 #radio-presets .tile-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
 
 #radio-favorites .list-card {
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     min-height: 0;
     overflow: hidden;
 }
 
 #radio-favorites .favorites-list {
+    flex: 1;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -2292,35 +2296,38 @@ h2 {
     }
 
     #radio-content {
-        display: grid;
-        grid-template-rows: auto 1fr;
+        display: flex;
+        flex-direction: column;
         min-height: 0;
     }
 
     #radio-presets.subpage.active,
     #radio-favorites.subpage.active {
-        display: grid;
-        grid-template-rows: 1fr;
+        display: flex;
+        flex-direction: column;
         min-height: 0;
     }
 
-    /* tile-card scrolls its own content */
     #radio-presets .tile-card {
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
         min-height: 0;
+        overflow-y: auto;
     }
 
-    /* list-card splits header / scrollable list */
     #radio-favorites .list-card {
-        display: grid;
-        grid-template-rows: auto 1fr;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
         min-height: 0;
         overflow: hidden;
     }
 
     #radio-favorites .favorites-list {
-        overflow-y: auto;
+        flex: 1;
         min-height: 0;
+        overflow-y: auto;
     }
 
     #panel-vehicle .subtabs {
