@@ -307,6 +307,8 @@ select {
 }
 
 #panel-radio .radio-panel.active {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-height: 0;
     overflow: hidden;
@@ -2297,6 +2299,8 @@ h2 {
     }
 
     #panel-radio .radio-panel.active {
+        display: flex;
+        flex-direction: column;
         flex: 1;
         min-height: 0;
         overflow: hidden;
