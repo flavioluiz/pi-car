@@ -121,6 +121,8 @@ class FrontendMigrationSmokeTest(unittest.TestCase):
             'id="search-results"',
             'id="obd-speed"',
             'id="obd-rpm"',
+            'id="obd-gear"',
+            'id="home-gear"',
             'id="gps-speed"',
             'id="radio-freq"',
             'id="favorites-list"',
@@ -181,6 +183,8 @@ class AppTestModeSmokeTest(unittest.TestCase):
             self.assertEqual(payload["wifi"]["state"], "connected")
             self.assertGreaterEqual(payload["music"]["elapsed"], 0)
             self.assertGreater(payload["obd"]["direct"]["speed_kmh"], -1)
+            self.assertIn("gear_state", payload["obd"]["inferred"])
+            self.assertIn("gear_display", payload["obd"]["inferred"])
         finally:
             sys.argv = original_argv
 

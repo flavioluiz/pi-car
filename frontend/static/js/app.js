@@ -571,6 +571,7 @@ function updateOBDDisplay(obdData) {
     setText('obd-trip-distance', formatOBDValue(inferred.trip_distance_km, 1));
     setText('obd-trip-fuel', formatOBDValue(inferred.trip_consumed_l, 2));
     setText('obd-trip-average', formatOBDValue(inferred.trip_average_km_l, 1));
+    setText('obd-gear', inferred.gear_display || '--');
     setText('obd-voltage', formatOBDValue(direct.adapter_voltage_v, 1));
 
     setText('stat-mil', direct.mil_on === true ? 'On' : direct.mil_on === false ? 'Off' : '--');
@@ -2173,6 +2174,7 @@ updateData = function() {
                 setText('home-trip-fuel', formatOBDValue(inf.trip_consumed_l, 2));
                 setText('home-trip-dist', formatOBDValue(inf.trip_distance_km, 1));
                 setText('home-avg-kml', formatOBDValue(inf.trip_average_km_l, 1));
+                setText('home-gear', inf.gear_display || '--');
                 setText('home-battery', formatOBDValue(d.adapter_voltage_v, 1));
                 setText('home-rpm', d.rpm ? Math.round(d.rpm).toString() : '--');
                 const speedFill = document.getElementById('home-speed-fill');
@@ -2184,6 +2186,7 @@ updateData = function() {
                 setText('home-trip-fuel', '--');
                 setText('home-trip-dist', '--');
                 setText('home-avg-kml', '--');
+                setText('home-gear', '--');
                 setText('home-battery', '--');
                 setText('home-rpm', '--');
                 const speedFill = document.getElementById('home-speed-fill');

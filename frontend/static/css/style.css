@@ -848,6 +848,10 @@ h2 {
     gap: 4px;
 }
 
+.trip-summary-grid .trip-summary-wide {
+    grid-column: 1 / -1;
+}
+
 .trip-summary-grid strong {
     font-family: "Michroma", sans-serif;
     font-size: 1.45rem;
@@ -1251,6 +1255,10 @@ h2 {
     background: rgba(255, 255, 255, 0.03);
     display: grid;
     gap: 6px;
+}
+
+.metric-box.wide {
+    grid-column: 1 / -1;
 }
 
 .metric-box.major strong {

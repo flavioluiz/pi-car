@@ -135,6 +135,7 @@
                                     <div><span>Battery</span><span class="value-line"><strong id="home-battery">--</strong><span class="metric-unit">V</span></span></div>
                                     <div><span>Efficiency</span><span class="value-line"><strong id="home-avg-kml">--</strong><span class="metric-unit">km/L</span></span></div>
                                     <div><span>Trip</span><span class="value-line"><strong id="home-trip-dist">--</strong><span class="metric-unit">km</span></span></div>
+                                    <div class="trip-summary-wide"><span>Gear</span><span class="value-line"><strong id="home-gear">--</strong><span class="metric-unit">EST</span></span></div>
                                 </div>
                             </div>
                         </section>
@@ -374,6 +375,7 @@
                                     <div class="metric-box" data-help-title="Trip fuel" data-help="Fuel consumed since trip reset, estimated from the fuel-rate model because this ECU does not provide direct fuel rate."><strong id="obd-trip-fuel">--</strong><span>Fuel L</span></div>
                                     <div class="metric-box" data-help-title="Average km/L" data-help="Average fuel economy over the current trip. It becomes more stable as the trip distance grows."><strong id="obd-trip-average">--</strong><span>Avg km/L</span></div>
                                     <div class="metric-box" data-help-title="Instant km/L" data-help="Estimated instant fuel economy derived from MAP, RPM and intake temperature. It is only meaningful when the vehicle is moving."><strong id="obd-inst-kml">--</strong><span>Inst km/L</span></div>
+                                    <div class="metric-box wide" data-help-title="Estimated gear" data-help="Estimated current gear inferred from RPM to speed ratio, with hysteresis and stale-data handling. It shows only 1 to 5, N or --."><strong id="obd-gear">--</strong><span>Gear <em class="data-tag est">EST</em></span></div>
                                 </div>
                                 <div class="vehicle-controls-row">
                                     <select id="obd-fuel-select" onchange="setOBDFuel(this.value)">

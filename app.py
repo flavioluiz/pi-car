@@ -38,6 +38,67 @@ TEST_MODE = bool(CLI_ARGS.test_mode)
 FLASK_PORT = CLI_ARGS.port if CLI_ARGS.port is not None else config.FLASK_PORT
 
 
+def _estimate_test_gear(rpm, speed_kmh):
+    if rpm is None or rpm < 400:
+        return {
+            'gear_state': 'OFF',
+            'gear': None,
+            'gear_ratio': None,
+            'gear_confidence': 'none',
+            'gear_reason': 'engine_off_or_invalid_rpm',
+            'gear_display': '--',
+        }
+    if speed_kmh is None or speed_kmh < 8:
+        return {
+            'gear_state': 'STOPPED',
+            'gear': None,
+            'gear_ratio': None,
+            'gear_confidence': 'none',
+            'gear_reason': 'speed_below_inference_threshold',
+            'gear_display': '--',
+        }
+
+    ratio = rpm / speed_kmh if speed_kmh > 0 else None
+    if ratio is None or ratio < 31:
+        return {
+            'gear_state': 'DISENGAGED',
+            'gear': None,
+            'gear_ratio': round(ratio, 1) if ratio is not None else None,
+            'gear_confidence': 'none',
+            'gear_reason': 'ratio_below_engaged_threshold',
+            'gear_display': 'N',
+        }
+
+    for gear, lower, upper in (
+        (5, 31, 39),
+        (4, 39, 50),
+        (3, 50, 75),
+        (2, 75, 120),
+        (1, 120, None),
+    ):
+        if ratio >= lower and (upper is None or ratio < upper):
+            confidence = 'high'
+            if abs(ratio - lower) < 3 or (upper is not None and abs(upper - ratio) < 3):
+                confidence = 'medium'
+            return {
+                'gear_state': 'IN_GEAR',
+                'gear': gear,
+                'gear_ratio': round(ratio, 1),
+                'gear_confidence': confidence,
+                'gear_reason': 'ratio_in_gear_band',
+                'gear_display': str(gear),
+            }
+
+    return {
+        'gear_state': 'UNKNOWN',
+        'gear': None,
+        'gear_ratio': round(ratio, 1) if ratio is not None else None,
+        'gear_confidence': 'none',
+        'gear_reason': 'ratio_outside_known_bands',
+        'gear_display': '--',
+    }
+
+
 def _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data):
     gps_data.update({
         'lat': -23.200000 + random.uniform(-0.01, 0.01),
@@ -59,6 +120,7 @@ def _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data):
     battery = random.uniform(13.2, 14.4)
     instant = random.uniform(7.5, 15.5)
     sample_time = datetime.now(timezone.utc).isoformat()
+    gear = _estimate_test_gear(rpm, speed)
 
     direct.update({
         'rpm': round(rpm, 0),
@@ -97,6 +159,12 @@ def _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data):
         'trip_consumed_l': round(inferred.get('trip_consumed_l', 0.0) + random.uniform(0.01, 0.04), 3),
         'trip_distance_km': round(inferred.get('trip_distance_km', 0.0) + speed / 3600, 2),
         'trip_average_km_l': round(random.uniform(8.8, 14.5), 1),
+        'gear_state': gear['gear_state'],
+        'gear': gear['gear'],
+        'gear_ratio': gear['gear_ratio'],
+        'gear_confidence': gear['gear_confidence'],
+        'gear_reason': gear['gear_reason'],
+        'gear_display': gear['gear_display'],
         'coolant_alert': False,
         'battery_alert': False,
     })

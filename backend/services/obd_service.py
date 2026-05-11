@@ -46,6 +46,26 @@ PID_INFO = {
     'TRIP_AVERAGE_KM_L': {'label': 'Trip Avg', 'unit': 'km/L'},
 }
 
+GEAR_UNKNOWN_HOLD_S = 2.0
+GEAR_CONFIRMATION_TIME_S = 0.8
+GEAR_RECENT_CONFIRMATION_S = 1.0
+
+GEAR_ENTRY_BANDS = {
+    1: (120.0, None),
+    2: (75.0, 120.0),
+    3: (50.0, 75.0),
+    4: (39.0, 50.0),
+    5: (31.0, 39.0),
+}
+
+GEAR_HOLD_BANDS = {
+    1: (118.0, None),
+    2: (73.0, 122.0),
+    3: (48.0, 77.0),
+    4: (37.0, 52.0),
+    5: (29.0, 41.0),
+}
+
 INITIAL_DATA: Dict[str, Any] = {
     'connected': False,
     'supported_commands': [],
@@ -97,6 +117,12 @@ INITIAL_DATA: Dict[str, Any] = {
         'trip_consumed_l': 0.0,
         'trip_distance_km': 0.0,
         'trip_average_km_l': None,
+        'gear_state': 'UNKNOWN',
+        'gear': None,
+        'gear_ratio': None,
+        'gear_confidence': 'none',
+        'gear_reason': 'not_initialized',
+        'gear_display': '--',
         'coolant_alert': False,
         'battery_alert': False,
     },
@@ -245,6 +271,14 @@ class OBDService:
         self._last_dynamic_pid_at = 0.0
         self._last_dynamic_sample_time: Optional[str] = None
         self._last_successful_command: Optional[str] = None
+        self._gear_confirmed_state: str = 'UNKNOWN'
+        self._gear_confirmed_gear: Optional[int] = None
+        self._gear_confirmed_at: Optional[float] = None
+        self._gear_candidate_key: Optional[str] = None
+        self._gear_candidate_count = 0
+        self._gear_candidate_since: Optional[float] = None
+        self._last_confirmed_gear: Optional[int] = None
+        self._last_confirmed_gear_at: Optional[float] = None
 
     def _resolve_device(self) -> Optional[str]:
         if os.path.exists(self.device):
@@ -269,6 +303,7 @@ class OBDService:
     def stop(self) -> None:
         self._running = False
         self._close_serial()
+        self._reset_gear_state()
         with self._lock:
             obd_data['connected'] = False
             obd_data['connection']['connected'] = False
@@ -543,6 +578,15 @@ class OBDService:
         if self._trip_consumed_l > 0 and self._trip_distance_km > 0:
             trip_average = self._trip_distance_km / self._trip_consumed_l
 
+        stale_age = round(max(0.0, time.monotonic() - self._last_dynamic_pid_at), 1)
+        dynamic_stale = stale_age > 1.5
+        gear = self._calculate_gear_inference(
+            direct,
+            dynamic_stale=dynamic_stale,
+            dynamic_stale_age_s=stale_age,
+            now=now,
+        )
+
         return {
             'engine_on': rpm > 0,
             'stationary': speed == 0,
@@ -555,9 +599,256 @@ class OBDService:
             'trip_consumed_l': _round(self._trip_consumed_l, 3),
             'trip_distance_km': _round(self._trip_distance_km, 2),
             'trip_average_km_l': _round(trip_average, 1),
+            'gear_state': gear['state'],
+            'gear': gear['gear'],
+            'gear_ratio': gear['ratio'],
+            'gear_confidence': gear['confidence'],
+            'gear_reason': gear['reason'],
+            'gear_display': gear['display'],
             'coolant_alert': coolant is not None and coolant >= 105,
             'battery_alert': rpm > 0 and voltage is not None and voltage < 13.0,
         }
+
+    def _reset_gear_state(self) -> None:
+        self._gear_confirmed_state = 'UNKNOWN'
+        self._gear_confirmed_gear = None
+        self._gear_confirmed_at = None
+        self._gear_candidate_key = None
+        self._gear_candidate_count = 0
+        self._gear_candidate_since = None
+        self._last_confirmed_gear = None
+        self._last_confirmed_gear_at = None
+
+    def _classify_gear_candidate(
+        self,
+        direct: Dict[str, Any],
+        *,
+        dynamic_stale: bool,
+        dynamic_stale_age_s: Optional[float],
+    ) -> Dict[str, Any]:
+        rpm = direct.get('rpm')
+        speed = direct.get('speed_kmh')
+        engine_on = True if rpm is None else rpm > 0
+
+        if rpm is None or speed is None or speed < 0 or rpm < 0:
+            return {'state': 'UNKNOWN', 'gear': None, 'ratio': None, 'reason': 'missing_or_invalid_dynamic_data'}
+        if rpm < 400 or engine_on is False:
+            return {'state': 'OFF', 'gear': None, 'ratio': None, 'reason': 'engine_off_or_invalid_rpm'}
+        if dynamic_stale or (dynamic_stale_age_s is not None and dynamic_stale_age_s > 1.5):
+            return {'state': 'UNKNOWN', 'gear': None, 'ratio': None, 'reason': 'stale_dynamic_sample'}
+        if speed < 8:
+            return {'state': 'STOPPED', 'gear': None, 'ratio': None, 'reason': 'speed_below_inference_threshold'}
+
+        ratio = rpm / speed
+
+        if self._gear_confirmed_gear is not None:
+            lower, upper = GEAR_HOLD_BANDS[self._gear_confirmed_gear]
+            if ratio >= lower and (upper is None or ratio < upper):
+                return {'state': 'IN_GEAR', 'gear': self._gear_confirmed_gear, 'ratio': _round(ratio, 1), 'reason': 'confirmed_gear_hysteresis_hold'}
+
+        if self._gear_confirmed_state == 'DISENGAGED' and ratio < 33:
+            return {'state': 'DISENGAGED', 'gear': None, 'ratio': _round(ratio, 1), 'reason': 'disengaged_hysteresis_hold'}
+        if ratio < 31:
+            return {'state': 'DISENGAGED', 'gear': None, 'ratio': _round(ratio, 1), 'reason': 'ratio_below_engaged_threshold'}
+
+        for gear, (lower, upper) in GEAR_ENTRY_BANDS.items():
+            if ratio >= lower and (upper is None or ratio < upper):
+                return {'state': 'IN_GEAR', 'gear': gear, 'ratio': _round(ratio, 1), 'reason': 'ratio_in_gear_band'}
+
+        return {'state': 'UNKNOWN', 'gear': None, 'ratio': _round(ratio, 1), 'reason': 'ratio_outside_known_bands'}
+
+    def _build_gear_output(
+        self,
+        *,
+        state: str,
+        gear: Optional[int],
+        ratio: Optional[float],
+        confidence: str,
+        reason: str,
+        retain_confirmed_gear: bool = False,
+    ) -> Dict[str, Any]:
+        if state == 'IN_GEAR' and gear is not None:
+            display = str(gear)
+        elif state == 'DISENGAGED':
+            display = 'N'
+        else:
+            display = '--'
+
+        output_gear = gear
+        if retain_confirmed_gear and output_gear is None:
+            output_gear = self._last_confirmed_gear
+            if output_gear is not None:
+                display = str(output_gear)
+
+        return {
+            'state': state,
+            'gear': output_gear,
+            'ratio': ratio,
+            'confidence': confidence,
+            'display': display,
+            'reason': reason,
+        }
+
+    def _gear_boundary_distance(self, gear: Optional[int], ratio: Optional[float]) -> Optional[float]:
+        if gear is None or ratio is None:
+            return None
+        lower, upper = GEAR_ENTRY_BANDS[gear]
+        distances = [abs(ratio - lower)]
+        if upper is not None:
+            distances.append(abs(upper - ratio))
+        return min(distances)
+
+    def _gear_candidate_key_for(self, candidate: Dict[str, Any]) -> str:
+        return f"{candidate['state']}:{candidate['gear'] if candidate['gear'] is not None else '-'}"
+
+    def _gear_confidence(self, gear: Optional[int], ratio: Optional[float], now: float) -> str:
+        if gear is None:
+            return 'none'
+        boundary_distance = self._gear_boundary_distance(gear, ratio)
+        recently_confirmed = self._gear_confirmed_at is None or (now - self._gear_confirmed_at) < GEAR_RECENT_CONFIRMATION_S
+        if recently_confirmed or (boundary_distance is not None and boundary_distance < 3.0):
+            return 'medium'
+        return 'high'
+
+    def _calculate_gear_inference(
+        self,
+        direct: Dict[str, Any],
+        *,
+        dynamic_stale: bool,
+        dynamic_stale_age_s: Optional[float],
+        now: float,
+    ) -> Dict[str, Any]:
+        candidate = self._classify_gear_candidate(
+            direct,
+            dynamic_stale=dynamic_stale,
+            dynamic_stale_age_s=dynamic_stale_age_s,
+        )
+        candidate_key = self._gear_candidate_key_for(candidate)
+
+        if candidate['state'] == 'UNKNOWN':
+            self._gear_candidate_key = None
+            self._gear_candidate_count = 0
+            self._gear_candidate_since = None
+            if self._last_confirmed_gear is not None and self._last_confirmed_gear_at is not None:
+                if now - self._last_confirmed_gear_at <= GEAR_UNKNOWN_HOLD_S:
+                    return self._build_gear_output(
+                        state='UNKNOWN',
+                        gear=None,
+                        ratio=None,
+                        confidence='low',
+                        reason='stale_sample_retaining_last_confirmed_gear',
+                        retain_confirmed_gear=True,
+                    )
+            return self._build_gear_output(
+                state='UNKNOWN',
+                gear=None,
+                ratio=None,
+                confidence='none',
+                reason=candidate['reason'],
+            )
+
+        if candidate['state'] == 'OFF':
+            self._gear_confirmed_state = 'OFF'
+            self._gear_confirmed_gear = None
+            self._gear_confirmed_at = now
+            self._gear_candidate_key = None
+            self._gear_candidate_count = 0
+            self._gear_candidate_since = None
+            self._last_confirmed_gear = None
+            self._last_confirmed_gear_at = None
+            return self._build_gear_output(state='OFF', gear=None, ratio=None, confidence='none', reason=candidate['reason'])
+
+        if candidate['state'] == 'STOPPED':
+            self._gear_confirmed_state = 'STOPPED'
+            self._gear_confirmed_gear = None
+            self._gear_confirmed_at = now
+            self._gear_candidate_key = None
+            self._gear_candidate_count = 0
+            self._gear_candidate_since = None
+            return self._build_gear_output(state='STOPPED', gear=None, ratio=None, confidence='none', reason=candidate['reason'])
+
+        if candidate_key == self._gear_candidate_key:
+            self._gear_candidate_count += 1
+        else:
+            self._gear_candidate_key = candidate_key
+            self._gear_candidate_count = 1
+            self._gear_candidate_since = now
+
+        candidate_elapsed = now - (self._gear_candidate_since or now)
+
+        if candidate['state'] == 'DISENGAGED':
+            if self._gear_confirmed_state == 'DISENGAGED':
+                return self._build_gear_output(
+                    state='DISENGAGED',
+                    gear=None,
+                    ratio=candidate['ratio'],
+                    confidence='none',
+                    reason=candidate['reason'],
+                )
+            should_confirm = candidate['ratio'] is not None and (
+                candidate['ratio'] < 24 or self._gear_candidate_count >= 2
+            )
+            if should_confirm:
+                self._gear_confirmed_state = 'DISENGAGED'
+                self._gear_confirmed_gear = None
+                self._gear_confirmed_at = now
+                return self._build_gear_output(
+                    state='DISENGAGED',
+                    gear=None,
+                    ratio=candidate['ratio'],
+                    confidence='none',
+                    reason=candidate['reason'],
+                )
+            if self._gear_confirmed_gear is not None:
+                return self._build_gear_output(
+                    state='IN_GEAR',
+                    gear=self._gear_confirmed_gear,
+                    ratio=candidate['ratio'],
+                    confidence=self._gear_confidence(self._gear_confirmed_gear, candidate['ratio'], now),
+                    reason='awaiting_disengaged_confirmation',
+                )
+            return self._build_gear_output(state='UNKNOWN', gear=None, ratio=candidate['ratio'], confidence='none', reason='disengaged_pending_confirmation')
+
+        if self._gear_confirmed_state == 'IN_GEAR' and self._gear_confirmed_gear == candidate['gear']:
+            return self._build_gear_output(
+                state='IN_GEAR',
+                gear=candidate['gear'],
+                ratio=candidate['ratio'],
+                confidence=self._gear_confidence(candidate['gear'], candidate['ratio'], now),
+                reason=candidate['reason'],
+            )
+
+        should_confirm = self._gear_candidate_count >= 2 or candidate_elapsed >= GEAR_CONFIRMATION_TIME_S
+        if should_confirm:
+            self._gear_confirmed_state = 'IN_GEAR'
+            self._gear_confirmed_gear = candidate['gear']
+            self._gear_confirmed_at = now
+            self._last_confirmed_gear = candidate['gear']
+            self._last_confirmed_gear_at = now
+            return self._build_gear_output(
+                state='IN_GEAR',
+                gear=candidate['gear'],
+                ratio=candidate['ratio'],
+                confidence=self._gear_confidence(candidate['gear'], candidate['ratio'], now),
+                reason=candidate['reason'],
+            )
+
+        if self._gear_confirmed_gear is not None:
+            return self._build_gear_output(
+                state='IN_GEAR',
+                gear=self._gear_confirmed_gear,
+                ratio=candidate['ratio'],
+                confidence=self._gear_confidence(self._gear_confirmed_gear, candidate['ratio'], now),
+                reason='holding_last_confirmed_gear',
+            )
+
+        return self._build_gear_output(
+            state='UNKNOWN',
+            gear=None,
+            ratio=candidate['ratio'],
+            confidence='none',
+            reason='gear_candidate_not_yet_confirmed',
+        )
 
     def _estimate_fuel_rate(self, direct: Dict[str, Any], fuel: str) -> Optional[float]:
         map_kpa = direct.get('map_kpa')
@@ -666,7 +957,7 @@ class OBDService:
                         obd_data['metadata']['sample_time'] = datetime.now(timezone.utc).isoformat()
                         obd_data['metadata']['last_dynamic_sample_time'] = self._last_dynamic_sample_time
                         obd_data['metadata']['dynamic_stale_age_s'] = round(stale_age, 1)
-                        obd_data['metadata']['dynamic_stale'] = stale_age > (POLL_INTERVAL * 3)
+                        obd_data['metadata']['dynamic_stale'] = stale_age > 1.5
                         obd_data['metadata']['last_successful_command'] = self._last_successful_command
                         obd_data['error'] = None
 
@@ -677,6 +968,7 @@ class OBDService:
                 self._set_error(str(exc))
             finally:
                 self._last_sample_at = None
+                self._reset_gear_state()
                 self._close_serial()
 
             if self._running:
