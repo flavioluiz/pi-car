@@ -4,6 +4,8 @@ Pi-Car - rotinas simples de manutencao do app.
 Expõe:
 - git pull no repositorio local
 - reinicio do processo atual
+- reboot do Raspberry Pi
+- desligamento completo do Raspberry Pi
 """
 
 from __future__ import annotations
@@ -81,7 +83,7 @@ class MaintenanceService:
         else:
             action = (payload or '').strip().lower()
 
-        if action not in {'update', 'restart'}:
+        if action not in {'update', 'restart', 'reboot', 'shutdown'}:
             return {'accepted': False, 'message': 'Unknown maintenance action.'}
 
         with self._lock:
@@ -140,6 +142,9 @@ class MaintenanceService:
                 output.append(action_output)
             elif action == 'restart':
                 summary, action_output = self._schedule_restart()
+                output.append(action_output)
+            elif action in {'reboot', 'shutdown'}:
+                summary, action_output = self._schedule_system_power(action)
                 output.append(action_output)
             else:
                 raise RuntimeError(f'Unsupported action: {action}')
@@ -229,6 +234,58 @@ subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
         )
         return 'Application restart scheduled.', output
 
+    def _schedule_system_power(self, action: str) -> tuple[str, str]:
+        if action not in {'reboot', 'shutdown'}:
+            raise RuntimeError(f'Unsupported system power action: {action}')
+
+        command_sets = {
+            'shutdown': [
+                ['systemctl', 'poweroff'],
+                ['shutdown', '-h', 'now'],
+                ['sudo', '-n', 'systemctl', 'poweroff'],
+                ['sudo', '-n', 'shutdown', '-h', 'now'],
+            ],
+            'reboot': [
+                ['systemctl', 'reboot'],
+                ['shutdown', '-r', 'now'],
+                ['sudo', '-n', 'systemctl', 'reboot'],
+                ['sudo', '-n', 'shutdown', '-r', 'now'],
+            ],
+        }
+        commands = command_sets[action]
+        helper_code = f"""
+import shutil
+import subprocess
+import time
+
+commands = {commands!r}
+time.sleep(1.0)
+
+for command in commands:
+    if shutil.which(command[0]) is None:
+        continue
+    try:
+        completed = subprocess.run(command, check=False)
+    except Exception:
+        continue
+    if completed.returncode == 0:
+        break
+"""
+
+        subprocess.Popen(
+            [sys.executable, '-c', helper_code],
+            cwd=self.repo_dir,
+            start_new_session=True,
+        )
+
+        label = 'System reboot' if action == 'reboot' else 'System shutdown'
+        output = (
+            f"{label} scheduled.\n"
+            f"Commands queued: {len(commands)}\n"
+            f"Primary command: {' '.join(commands[0])}"
+        )
+        return f'{label} scheduled.', output
+
     def _current_branch(self) -> str:
         return self._git_read(['git', 'branch', '--show-current']) or 'detached'
 
@@ -281,6 +338,24 @@ subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
                     'last_error': None,
                     'last_summary': 'Application restart completed.',
                     'last_output': self._status.get('last_output') or 'Restart completed after app relaunch.',
+                })
+            elif self._status.get('last_action') == 'reboot':
+                self._status.update({
+                    'running': False,
+                    'last_finished_at': self._status.get('last_finished_at') or now,
+                    'last_success_at': self._status.get('last_success_at') or now,
+                    'last_error': None,
+                    'last_summary': 'System reboot completed.',
+                    'last_output': self._status.get('last_output') or 'Reboot completed after system relaunch.',
+                })
+            elif self._status.get('last_action') == 'shutdown':
+                self._status.update({
+                    'running': False,
+                    'last_finished_at': self._status.get('last_finished_at') or now,
+                    'last_success_at': self._status.get('last_success_at') or now,
+                    'last_error': None,
+                    'last_summary': 'System shutdown completed.',
+                    'last_output': self._status.get('last_output') or 'Shutdown completed before next boot.',
                 })
             else:
                 self._status.update({

@@ -96,6 +96,7 @@ let maintenancePoller = null;
 let obdLoggerStatus = null;
 let restartReconnectPoller = null;
 let restartReconnectStartedAt = null;
+let powerActionInFlight = false;
 
 function applyTheme(themeName, label) {
     document.body.dataset.theme = themeName;
@@ -353,8 +354,79 @@ function requestMaintenanceAction(action, extra = {}) {
             if (action === 'restart' && status.accepted) {
                 startRestartReconnect();
             }
+            if ((action === 'shutdown' || action === 'reboot') && status.accepted) {
+                setPowerModalBusy(action);
+            } else if (action === 'shutdown' || action === 'reboot') {
+                setPowerModalError(status.message || 'Power action was not accepted.');
+            }
         })
-        .catch(err => console.error('Error starting maintenance action:', err));
+        .catch(err => {
+            if (action === 'shutdown' || action === 'reboot') {
+                setPowerModalError('Failed to contact the backend.');
+            }
+            console.error('Error starting maintenance action:', err);
+        });
+}
+
+function openPowerModal() {
+    const modal = document.getElementById('power-modal');
+    if (!modal) return;
+    powerActionInFlight = false;
+    setPowerModalText('Choose an action for the Raspberry Pi.');
+    setPowerModalButtonsDisabled(false);
+    modal.classList.remove('hidden');
+}
+
+function closePowerModal() {
+    if (powerActionInFlight) return;
+    const modal = document.getElementById('power-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+}
+
+function powerModalOverlayClick(event) {
+    if (event.target === document.getElementById('power-modal')) {
+        closePowerModal();
+    }
+}
+
+function setPowerModalText(message) {
+    const status = document.getElementById('power-modal-status');
+    if (status) status.textContent = message;
+}
+
+function setPowerModalButtonsDisabled(disabled) {
+    ['power-shutdown-button', 'power-reboot-button', 'power-cancel-button'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (id === 'power-cancel-button' && powerActionInFlight) {
+            el.disabled = true;
+            return;
+        }
+        el.disabled = disabled;
+    });
+}
+
+function setPowerModalBusy(action) {
+    powerActionInFlight = true;
+    setPowerModalButtonsDisabled(true);
+    setPowerModalText(
+        action === 'shutdown'
+            ? 'Shutdown requested. The Raspberry Pi is powering off.'
+            : 'Reset requested. The Raspberry Pi is rebooting.'
+    );
+}
+
+function setPowerModalError(message) {
+    powerActionInFlight = false;
+    setPowerModalButtonsDisabled(false);
+    setPowerModalText(message);
+}
+
+function confirmPowerAction(action) {
+    if (powerActionInFlight) return;
+    setPowerModalText(action === 'shutdown' ? 'Requesting full shutdown...' : 'Requesting system reset...');
+    requestMaintenanceAction(action);
 }
 
 // ============ CLOCK ============

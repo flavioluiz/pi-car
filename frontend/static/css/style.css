@@ -116,6 +116,21 @@ select {
     background: rgba(255, 255, 255, 0.02);
 }
 
+.brand-trigger,
+.topbar-wordmark-trigger {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.brand-trigger {
+    display: block;
+    width: 100%;
+}
+
 .brand-logo,
 .brand-wordmark {
     width: 100%;
@@ -211,6 +226,14 @@ select {
 
 .app-shell:not(.page-home-active) .topbar-wordmark {
     visibility: visible;
+}
+
+.topbar-wordmark-trigger {
+    justify-self: start;
+}
+
+.app-shell.page-home-active .topbar-wordmark-trigger {
+    pointer-events: none;
 }
 
 .app-shell:not(.page-home-active) .brand-panel {
@@ -4287,6 +4310,79 @@ h2 {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+}
+
+.power-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.76);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 920;
+}
+
+.power-modal-overlay.hidden {
+    display: none;
+}
+
+.power-modal {
+    width: min(520px, 94vw);
+    border: 1px solid var(--line-strong);
+    border-radius: 22px;
+    background:
+        radial-gradient(circle at top right, var(--accent-glow), transparent 28%),
+        linear-gradient(180deg, var(--panel-2), var(--panel));
+    box-shadow: var(--shadow);
+    padding: 22px;
+    display: grid;
+    gap: 14px;
+}
+
+.power-modal-header {
+    display: grid;
+    gap: 6px;
+}
+
+.power-modal-header strong {
+    font-family: "Michroma", sans-serif;
+    font-size: 1.15rem;
+}
+
+.power-modal-header span,
+.power-modal-copy {
+    color: var(--muted);
+}
+
+.power-modal-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.power-action {
+    min-height: 52px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+}
+
+.power-action.secondary {
+    color: var(--muted);
+}
+
+.power-action.danger {
+    background: linear-gradient(90deg, var(--red), var(--red-dark));
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.power-action:disabled {
+    opacity: 0.55;
+    cursor: wait;
 }
 
 .fav-cancel-btn {

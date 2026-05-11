@@ -86,6 +86,42 @@ class MaintenanceServiceVersionTest(unittest.TestCase):
             self.assertEqual(reloaded._status["version"], "0.5.3")
             self.assertEqual(reloaded._status["repo_version"], "0.5.3")
 
+    def test_schedule_system_power_queues_reboot_helper(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_dir = Path(tmpdir)
+            (repo_dir / "VERSION").write_text("0.5.3\n", encoding="utf-8")
+
+            service = MaintenanceService()
+            service.repo_dir = repo_dir
+            service.version_file = repo_dir / "VERSION"
+
+            captured = {}
+            original_popen = maintenance_service_module.subprocess.Popen
+
+            def fake_popen(command, cwd=None, start_new_session=False):
+                captured["command"] = command
+                captured["cwd"] = cwd
+                captured["start_new_session"] = start_new_session
+
+                class Proc:
+                    pass
+
+                return Proc()
+
+            maintenance_service_module.subprocess.Popen = fake_popen
+            try:
+                summary, output = service._schedule_system_power("reboot")
+            finally:
+                maintenance_service_module.subprocess.Popen = original_popen
+
+            self.assertEqual(summary, "System reboot scheduled.")
+            self.assertIn("Primary command: systemctl reboot", output)
+            self.assertEqual(captured["cwd"], repo_dir)
+            self.assertTrue(captured["start_new_session"])
+            self.assertEqual(captured["command"][:2], [sys.executable, "-c"])
+            self.assertIn("systemctl", captured["command"][2])
+            self.assertIn("shutdown", captured["command"][2])
+
 
 if __name__ == "__main__":
     unittest.main()

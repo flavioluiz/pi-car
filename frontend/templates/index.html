@@ -82,13 +82,17 @@
             </nav>
 
             <div class="brand-panel">
-                <img class="brand-logo" src="{{ url_for('static', filename='logos/picasso_logo.png') }}" alt="PiCASSO logo">
+                <button class="brand-trigger" type="button" onclick="openPowerModal()" title="Power menu">
+                    <img class="brand-logo" src="{{ url_for('static', filename='logos/picasso_logo.png') }}" alt="PiCASSO logo">
+                </button>
             </div>
         </aside>
 
         <section class="main-stage">
             <header class="topbar">
-                <img class="topbar-wordmark" src="{{ url_for('static', filename='logos/picasso_name_only.png') }}" alt="PiCASSO">
+                <button class="topbar-wordmark-trigger" type="button" onclick="openPowerModal()" title="Power menu">
+                    <img class="topbar-wordmark" src="{{ url_for('static', filename='logos/picasso_name_only.png') }}" alt="PiCASSO">
+                </button>
                 <div class="status-strip">
                     <span>GPS <i class="dot indicator" id="ind-gps"></i></span>
                     <span>OBD-II <i class="dot indicator" id="ind-obd"></i></span>
@@ -780,6 +784,21 @@
             <div class="fav-modal-actions">
                 <button class="fav-cancel-btn" onclick="favModalClose()">Cancel</button>
                 <button class="fav-save-btn" onclick="favModalSave()">&#9733; Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="power-modal" class="power-modal-overlay hidden" onclick="powerModalOverlayClick(event)">
+        <div class="power-modal" role="dialog" aria-modal="true" aria-labelledby="power-modal-title">
+            <div class="power-modal-header">
+                <strong id="power-modal-title">Power</strong>
+                <span id="power-modal-status">Choose an action for the Raspberry Pi.</span>
+            </div>
+            <div class="power-modal-copy">Shutdown powers the Raspberry Pi off completely. Reset reboots the whole system.</div>
+            <div class="power-modal-actions">
+                <button id="power-shutdown-button" class="power-action danger" type="button" onclick="confirmPowerAction('shutdown')">Shutdown</button>
+                <button id="power-reboot-button" class="power-action" type="button" onclick="confirmPowerAction('reboot')">Reset</button>
+                <button id="power-cancel-button" class="power-action secondary" type="button" onclick="closePowerModal()">Cancel</button>
             </div>
         </div>
     </div>
