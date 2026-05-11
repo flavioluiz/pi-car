@@ -232,10 +232,6 @@ select {
     justify-self: start;
 }
 
-.app-shell.page-home-active .topbar-wordmark-trigger {
-    pointer-events: none;
-}
-
 .app-shell:not(.page-home-active) .brand-panel {
     display: none;
 }
@@ -3027,9 +3023,13 @@ h2 {
         grid-template-columns: minmax(0, 1fr) auto;
     }
 
-    .app-shell.page-home-active .topbar-wordmark {
-        display: none;
-    }
+.app-shell.page-home-active .topbar-wordmark {
+    display: none;
+}
+
+.app-shell.page-home-active .topbar-wordmark-trigger {
+    display: none;
+}
 
     .status-strip,
     .topbar-right {
