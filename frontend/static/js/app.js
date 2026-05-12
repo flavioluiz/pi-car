@@ -77,6 +77,9 @@ document.querySelectorAll('.settings-tabs .subtab').forEach(subtab => {
         subtab.classList.add('active');
         const target = document.getElementById(subtab.dataset.subtab);
         if (target) target.classList.add('active');
+        if (subtab.dataset.subtab === 'settings-wifi') {
+            fetchWifiSettings(true);
+        }
     });
 });
 
@@ -97,6 +100,12 @@ let obdLoggerStatus = null;
 let restartReconnectPoller = null;
 let restartReconnectStartedAt = null;
 let powerActionInFlight = false;
+let wifiSettingsStatus = null;
+let wifiSettingsNetworks = [];
+let wifiConnectBusy = false;
+let wifiSelectedNetwork = null;
+let wifiPasswordKeyboardMode = 'lower';
+let wifiPasswordVisible = false;
 
 function applyTheme(themeName, label) {
     document.body.dataset.theme = themeName;
@@ -558,6 +567,284 @@ function updateWifiStatus(wifiData) {
     }
 
     setWifiIndicator('disconnected');
+}
+
+const wifiPasswordLayouts = {
+    lower: [
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+        ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+        ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+        ['⇧', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '⌫'],
+        ['123', '@', '.', '-', '_', ' ', 'Connect']
+    ],
+    upper: [
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+        ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+        ['⇩', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫'],
+        ['123', '@', '.', '-', '_', ' ', 'Connect']
+    ],
+    symbols: [
+        ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')'],
+        ['[', ']', '{', '}', '/', '\\', '|', ':', ';', '"'],
+        ['+', '=', '?', ',', '.', '-', '_', '~', '`'],
+        ['ABC', '<', '>', "'", '€', '£', '§', '°', '⌫'],
+        ['abc', ' ', 'Connect']
+    ],
+};
+
+function fetchWifiSettings(force = false) {
+    const scanButton = document.getElementById('wifi-scan-button');
+    if (scanButton) {
+        scanButton.disabled = true;
+        scanButton.textContent = 'Refreshing...';
+    }
+
+    fetch(`/api/wifi${force ? '?force=1' : ''}`)
+        .then(r => r.json())
+        .then(updateWifiSettings)
+        .catch(err => {
+            console.error('Error loading Wi-Fi settings:', err);
+            updateWifiSettings({
+                status: { connected: false, state: 'error', ssid: '', interface: '', last_checked_at: null },
+                networks: [],
+                message: 'Failed to load Wi-Fi information.',
+            });
+        })
+        .finally(() => {
+            if (scanButton) {
+                scanButton.disabled = false;
+                scanButton.textContent = 'Refresh';
+            }
+        });
+}
+
+function updateWifiSettings(payload) {
+    wifiSettingsStatus = payload?.status || null;
+    wifiSettingsNetworks = payload?.networks || [];
+
+    setText(
+        'wifi-settings-state',
+        wifiSettingsStatus
+            ? (wifiSettingsStatus.connected ? 'Connected' : wifiSettingsStatus.state || 'Disconnected')
+            : 'Unavailable'
+    );
+    setText('wifi-settings-ssid', wifiSettingsStatus?.ssid || '--');
+    setText('wifi-settings-interface', wifiSettingsStatus?.interface || '--');
+    setText('wifi-settings-last-scan', formatSyncDate(wifiSettingsStatus?.last_checked_at));
+    setText(
+        'wifi-settings-summary',
+        payload?.message
+            || (wifiSettingsStatus?.connected
+                ? `Connected to ${wifiSettingsStatus.ssid || 'Wi-Fi network'}.`
+                : 'Select a network below to connect.')
+    );
+
+    renderWifiNetworks(wifiSettingsNetworks);
+}
+
+function renderWifiNetworks(networks) {
+    const list = document.getElementById('wifi-network-list');
+    if (!list) return;
+    if (!networks.length) {
+        list.innerHTML = '<div class="empty-message">No Wi-Fi networks found.</div>';
+        return;
+    }
+
+    list.innerHTML = networks.map(network => {
+        const label = network.connected ? 'Connected' : 'Connect';
+        const actionClass = network.connected ? 'wifi-network-action connected' : 'wifi-network-action sync-button';
+        const safety = network.requires_password ? 'Secured' : 'Open';
+        const subtitle = `${safety} · ${network.signal ?? 0}% signal`;
+        return `
+            <div class="wifi-network-item ${network.connected ? 'connected' : ''}">
+                <div class="wifi-network-copy">
+                    <strong>${escapeHtml(network.ssid)}</strong>
+                    <span>${escapeHtml(subtitle)}</span>
+                </div>
+                <button
+                    class="${actionClass}"
+                    type="button"
+                    data-ssid="${escapeHtml(network.ssid)}"
+                    data-requires-password="${network.requires_password ? 'true' : 'false'}"
+                    ${network.connected || wifiConnectBusy ? 'disabled' : ''}
+                    onclick="wifiSelectNetwork(this.dataset.ssid, this.dataset.requiresPassword === 'true')"
+                >${label}</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function wifiSelectNetwork(ssid, requiresPassword) {
+    if (wifiConnectBusy) return;
+    wifiSelectedNetwork = {
+        ssid,
+        interface: wifiSettingsStatus?.interface || '',
+    };
+    if (requiresPassword) {
+        openWifiPasswordModal(ssid);
+        return;
+    }
+    submitWifiConnect(ssid, '');
+}
+
+function submitWifiConnect(ssid, password = '') {
+    wifiConnectBusy = true;
+    setText('wifi-settings-summary', `Connecting to ${ssid}...`);
+    renderWifiNetworks(wifiSettingsNetworks);
+    fetch('/api/wifi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            ssid,
+            password,
+            interface: wifiSelectedNetwork?.interface || wifiSettingsStatus?.interface || '',
+        })
+    })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) throw data;
+            return data;
+        })
+        .then(result => {
+            closeWifiPasswordModal(true);
+            updateWifiSettings(result);
+        })
+        .catch(err => {
+            const message = err?.message || err?.error || 'Failed to connect to the selected Wi-Fi network.';
+            setText('wifi-settings-summary', message);
+            setWifiPasswordModalMessage(message);
+        })
+        .finally(() => {
+            wifiConnectBusy = false;
+            renderWifiNetworks(wifiSettingsNetworks);
+        });
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function openWifiPasswordModal(ssid) {
+    const modal = document.getElementById('wifi-password-modal');
+    const ssidInput = document.getElementById('wifi-password-ssid');
+    const passwordInput = document.getElementById('wifi-password-input');
+    if (!modal || !ssidInput || !passwordInput) return;
+    wifiPasswordKeyboardMode = 'lower';
+    wifiPasswordVisible = false;
+    ssidInput.value = ssid;
+    passwordInput.value = '';
+    passwordInput.type = 'password';
+    setWifiPasswordModalMessage(`Enter the password for ${ssid}.`);
+    buildWifiPasswordKeyboard();
+    modal.classList.remove('hidden');
+}
+
+function closeWifiPasswordModal(force = false) {
+    if (wifiConnectBusy && !force) return;
+    const modal = document.getElementById('wifi-password-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    wifiSelectedNetwork = null;
+}
+
+function wifiPasswordOverlayClick(event) {
+    if (event.target === document.getElementById('wifi-password-modal')) {
+        closeWifiPasswordModal();
+    }
+}
+
+function setWifiPasswordModalMessage(message) {
+    setText('wifi-password-subtitle', message);
+}
+
+function buildWifiPasswordKeyboard() {
+    const container = document.getElementById('wifi-password-keyboard');
+    if (!container) return;
+    const rows = wifiPasswordLayouts[wifiPasswordKeyboardMode] || wifiPasswordLayouts.lower;
+    container.innerHTML = rows.map(row => `
+        <div class="wifi-password-keyboard-row">
+            ${row.map(key => {
+                const wide = ['⇧', '⇩', '⌫', '123', 'abc', 'ABC', 'Connect'].includes(key);
+                const isSpace = key === ' ';
+                const active = (key === '⇧' && wifiPasswordKeyboardMode === 'lower') || (key === '⇩' && wifiPasswordKeyboardMode === 'upper');
+                return `<button
+                    class="wifi-password-key ${wide ? 'wide' : ''} ${isSpace ? 'space' : ''} ${active ? 'active' : ''}"
+                    type="button"
+                    onclick="wifiPasswordKeyPress(${JSON.stringify(key)})"
+                >${key === ' ' ? 'SPACE' : escapeHtml(key)}</button>`;
+            }).join('')}
+        </div>
+    `).join('');
+}
+
+function wifiPasswordKeyPress(key) {
+    if (key === '⇧') {
+        wifiPasswordKeyboardMode = 'upper';
+        buildWifiPasswordKeyboard();
+        return;
+    }
+    if (key === '⇩') {
+        wifiPasswordKeyboardMode = 'lower';
+        buildWifiPasswordKeyboard();
+        return;
+    }
+    if (key === '123') {
+        wifiPasswordKeyboardMode = 'symbols';
+        buildWifiPasswordKeyboard();
+        return;
+    }
+    if (key === 'abc') {
+        wifiPasswordKeyboardMode = 'lower';
+        buildWifiPasswordKeyboard();
+        return;
+    }
+    if (key === 'ABC') {
+        wifiPasswordKeyboardMode = 'upper';
+        buildWifiPasswordKeyboard();
+        return;
+    }
+    if (key === '⌫') {
+        wifiPasswordBackspace();
+        return;
+    }
+    if (key === 'Connect') {
+        submitWifiPassword();
+        return;
+    }
+    const input = document.getElementById('wifi-password-input');
+    if (!input) return;
+    input.value += key;
+}
+
+function wifiPasswordBackspace() {
+    const input = document.getElementById('wifi-password-input');
+    if (!input) return;
+    input.value = input.value.slice(0, -1);
+}
+
+function wifiPasswordClear() {
+    const input = document.getElementById('wifi-password-input');
+    if (!input) return;
+    input.value = '';
+}
+
+function toggleWifiPasswordVisible() {
+    const input = document.getElementById('wifi-password-input');
+    if (!input) return;
+    wifiPasswordVisible = !wifiPasswordVisible;
+    input.type = wifiPasswordVisible ? 'text' : 'password';
+}
+
+function submitWifiPassword() {
+    const input = document.getElementById('wifi-password-input');
+    if (!input || !wifiSelectedNetwork?.ssid) return;
+    submitWifiConnect(wifiSelectedNetwork.ssid, input.value);
 }
 
 function formatStateValue(value, unit = '', digits = 1) {
@@ -2330,6 +2617,7 @@ if (document.getElementById('obd-logger-state')) {
 window.addEventListener('online', () => setWifiIndicator('disconnected'));
 window.addEventListener('offline', () => setWifiIndicator('disconnected'));
 
+fetchWifiSettings(false);
 updateData();
 setInterval(updateData, 1000);
 

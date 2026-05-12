@@ -628,6 +628,24 @@ def create_app():
         set_obd_service(FakeOBDService())
         set_rtlsdr_service(FakeRTLSDRService())
         network_service.get_wifi_status = lambda force=False: copy.deepcopy(wifi_data)
+        network_service.list_wifi_networks = lambda force=False: [
+            {'ssid': wifi_data.get('ssid') or 'PiCASSO Test AP', 'signal': 92, 'security': 'WPA2', 'requires_password': True, 'connected': True},
+            {'ssid': 'Hangar Guest', 'signal': 74, 'security': 'WPA2', 'requires_password': True, 'connected': False},
+            {'ssid': 'Open Telemetry', 'signal': 51, 'security': 'Open', 'requires_password': False, 'connected': False},
+        ]
+        network_service.get_wifi_overview = lambda force=False: {
+            'status': copy.deepcopy(wifi_data),
+            'networks': copy.deepcopy(network_service.list_wifi_networks(force=force)),
+        }
+        network_service.connect_wifi = lambda ssid, password=None, interface=None: {
+            'success': True,
+            'message': f'Connected to {ssid}.',
+            'status': copy.deepcopy({**wifi_data, 'connected': True, 'state': 'connected', 'ssid': ssid}),
+            'networks': [
+                {**network, 'connected': network['ssid'] == ssid}
+                for network in copy.deepcopy(network_service.list_wifi_networks())
+            ],
+        }
         _update_test_telemetry(gps_data, obd_data, radio_data, wifi_data)
         _start_test_telemetry_loop(gps_data, obd_data, radio_data, wifi_data)
         from backend.services.obd_logger_service import obd_logger_service

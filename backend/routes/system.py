@@ -119,3 +119,19 @@ def api_obd_logger():
     )
     status_code = 202 if result.get('accepted') else 200
     return jsonify(result), status_code
+
+
+@system_bp.route('/wifi', methods=['GET', 'POST'])
+def api_wifi():
+    """Consulta status/lista de Wi-Fi ou solicita conexão a uma rede."""
+    if request.method == 'GET':
+        force = request.args.get('force', '').strip().lower() in {'1', 'true', 'yes'}
+        return jsonify(network_service.get_wifi_overview(force=force))
+
+    payload = request.get_json(silent=True) or {}
+    result = network_service.connect_wifi(
+        ssid=payload.get('ssid') or '',
+        password=payload.get('password') or None,
+        interface=payload.get('interface') or None,
+    )
+    return jsonify(result), (200 if result.get('success') else 400)

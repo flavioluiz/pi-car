@@ -3,6 +3,10 @@ import sys
 import types
 import unittest
 import warnings
+from pathlib import Path
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 def install_dependency_stubs():
@@ -113,6 +117,10 @@ class FrontendMigrationSmokeTest(unittest.TestCase):
             'id="power-modal"',
             'id="power-shutdown-button"',
             'id="power-reboot-button"',
+            'id="settings-wifi"',
+            'id="wifi-network-list"',
+            'id="wifi-password-modal"',
+            'id="wifi-password-keyboard"',
             'id="music-title"',
             'id="music-artist"',
             'id="btn-play"',
@@ -188,6 +196,13 @@ class AppTestModeSmokeTest(unittest.TestCase):
             self.assertGreater(payload["obd"]["direct"]["speed_kmh"], -1)
             self.assertIn("gear_state", payload["obd"]["inferred"])
             self.assertIn("gear_display", payload["obd"]["inferred"])
+
+            wifi_response = client.get("/api/wifi")
+            self.assertEqual(wifi_response.status_code, 200)
+            wifi_payload = wifi_response.get_json()
+            self.assertIn("status", wifi_payload)
+            self.assertIn("networks", wifi_payload)
+            self.assertGreaterEqual(len(wifi_payload["networks"]), 1)
         finally:
             sys.argv = original_argv
 

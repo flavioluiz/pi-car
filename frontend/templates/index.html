@@ -611,12 +611,48 @@
                         </div>
                     </div>
                     <div class="subtabs settings-tabs">
-                        <button class="subtab settings-tab active" data-subtab="settings-theme">Theme</button>
+                        <button class="subtab settings-tab active" data-subtab="settings-wifi">Wi-Fi</button>
+                        <button class="subtab settings-tab" data-subtab="settings-theme">Theme</button>
                         <button class="subtab settings-tab" data-subtab="settings-obd-logger">OBD Logger</button>
                         <button class="subtab settings-tab" data-subtab="settings-media-sync">Media Sync</button>
                         <button class="subtab settings-tab" data-subtab="settings-system">System</button>
                     </div>
-                    <div class="subpage settings-panel active" id="settings-theme">
+                    <div class="subpage settings-panel active" id="settings-wifi">
+                        <section class="card sync-settings-card wifi-settings-card">
+                            <div class="sync-settings-head">
+                                <div>
+                                    <div class="list-title">Wi-Fi</div>
+                                    <p class="sync-settings-copy">Scan nearby networks, check the active connection and switch to another access point when needed.</p>
+                                </div>
+                                <div class="settings-action-row">
+                                    <button id="wifi-scan-button" class="sync-button" type="button" onclick="fetchWifiSettings(true)">Refresh</button>
+                                </div>
+                            </div>
+                            <div class="sync-status-grid">
+                                <div class="sync-status-row">
+                                    <span>Status</span>
+                                    <strong id="wifi-settings-state">Idle</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Connected SSID</span>
+                                    <strong id="wifi-settings-ssid">--</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Interface</span>
+                                    <strong id="wifi-settings-interface">--</strong>
+                                </div>
+                                <div class="sync-status-row">
+                                    <span>Last scan</span>
+                                    <strong id="wifi-settings-last-scan">Never</strong>
+                                </div>
+                            </div>
+                            <div id="wifi-settings-summary" class="sync-summary">Waiting for first Wi-Fi scan.</div>
+                            <div id="wifi-network-list" class="wifi-network-list">
+                                <div class="empty-message">No Wi-Fi networks loaded yet.</div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="subpage settings-panel" id="settings-theme">
                         <div class="theme-settings-grid">
                             <section class="card theme-group">
                                 <div class="list-title">Themes</div>
@@ -799,6 +835,27 @@
                 <button id="power-shutdown-button" class="power-action danger" type="button" onclick="confirmPowerAction('shutdown')">Shutdown</button>
                 <button id="power-reboot-button" class="power-action" type="button" onclick="confirmPowerAction('reboot')">Reset</button>
                 <button id="power-cancel-button" class="power-action secondary" type="button" onclick="closePowerModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="wifi-password-modal" class="wifi-password-modal-overlay hidden" onclick="wifiPasswordOverlayClick(event)">
+        <div class="wifi-password-modal" role="dialog" aria-modal="true" aria-labelledby="wifi-password-title">
+            <div class="wifi-password-header">
+                <strong id="wifi-password-title">Wi-Fi Password</strong>
+                <span id="wifi-password-subtitle">Enter the password for the selected network.</span>
+            </div>
+            <input type="text" id="wifi-password-ssid" class="wifi-password-display" readonly>
+            <input type="password" id="wifi-password-input" class="wifi-password-input" placeholder="Password" readonly>
+            <div class="wifi-password-toolbar">
+                <button class="wifi-password-tool" type="button" onclick="toggleWifiPasswordVisible()">Show/Hide</button>
+                <button class="wifi-password-tool" type="button" onclick="wifiPasswordBackspace()">⌫</button>
+                <button class="wifi-password-tool" type="button" onclick="wifiPasswordClear()">Clear</button>
+            </div>
+            <div id="wifi-password-keyboard" class="wifi-password-keyboard"></div>
+            <div class="wifi-password-actions">
+                <button id="wifi-password-cancel" class="power-action secondary" type="button" onclick="closeWifiPasswordModal()">Cancel</button>
+                <button id="wifi-password-connect" class="power-action" type="button" onclick="submitWifiPassword()">Connect</button>
             </div>
         </div>
     </div>
