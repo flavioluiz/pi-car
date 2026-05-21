@@ -23,6 +23,7 @@ STABLE_PORT = getattr(config, 'OBD_DEVICE', '/dev/serial/by-id/usb-FTDI_FT232R_U
 FALLBACK_PORT = getattr(config, 'OBD_FALLBACK_DEVICE', '/dev/ttyUSB0')
 BAUDRATE = getattr(config, 'OBD_BAUDRATE', 38400)
 POLL_INTERVAL = getattr(config, 'OBD_POLL_INTERVAL', 0.8)
+SECONDARY_POLL_INTERVAL = getattr(config, 'OBD_SECONDARY_POLL_INTERVAL', 0.5)
 STALE_TIMEOUT = getattr(config, 'OBD_STALE_TIMEOUT', 6.0)
 
 PID_INFO = {
@@ -49,6 +50,8 @@ PID_INFO = {
 GEAR_UNKNOWN_HOLD_S = 2.0
 GEAR_CONFIRMATION_TIME_S = 0.8
 GEAR_RECENT_CONFIRMATION_S = 1.0
+GEAR_UPSHIFT_RPM = 3000
+GEAR_DOWNSHIFT_RPM = 1300
 
 GEAR_ENTRY_BANDS = {
     1: (120.0, None),
@@ -123,6 +126,8 @@ INITIAL_DATA: Dict[str, Any] = {
         'gear_confidence': 'none',
         'gear_reason': 'not_initialized',
         'gear_display': '--',
+        'shift_hint': 'none',
+        'shift_hint_display': '',
         'coolant_alert': False,
         'battery_alert': False,
     },
@@ -265,6 +270,7 @@ class OBDService:
         self._fuel = getattr(config, 'OBD_DEFAULT_FUEL', 'gasoline_e27')
         self._trip_consumed_l = 0.0
         self._trip_distance_km = 0.0
+        self._last_secondary_poll_at = 0.0
         self._last_medium_poll_at = 0.0
         self._last_slow_poll_at = 0.0
         self._last_extended_poll_at = 0.0
@@ -460,15 +466,22 @@ class OBDService:
 
     def _read_direct_data(self, now: float) -> Dict[str, Any]:
         direct = copy.deepcopy(obd_data['direct'])
-        fast_values = {
+        primary_values = {
             'rpm': self._parse_two_byte('010C', '410C', lambda a, b: ((a * 256) + b) / 4, timeout=0.55),
             'speed_kmh': self._parse_one_byte('010D', '410D', lambda a: a, timeout=0.45),
-            'map_kpa': self._parse_one_byte('010B', '410B', lambda a: a, timeout=0.55),
-            'engine_load_pct': self._parse_one_byte('0104', '4104', lambda a: a * 100 / 255, timeout=0.55),
-            'throttle_pct': self._parse_one_byte('0111', '4111', lambda a: a * 100 / 255, timeout=0.55),
         }
-        for key, value in fast_values.items():
+        for key, value in primary_values.items():
             _set_valid(direct, key, value)
+
+        if now - self._last_secondary_poll_at >= SECONDARY_POLL_INTERVAL:
+            secondary_values = {
+                'map_kpa': self._parse_one_byte('010B', '410B', lambda a: a, timeout=0.55),
+                'engine_load_pct': self._parse_one_byte('0104', '4104', lambda a: a * 100 / 255, timeout=0.55),
+                'throttle_pct': self._parse_one_byte('0111', '4111', lambda a: a * 100 / 255, timeout=0.55),
+            }
+            for key, value in secondary_values.items():
+                _set_valid(direct, key, value)
+            self._last_secondary_poll_at = now
 
         if now - self._last_medium_poll_at >= 1:
             medium_values = {
@@ -586,6 +599,7 @@ class OBDService:
             dynamic_stale_age_s=stale_age,
             now=now,
         )
+        shift_hint = self._calculate_shift_hint(direct, gear)
 
         return {
             'engine_on': rpm > 0,
@@ -605,6 +619,8 @@ class OBDService:
             'gear_confidence': gear['confidence'],
             'gear_reason': gear['reason'],
             'gear_display': gear['display'],
+            'shift_hint': shift_hint,
+            'shift_hint_display': '↑' if shift_hint == 'up' else '↓' if shift_hint == 'down' else '',
             'coolant_alert': coolant is not None and coolant >= 105,
             'battery_alert': rpm > 0 and voltage is not None and voltage < 13.0,
         }
@@ -709,6 +725,22 @@ class OBDService:
         if recently_confirmed or (boundary_distance is not None and boundary_distance < 3.0):
             return 'medium'
         return 'high'
+
+    def _calculate_shift_hint(self, direct: Dict[str, Any], gear: Dict[str, Any]) -> str:
+        if gear.get('state') != 'IN_GEAR':
+            return 'none'
+
+        current_gear = gear.get('gear')
+        rpm = direct.get('rpm')
+        speed = direct.get('speed_kmh')
+        if current_gear is None or rpm is None or speed is None or speed < 8:
+            return 'none'
+
+        if current_gear < max(GEAR_ENTRY_BANDS) and rpm >= GEAR_UPSHIFT_RPM:
+            return 'up'
+        if current_gear > min(GEAR_ENTRY_BANDS) and rpm <= GEAR_DOWNSHIFT_RPM:
+            return 'down'
+        return 'none'
 
     def _calculate_gear_inference(
         self,
@@ -916,6 +948,7 @@ class OBDService:
                 logger.info(f"Connecting to OBD at {port} ({self.baudrate} baud)...")
                 self._serial = self._open_serial(port)
                 init = self._initialize_elm()
+                self._last_secondary_poll_at = 0.0
                 self._last_medium_poll_at = 0.0
                 self._last_slow_poll_at = 0.0
                 self._last_extended_poll_at = 0.0
@@ -939,13 +972,13 @@ class OBDService:
                     obd_data['metadata']['vin'] = init['vin']
 
                 while self._running:
-                    now = time.time()
-                    direct = self._read_direct_data(now)
+                    loop_started_at = time.monotonic()
+                    direct = self._read_direct_data(loop_started_at)
                     stale_age = time.monotonic() - self._last_dynamic_pid_at
                     if stale_age > STALE_TIMEOUT:
                         raise TimeoutError(f'OBD dynamic data stale for {stale_age:.1f}s')
 
-                    inferred = self._calculate_inferred(direct, now)
+                    inferred = self._calculate_inferred(direct, loop_started_at)
                     metrics = self._metrics_from_snapshot(direct, inferred)
 
                     with self._lock:
@@ -961,7 +994,8 @@ class OBDService:
                         obd_data['metadata']['last_successful_command'] = self._last_successful_command
                         obd_data['error'] = None
 
-                    time.sleep(POLL_INTERVAL)
+                    loop_elapsed = time.monotonic() - loop_started_at
+                    time.sleep(max(0.0, POLL_INTERVAL - loop_elapsed))
 
             except Exception as exc:
                 logger.warning(f"OBD connection error: {exc}")

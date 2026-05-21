@@ -100,6 +100,8 @@ let obdLoggerStatus = null;
 let restartReconnectPoller = null;
 let restartReconnectStartedAt = null;
 let powerActionInFlight = false;
+const STATUS_UPDATE_INTERVAL_MS = 1000;
+const OBD_UPDATE_INTERVAL_MS = 250;
 let wifiSettingsStatus = null;
 let wifiSettingsNetworks = [];
 let wifiConnectBusy = false;
@@ -866,6 +868,37 @@ function updatePlaybackSummary(musicData) {
     setText('stat-queue-len', `${queueFiles.size} track${queueFiles.size === 1 ? '' : 's'}`);
 }
 
+function updateHomeOBD(obd) {
+    if (obd && obd.connected) {
+        const d = obd.direct || {};
+        const inf = obd.inferred || {};
+        setText('home-obd-speed', formatOBDValue(d.speed_kmh));
+        setText('home-trip-fuel', formatOBDValue(inf.trip_consumed_l, 2));
+        setText('home-trip-dist', formatOBDValue(inf.trip_distance_km, 1));
+        setText('home-avg-kml', formatOBDValue(inf.trip_average_km_l, 1));
+        setText('home-gear', formatGearDisplay(inf));
+        setText('home-battery', formatOBDValue(d.adapter_voltage_v, 1));
+        setText('home-rpm', d.rpm ? Math.round(d.rpm).toString() : '--');
+        const speedFill = document.getElementById('home-speed-fill');
+        if (speedFill) speedFill.style.width = Math.min(100, (d.speed_kmh || 0) / 200 * 100) + '%';
+        const rpmFill = document.getElementById('home-rpm-fill');
+        if (rpmFill) rpmFill.style.width = Math.min(100, (d.rpm || 0) / 7000 * 100) + '%';
+        return;
+    }
+
+    setText('home-obd-speed', '--');
+    setText('home-trip-fuel', '--');
+    setText('home-trip-dist', '--');
+    setText('home-avg-kml', '--');
+    setText('home-gear', '--');
+    setText('home-battery', '--');
+    setText('home-rpm', '--');
+    const speedFill = document.getElementById('home-speed-fill');
+    if (speedFill) speedFill.style.width = '0%';
+    const rpmFill = document.getElementById('home-rpm-fill');
+    if (rpmFill) rpmFill.style.width = '0%';
+}
+
 // Update OBD display with dynamic metrics
 function updateOBDDisplay(obdData) {
     const obdContent = document.getElementById('obd-content');
@@ -930,7 +963,7 @@ function updateOBDDisplay(obdData) {
     setText('obd-trip-distance', formatOBDValue(inferred.trip_distance_km, 1));
     setText('obd-trip-fuel', formatOBDValue(inferred.trip_consumed_l, 2));
     setText('obd-trip-average', formatOBDValue(inferred.trip_average_km_l, 1));
-    setText('obd-gear', inferred.gear_display || '--');
+    setText('obd-gear', formatGearDisplay(inferred));
     setText('obd-voltage', formatOBDValue(direct.adapter_voltage_v, 1));
 
     setText('stat-mil', direct.mil_on === true ? 'On' : direct.mil_on === false ? 'Off' : '--');
@@ -995,6 +1028,12 @@ function updateOBDDisplay(obdData) {
         inferred.fuel === 'ethanol' ? 'Ethanol' : inferred.fuel === 'gasoline_e27' ? 'Gasoline E27' : '--'
     );
     renderSupportedPids(obdData.supported_commands || []);
+}
+
+function formatGearDisplay(inferred) {
+    const gearDisplay = inferred?.gear_display || '--';
+    const shiftHint = inferred?.shift_hint_display || '';
+    return shiftHint ? `${gearDisplay} ${shiftHint}` : gearDisplay;
 }
 
 function formatSampleTime(metadata) {
@@ -2511,6 +2550,7 @@ updateData = function() {
             updatePlaybackSummary(data.music);
 
             updateOBDDisplay(data.obd);
+            updateHomeOBD(data.obd);
 
             if (data.gps.connected && data.gps.lat) {
                 document.getElementById('gps-content').style.display = 'block';
@@ -2525,34 +2565,6 @@ updateData = function() {
             }
 
             // ============ HOME PANEL ============
-            const obd = data.obd;
-            if (obd && obd.connected) {
-                const d = obd.direct || {};
-                const inf = obd.inferred || {};
-                setText('home-obd-speed', formatOBDValue(d.speed_kmh));
-                setText('home-trip-fuel', formatOBDValue(inf.trip_consumed_l, 2));
-                setText('home-trip-dist', formatOBDValue(inf.trip_distance_km, 1));
-                setText('home-avg-kml', formatOBDValue(inf.trip_average_km_l, 1));
-                setText('home-gear', inf.gear_display || '--');
-                setText('home-battery', formatOBDValue(d.adapter_voltage_v, 1));
-                setText('home-rpm', d.rpm ? Math.round(d.rpm).toString() : '--');
-                const speedFill = document.getElementById('home-speed-fill');
-                if (speedFill) speedFill.style.width = Math.min(100, (d.speed_kmh || 0) / 200 * 100) + '%';
-                const rpmFill = document.getElementById('home-rpm-fill');
-                if (rpmFill) rpmFill.style.width = Math.min(100, (d.rpm || 0) / 7000 * 100) + '%';
-            } else {
-                setText('home-obd-speed', '--');
-                setText('home-trip-fuel', '--');
-                setText('home-trip-dist', '--');
-                setText('home-avg-kml', '--');
-                setText('home-gear', '--');
-                setText('home-battery', '--');
-                setText('home-rpm', '--');
-                const speedFill = document.getElementById('home-speed-fill');
-                if (speedFill) speedFill.style.width = '0%';
-                const rpmFill = document.getElementById('home-rpm-fill');
-                if (rpmFill) rpmFill.style.width = '0%';
-            }
             setText('home-music-title', data.music.title || 'No music');
             setText('home-music-artist', data.music.artists_all || data.music.artist || '-');
             const homePlay = document.getElementById('home-btn-play');
@@ -2591,6 +2603,17 @@ updateData = function() {
         .catch(err => console.error('Error updating:', err));
 };
 
+function updateOBDData() {
+    fetch('/api/vehicle/status')
+        .then(r => r.json())
+        .then(obd => {
+            document.getElementById('ind-obd').classList.toggle('connected', !!obd.connected);
+            updateOBDDisplay(obd);
+            updateHomeOBD(obd);
+        })
+        .catch(err => console.error('Error updating OBD:', err));
+}
+
 // Load presets and populate tuner favorite strip on page load
 if (document.getElementById('fm-presets')) {
     loadRadioPresets();
@@ -2619,7 +2642,9 @@ window.addEventListener('offline', () => setWifiIndicator('disconnected'));
 
 fetchWifiSettings(false);
 updateData();
-setInterval(updateData, 1000);
+updateOBDData();
+setInterval(updateData, STATUS_UPDATE_INTERVAL_MS);
+setInterval(updateOBDData, OBD_UPDATE_INTERVAL_MS);
 
 // ============ MUSIC VISUALIZER ============
 (function () {

@@ -196,6 +196,8 @@ class AppTestModeSmokeTest(unittest.TestCase):
             self.assertGreater(payload["obd"]["direct"]["speed_kmh"], -1)
             self.assertIn("gear_state", payload["obd"]["inferred"])
             self.assertIn("gear_display", payload["obd"]["inferred"])
+            self.assertIn("shift_hint", payload["obd"]["inferred"])
+            self.assertIn("shift_hint_display", payload["obd"]["inferred"])
 
             wifi_response = client.get("/api/wifi")
             self.assertEqual(wifi_response.status_code, 200)
