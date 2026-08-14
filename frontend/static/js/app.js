@@ -745,6 +745,7 @@ function openWifiPasswordModal(ssid) {
     setWifiPasswordModalMessage(`Enter the password for ${ssid}.`);
     buildWifiPasswordKeyboard();
     modal.classList.remove('hidden');
+    passwordInput.focus({ preventScroll: true });
 }
 
 function closeWifiPasswordModal(force = false) {
@@ -778,7 +779,8 @@ function buildWifiPasswordKeyboard() {
                 return `<button
                     class="wifi-password-key ${wide ? 'wide' : ''} ${isSpace ? 'space' : ''} ${active ? 'active' : ''}"
                     type="button"
-                    onclick="wifiPasswordKeyPress(${JSON.stringify(key)})"
+                    data-key="${escapeHtml(key)}"
+                    onclick="wifiPasswordKeyPress(this.dataset.key)"
                 >${key === ' ' ? 'SPACE' : escapeHtml(key)}</button>`;
             }).join('')}
         </div>
@@ -848,6 +850,31 @@ function submitWifiPassword() {
     if (!input || !wifiSelectedNetwork?.ssid) return;
     submitWifiConnect(wifiSelectedNetwork.ssid, input.value);
 }
+
+document.addEventListener('keydown', event => {
+    const modal = document.getElementById('wifi-password-modal');
+    if (!modal || modal.classList.contains('hidden')) return;
+
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        closeWifiPasswordModal();
+        return;
+    }
+    if (event.key === 'Backspace') {
+        event.preventDefault();
+        wifiPasswordBackspace();
+        return;
+    }
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        submitWifiPassword();
+        return;
+    }
+    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        wifiPasswordKeyPress(event.key);
+    }
+});
 
 function formatStateValue(value, unit = '', digits = 1) {
     if (value === null || value === undefined || Number.isNaN(Number(value))) {

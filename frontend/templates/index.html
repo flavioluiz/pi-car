@@ -842,11 +842,14 @@
     <div id="wifi-password-modal" class="wifi-password-modal-overlay hidden" onclick="wifiPasswordOverlayClick(event)">
         <div class="wifi-password-modal" role="dialog" aria-modal="true" aria-labelledby="wifi-password-title">
             <div class="wifi-password-header">
-                <strong id="wifi-password-title">Wi-Fi Password</strong>
-                <span id="wifi-password-subtitle">Enter the password for the selected network.</span>
+                <div>
+                    <strong id="wifi-password-title">Wi-Fi Password</strong>
+                    <span id="wifi-password-subtitle">Enter the password for the selected network.</span>
+                </div>
+                <button id="wifi-password-close" class="wifi-password-close" type="button" aria-label="Close Wi-Fi password dialog" onclick="closeWifiPasswordModal()">&times;</button>
             </div>
             <input type="text" id="wifi-password-ssid" class="wifi-password-display" readonly>
-            <input type="password" id="wifi-password-input" class="wifi-password-input" placeholder="Password" readonly>
+            <input type="password" id="wifi-password-input" class="wifi-password-input" placeholder="Password" inputmode="none" autocomplete="new-password" readonly>
             <div class="wifi-password-toolbar">
                 <button class="wifi-password-tool" type="button" onclick="toggleWifiPasswordVisible()">Show/Hide</button>
                 <button class="wifi-password-tool" type="button" onclick="wifiPasswordBackspace()">⌫</button>

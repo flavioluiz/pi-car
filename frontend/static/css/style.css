@@ -1598,6 +1598,12 @@ h2 {
     min-height: 0;
 }
 
+#panel-settings.active {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    overflow: hidden;
+}
+
 #panel-settings .settings-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr));
 }
@@ -1605,6 +1611,8 @@ h2 {
 #panel-settings .settings-panel.active {
     display: block;
     min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .sync-status-grid {
@@ -1658,12 +1666,19 @@ h2 {
 }
 
 .wifi-settings-card {
+    height: 100%;
     min-height: 0;
+    grid-template-rows: auto auto auto minmax(0, 1fr);
 }
 
 .wifi-network-list {
     display: grid;
     gap: 10px;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    align-content: start;
+    padding-right: 4px;
 }
 
 .wifi-network-item {
@@ -4446,6 +4461,9 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px;
     z-index: 930;
 }
 
@@ -4455,6 +4473,8 @@ h2 {
 
 .wifi-password-modal {
     width: min(860px, 96vw);
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
     border: 1px solid var(--line-strong);
     border-radius: 24px;
     background:
@@ -4464,9 +4484,18 @@ h2 {
     padding: 20px;
     display: grid;
     gap: 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .wifi-password-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 6px;
+}
+
+.wifi-password-header > div {
     display: grid;
     gap: 6px;
 }
@@ -4477,7 +4506,20 @@ h2 {
 }
 
 .wifi-password-header span {
+    display: block;
     color: var(--muted);
+}
+
+.wifi-password-close {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
 }
 
 .wifi-password-display,
@@ -4518,11 +4560,13 @@ h2 {
     display: flex;
     justify-content: center;
     gap: 8px;
+    min-width: 0;
 }
 
 .wifi-password-key {
-    min-width: 52px;
+    min-width: 0;
     min-height: 52px;
+    flex: 1 1 0;
     border-radius: 12px;
     border: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.06);
@@ -4533,15 +4577,73 @@ h2 {
 }
 
 .wifi-password-key.wide {
-    min-width: 110px;
+    flex-grow: 1.75;
 }
 
 .wifi-password-key.space {
-    min-width: 240px;
+    flex-grow: 3.5;
 }
 
 .wifi-password-key.active {
     background: linear-gradient(180deg, var(--red), var(--red-dark));
+}
+
+@media (max-height: 600px) {
+    .wifi-password-modal {
+        padding: 10px;
+        gap: 6px;
+        border-radius: 16px;
+    }
+
+    .wifi-password-display {
+        display: none;
+    }
+
+    .wifi-password-header,
+    .wifi-password-header > div {
+        gap: 2px;
+    }
+
+    .wifi-password-header strong {
+        font-size: 0.95rem;
+    }
+
+    .wifi-password-header span {
+        font-size: 0.78rem;
+        line-height: 1.15;
+    }
+
+    .wifi-password-close {
+        width: 38px;
+        height: 38px;
+    }
+
+    .wifi-password-input {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 1rem;
+    }
+
+    .wifi-password-toolbar,
+    .wifi-password-actions {
+        gap: 6px;
+    }
+
+    .wifi-password-tool,
+    .wifi-password-actions .power-action {
+        min-height: 38px;
+    }
+
+    .wifi-password-keyboard,
+    .wifi-password-keyboard-row {
+        gap: 4px;
+    }
+
+    .wifi-password-key {
+        min-height: 42px;
+        border-radius: 9px;
+        font-size: 0.9rem;
+    }
 }
 
 .fav-cancel-btn {

@@ -121,6 +121,8 @@ class FrontendMigrationSmokeTest(unittest.TestCase):
             'id="wifi-network-list"',
             'id="wifi-password-modal"',
             'id="wifi-password-keyboard"',
+            'id="wifi-password-close"',
+            'id="wifi-password-input" class="wifi-password-input" placeholder="Password" inputmode="none"',
             'id="music-title"',
             'id="music-artist"',
             'id="btn-play"',
@@ -145,6 +147,17 @@ class FrontendMigrationSmokeTest(unittest.TestCase):
         self.assertIn('/static/logos/picasso_logo.png', html)
         self.assertIn('/static/logos/picasso_name_only.png', html)
         self.assertNotIn('id="home-avg-speed"', html)
+
+    def test_wifi_password_keyboard_uses_valid_data_key_handlers(self):
+        app_js = (Path(__file__).resolve().parents[1] / "frontend" / "static" / "js" / "app.js").read_text()
+        styles = (Path(__file__).resolve().parents[1] / "frontend" / "static" / "css" / "style.css").read_text()
+
+        self.assertIn('data-key="${escapeHtml(key)}"', app_js)
+        self.assertIn('onclick="wifiPasswordKeyPress(this.dataset.key)"', app_js)
+        self.assertNotIn('onclick="wifiPasswordKeyPress(${JSON.stringify(key)})"', app_js)
+        self.assertIn("document.addEventListener('keydown', event => {", app_js)
+        self.assertIn(".wifi-network-list {", styles)
+        self.assertIn("max-height: calc(100dvh - 16px);", styles)
 
     def test_static_logo_assets_are_served(self):
         for path in (
